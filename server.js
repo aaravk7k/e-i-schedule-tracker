@@ -6,7 +6,7 @@ const crypto = require("node:crypto");
 const PORT = Number(process.env.PORT || 8787);
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const DATA_FILE = process.env.DATA_FILE || path.join(DATA_DIR, "db.json");
-const COOKIE_NAME = "taskops_session";
+const COOKIE_NAME = "schedule_manager_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
 const AIRTABLE_API_URL = "https://api.airtable.com/v0";
 const AIRTABLE_TABLES = {
@@ -1351,7 +1351,7 @@ const coverageTaskTemplates = [
 db = loadDb();
 
 server.listen(PORT, () => {
-  console.log(`Edson E+I TaskOps running at http://localhost:${PORT}`);
+  console.log(`Edson E+I Schedule Manager running at http://localhost:${PORT}`);
   if (!process.env.STAFF_PASSWORD || !process.env.STUDENT_DEFAULT_PASSWORD) {
     console.log("Default seed passwords are active. Set STAFF_PASSWORD and STUDENT_DEFAULT_PASSWORD before real deployment.");
   }

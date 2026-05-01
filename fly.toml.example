@@ -1,4 +1,4 @@
-app = "edson-ei-taskops"
+app = "edson-ei-schedule-manager"
 primary_region = "phx"
 
 [build]
@@ -14,7 +14,7 @@ primary_region = "phx"
   AIRTABLE_TABLE_SPACES = "Spaces"
 
 [[mounts]]
-  source = "taskops_data"
+  source = "schedule_manager_data"
   destination = "/data"
 
 [[services]]

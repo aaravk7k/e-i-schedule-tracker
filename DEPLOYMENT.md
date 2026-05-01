@@ -60,14 +60,14 @@ Recommended fields:
 - Schedules: `External ID`, `Student`, `Day`, `Space`, `Start`, `End`, `Source`
 - Spaces: `External ID`, `Name`, `Campus`, `Business Hours`
 
-Create an Airtable Personal Access Token with record read/write access to the base, then set `AIRTABLE_PAT` and `AIRTABLE_BASE_ID` in the server environment. Staff users can then open the Airtable page in TaskOps and click sync.
+Create an Airtable Personal Access Token with record read/write access to the base, then set `AIRTABLE_PAT` and `AIRTABLE_BASE_ID` in the server environment. Staff users can then open the Airtable page in Schedule Manager and click sync.
 
 ## Docker Deploy
 
 Build:
 
 ```bash
-docker build -t edson-ei-taskops .
+docker build -t edson-ei-schedule-manager .
 ```
 
 Run:
@@ -77,8 +77,8 @@ docker run -p 8787:8787 \
   -e STAFF_EMAIL=your-supervisor-email@asu.edu \
   -e STAFF_PASSWORD=make-a-strong-password \
   -e STUDENT_DEFAULT_PASSWORD=make-a-temporary-student-password \
-  -v taskops-data:/data \
-  edson-ei-taskops
+  -v schedule-manager-data:/data \
+  edson-ei-schedule-manager
 ```
 
 Open:

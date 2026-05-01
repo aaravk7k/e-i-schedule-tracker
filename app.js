@@ -1,23 +1,20 @@
 const app = {
   data: null,
-  view: "dashboard",
+  view: "schedules",
   selectedWorkerId: "",
   toastTimer: null
 };
 
 const staffViews = [
-  ["dashboard", "Dashboard"],
-  ["tasks", "Tasks"],
-  ["people", "Students"],
   ["schedules", "Schedules"],
+  ["people", "Students"],
   ["spaces", "Spaces"],
   ["airtable", "Airtable"]
 ];
 
 const studentViews = [
-  ["my-tasks", "My Tasks"],
-  ["profile", "My Profile"],
   ["schedules", "Schedules"],
+  ["profile", "My Availability"],
   ["spaces", "Spaces"]
 ];
 
@@ -36,7 +33,7 @@ async function loadState() {
   }
   app.data = await response.json();
   app.selectedWorkerId = app.selectedWorkerId || app.data.currentUser.workerId || app.data.workers[0]?.id || "";
-  app.view = app.data.role === "staff" ? "dashboard" : "my-tasks";
+  app.view = defaultViewForRole(app.data.role);
   render();
 }
 
@@ -62,9 +59,9 @@ function renderLogin() {
   document.getElementById("appView").innerHTML = `
     <section class="login-panel">
       <div>
-        <p class="eyebrow">Edson E+I TaskOps</p>
+        <p class="eyebrow">Edson E+I Schedule Manager</p>
         <h3>Sign in to continue</h3>
-        <p class="microcopy">Staff and students use different accounts. Students only see their own tasks plus shared schedules and space coverage.</p>
+        <p class="microcopy">Staff manage student-worker coverage. Students update their own availability and view shared schedules.</p>
       </div>
       <form id="loginForm" class="login-form">
         <label>
@@ -106,7 +103,7 @@ async function refreshState(keepView = true) {
   const data = await api("/api/state");
   app.data = data;
   if (keepView && availableViews().some(([id]) => id === priorView)) app.view = priorView;
-  else app.view = data.role === "staff" ? "dashboard" : "my-tasks";
+  else app.view = defaultViewForRole(data.role);
   if (!data.workers.some((worker) => worker.id === app.selectedWorkerId)) {
     app.selectedWorkerId = data.currentUser.workerId || data.workers[0]?.id || "";
   }
@@ -124,7 +121,7 @@ function render() {
   document.getElementById("focusDateInput").value = app.data.focusDate;
   renderNav();
 
-  const viewTitle = availableViews().find(([id]) => id === app.view)?.[1] || "TaskOps";
+  const viewTitle = availableViews().find(([id]) => id === app.view)?.[1] || "Schedule Manager";
   document.getElementById("viewTitle").textContent = viewTitle;
   const region = document.getElementById("appView");
 
@@ -148,6 +145,10 @@ function renderNav() {
 
 function availableViews() {
   return app.data?.role === "staff" ? staffViews : studentViews;
+}
+
+function defaultViewForRole() {
+  return "schedules";
 }
 
 function renderStaffDashboard() {
@@ -297,6 +298,11 @@ function renderProfile() {
   return `
     <section class="split-grid">
       <div class="panel">
+        <h3>My Availability</h3>
+        <div class="task-list">${worker.availability.length ? worker.availability.map((slot, index) => scheduleMiniCard(slot, worker, index, true)).join("") : emptyState("No schedule blocks yet.")}</div>
+        ${scheduleForm(worker.id, false)}
+      </div>
+      <div class="panel">
         <h3>My Skills</h3>
         <form id="skillForm" class="skill-form" data-worker-id="${worker.id}">
           <div class="check-grid">${skillCheckboxes(worker.skills, "skills")}</div>
@@ -304,33 +310,47 @@ function renderProfile() {
           <div class="action-row"><button class="primary-button" type="submit">Save Skills</button></div>
         </form>
       </div>
-      <div class="panel">
-        <h3>My Schedule</h3>
-        <div class="task-list">${worker.availability.length ? worker.availability.map((slot, index) => scheduleMiniCard(slot, worker, index, true)).join("") : emptyState("No schedule blocks yet.")}</div>
-        ${scheduleForm(worker.id, false)}
-      </div>
     </section>
   `;
 }
 
 function renderSchedules() {
   const staff = app.data.role === "staff";
+  const totalBlocks = app.data.workers.reduce((sum, worker) => sum + worker.availability.length, 0);
   return `
     <section class="band">
       <div class="band-header">
         <div>
-          <p class="eyebrow">Shared Schedule</p>
-          <h3>Student Worker Coverage</h3>
+          <p class="eyebrow">Schedule Manager</p>
+          <h3>Weekly Coverage Board</h3>
         </div>
       </div>
-      ${staff ? `<div class="panel"><h3>Add or Change Schedule</h3>${scheduleForm(app.data.workers[0]?.id, true)}</div>` : ""}
+      <div class="kpi-grid">
+        ${kpiCard(totalBlocks, "Schedule blocks")}
+        ${kpiCard(app.data.workers.length, "Students")}
+        ${kpiCard(app.data.spaces.length, "Spaces")}
+        ${kpiCard(app.data.coverageGaps.length, "Coverage gaps")}
+      </div>
+    </section>
+    ${staff ? `
+    <section class="split-grid">
       <div class="panel">
         <h3>Coverage Alerts</h3>
         ${app.data.coverageGaps.length ? `<div class="alert-stack">${app.data.coverageGaps.map((gap) => alertCard(gapToAlert(gap))).join("")}</div>` : emptyState("All spaces are covered for configured business hours.")}
       </div>
-      <div class="panel flush">
-        <div class="table-wrap">${scheduleGrid()}</div>
+      <div class="panel">
+        <h3>Add or Change Schedule</h3>
+        ${scheduleForm(app.data.workers[0]?.id, true)}
       </div>
+    </section>
+    ` : `
+    <section class="panel">
+      <h3>Coverage Alerts</h3>
+      ${app.data.coverageGaps.length ? `<div class="alert-stack">${app.data.coverageGaps.map((gap) => alertCard(gapToAlert(gap))).join("")}</div>` : emptyState("All spaces are covered for configured business hours.")}
+    </section>
+    `}
+    <section class="panel flush">
+      <div class="table-wrap">${scheduleGrid()}</div>
     </section>
   `;
 }
@@ -701,8 +721,8 @@ function alertCard(alert) {
 function gapToAlert(gap) {
   return {
     level: "warning",
-    title: `${gap.space} needs coverage`,
-    message: `${formatShortDate(gap.date)} from ${gap.detail}. ${gap.blocks?.length ? `Other scheduled times: ${gap.blocks.join(", ")}.` : "Nobody is scheduled for that space that day."}`
+    title: `Gap: ${gap.space}`,
+    message: `No coverage on ${formatShortDate(gap.date)} from ${gap.detail}. ${gap.blocks?.length ? `Already covered: ${gap.blocks.join(", ")}.` : "Nobody is scheduled for that space that day."}`
   };
 }
 

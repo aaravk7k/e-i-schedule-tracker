@@ -1,15 +1,15 @@
-# Edson E+I TaskOps
+# Edson E+I Schedule Manager
 
-Deployable web app for Edson E+I student-worker schedules, skills, task assignment, event coverage, and space coverage alerts.
+Deployable web app for Edson E+I student-worker schedules, space coverage, skills, and coverage-gap alerts.
 
 ## What It Does
 
 - Staff login and student login are separate.
-- Staff can create tasks, paste event lists, add students, edit schedules, generate WorldLabs tasks, and rerun assignment.
-- Students can only see their own tasks, update their skills, update their own schedule, and view shared schedules/spaces.
-- Tasks are assigned by availability, space, workload, and skills such as Administrative, Graphic Design, Communications, Front Desk, Event Coverage, WorldLabs, and Data + Reporting.
-- Coverage alerts use plain language, for example: `1951@SkySong has an uncovered time: Apr 24 from 8:00AM-9:00AM. Other scheduled blocks that day: Aarav Kapoor 9:00AM-5:00PM.`
-- Staff can push current Tasks, Students, Schedules, and Spaces into Airtable when Airtable environment variables are configured.
+- Staff can add students, edit weekly student-worker schedules, view space business hours, and sync schedule data to Airtable.
+- Students can update their own availability, update their skills, and view shared schedules/spaces.
+- Coverage alerts point out gaps by space and time, for example: `Gap: 1951@SkySong. No coverage on Apr 24 from 11:00AM-5:00PM.`
+- Skills are still tracked so this branch can later connect schedule coverage to task/event assignment.
+- Task assignment endpoints still exist in the codebase, but the user interface on this branch is focused on scheduling for the SW meeting demo.
 
 ## Run Locally
 
@@ -59,7 +59,7 @@ For Render, Railway, Fly.io, or similar:
 4. Add a persistent disk/volume and point `DATA_DIR` at that disk path.
 5. Deploy.
 
-The app saves live data to `data/db.json` by default. For real workplace use, make sure `DATA_DIR` is on persistent storage so schedules and tasks do not reset when the service restarts.
+The app saves live data to `data/db.json` by default. For real workplace use, make sure `DATA_DIR` is on persistent storage so schedules do not reset when the service restarts.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for Docker and production rollout notes.
 
@@ -76,14 +76,17 @@ Add a text field named `External ID` to every table. The app uses that field to 
 
 The default table names can be changed with the `AIRTABLE_TABLE_*` environment variables above. The Airtable token must stay server-side in `AIRTABLE_PAT`; never paste it into browser code.
 
-## Event List Format
+## Meeting Demo Focus
 
-Paste one event per line:
+Use the `schedule-manager` branch to show:
 
-```text
-Pitch In | 2026-04-24 | 1951@SkySong | 5:00PM | 7:30PM | Front Desk, Event Coverage
-PBIS Workshop | 2026-04-25 | 850PBC | 9:00AM | 12:00PM | Administrative, Event Coverage
-```
+- separate staff and student sign-ins
+- the shared weekly schedule board
+- coverage-gap alerts when a space is open with no student scheduled
+- staff schedule edits
+- student self-service availability updates
+- space business hours
+- future Airtable sync path
 
 ## Important Next Step
 

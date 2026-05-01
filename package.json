@@ -1,8 +1,8 @@
 {
-  "name": "edson-ei-taskops",
+  "name": "edson-ei-schedule-manager",
   "version": "1.0.0",
   "private": true,
-  "description": "Deployable Edson E+I student worker scheduling and task assignment app.",
+  "description": "Deployable Edson E+I student worker scheduling and coverage manager.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

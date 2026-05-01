@@ -632,6 +632,52 @@ tr:last-child td {
   margin: 0;
 }
 
+.hour-meter {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.hour-meter.over {
+  border-color: #fda29b;
+  background: #fff7f6;
+}
+
+.hour-meter-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #344054;
+  font-size: 0.88rem;
+}
+
+.hour-meter-head span,
+.limit-warning {
+  color: var(--warning);
+  font-weight: 850;
+}
+
+.hour-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4e7ec;
+}
+
+.hour-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--asu-maroon), var(--asu-gold));
+}
+
+.hour-meter.over .hour-bar span {
+  background: var(--danger);
+}
+
 .span-2 {
   grid-column: span 2;
 }
@@ -693,6 +739,17 @@ tr:last-child td {
 .slot-action {
   justify-self: start;
   margin-top: 4px;
+}
+
+.slot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.slot-actions .slot-action {
+  margin-top: 0;
 }
 
 .empty-state {

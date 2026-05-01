@@ -2,6 +2,7 @@ const app = {
   data: null,
   view: "schedules",
   selectedWorkerId: "",
+  editingSchedule: null,
   toastTimer: null
 };
 
@@ -299,6 +300,7 @@ function renderProfile() {
     <section class="split-grid">
       <div class="panel">
         <h3>My Availability</h3>
+        ${weeklyHourPanel(worker)}
         <div class="task-list">${worker.availability.length ? worker.availability.map((slot, index) => scheduleMiniCard(slot, worker, index, true)).join("") : emptyState("No schedule blocks yet.")}</div>
         ${scheduleForm(worker.id, false)}
       </div>
@@ -311,6 +313,24 @@ function renderProfile() {
         </form>
       </div>
     </section>
+  `;
+}
+
+function weeklyHourPanel(worker) {
+  const limit = worker.weeklyLimit || 20;
+  const hours = Number(worker.weeklyHours || 0);
+  const remaining = Math.max(0, limit - hours);
+  const percent = Math.min(100, (hours / limit) * 100);
+  const over = hours > limit;
+  return `
+    <div class="hour-meter ${over ? "over" : ""}">
+      <div class="hour-meter-head">
+        <strong>${formatHours(hours)} / ${formatHours(limit)} hours</strong>
+        <span>${over ? "Over weekly limit" : `${formatHours(remaining)} hours left`}</span>
+      </div>
+      <div class="hour-bar"><span style="width:${percent}%"></span></div>
+      <p class="task-meta">Student workers should stay at or under ${formatHours(limit)} hours during the semester.</p>
+    </div>
   `;
 }
 
@@ -359,7 +379,7 @@ function renderSchedules() {
         <h3>Staff / Space Coverage</h3>
         ${staffScheduleTable()}
       </div>
-      ${staff ? `<div class="panel"><h3>Quick Schedule Edit</h3>${scheduleForm(app.data.workers[0]?.id, true)}</div>` : `<div class="panel"><h3>My Requests</h3>${renderRequestList(app.data.coverageRequests || [])}</div>`}
+      ${staff ? `<div class="panel"><h3>Quick Schedule Edit</h3>${scheduleForm(app.editingSchedule?.workerId || app.data.workers[0]?.id, true)}</div>` : `<div class="panel"><h3>My Requests</h3>${renderRequestList(app.data.coverageRequests || [])}</div>`}
     </section>
   `;
 }
@@ -481,6 +501,8 @@ function coverageRequestCard(request) {
   const worker = workerById(request.workerId);
   const staff = app.data.role === "staff";
   const canAct = !staff && request.workerId === app.data.currentUser.workerId;
+  const projected = worker && event ? projectedHoursForRequest(worker, event, request) : null;
+  const overLimit = Boolean(projected && request.status === "accepted" && projected.projected > projected.limit);
   if (!event) return "";
   return `
     <article class="task-card">
@@ -496,11 +518,13 @@ function coverageRequestCard(request) {
         ${staff ? `<span class="badge">${escapeHtml(worker?.name || "Unknown student")}</span>` : ""}
       </div>
       <p class="task-meta">${escapeHtml(request.reason || "Matched by space, schedule, and coverage skill.")}</p>
+      ${projected ? `<p class="task-meta ${projected.projected > projected.limit ? "limit-warning" : ""}">${escapeHtml(hourSummaryText(projected, request.status))}</p>` : ""}
       <div class="task-footer">
         <span class="task-meta">${staff ? `Student response: ${request.status}` : studentRequestHint(request.status)}</span>
         <div class="action-row">
           ${canAct && request.status === "pending" ? requestButton(request, "accept", "Accept", "primary-button") + requestButton(request, "deny", "Deny", "danger-button") : ""}
-          ${canAct && request.status === "accepted" ? requestButton(request, "add-to-schedule", "Add to My Schedule", "secondary-button") : ""}
+          ${canAct && request.status === "accepted" && !overLimit ? requestButton(request, "add-to-schedule", "Add to My Schedule", "secondary-button") : ""}
+          ${canAct && request.status === "accepted" && overLimit ? `<button class="secondary-button" type="button" data-action="open-profile">Edit My Schedule</button>` : ""}
         </div>
       </div>
     </article>
@@ -623,6 +647,25 @@ async function handleAction(action, button) {
       render();
       return;
     }
+    if (action === "open-profile") {
+      app.view = "profile";
+      render();
+      return;
+    }
+    if (action === "clear-schedule-edit") {
+      app.editingSchedule = null;
+      render();
+      return;
+    }
+    if (action === "edit-schedule") {
+      app.editingSchedule = {
+        workerId: button.dataset.workerId,
+        slotIndex: Number(button.dataset.slotIndex)
+      };
+      if (app.data.role === "student") app.view = "profile";
+      render();
+      return;
+    }
     if (action === "task-action") {
       const taskId = button.dataset.taskId;
       const taskAction = button.dataset.taskAction;
@@ -643,6 +686,7 @@ async function handleAction(action, button) {
       const workerId = button.dataset.workerId;
       const index = button.dataset.slotIndex;
       app.data = await api(`/api/workers/${encodeURIComponent(workerId)}/schedules/${index}`, { method: "DELETE" });
+      app.editingSchedule = null;
       showToast("Schedule block removed. Coverage alerts updated.");
       render();
     }
@@ -750,9 +794,11 @@ async function saveSchedule(form) {
       space: data.get("space"),
       start: data.get("start"),
       end: data.get("end"),
-      mode: data.get("mode")
+      mode: data.get("mode"),
+      slotIndex: data.get("slotIndex")
     }
   });
+  app.editingSchedule = null;
   showToast("Schedule saved. Coverage alerts updated.");
   render();
 }
@@ -800,22 +846,34 @@ function taskForm() {
 }
 
 function scheduleForm(workerId, includeWorkerSelect) {
+  const editing = app.editingSchedule?.workerId === workerId ? app.editingSchedule : null;
+  const worker = workerById(workerId);
+  const editSlot = editing ? worker?.availability[editing.slotIndex] : null;
+  const day = editSlot?.day || "Monday";
+  const space = editSlot?.space || app.data.spaces[0]?.name || "1951@SkySong";
+  const start = editSlot?.start || "09:00";
+  const end = editSlot?.end || "17:00";
   return `
     <form id="scheduleForm" class="schedule-change-form">
       <div class="form-grid">
-        ${includeWorkerSelect ? `<label class="span-2">Student${workerSelect(workerId)}</label>` : `<input type="hidden" name="workerId" value="${workerId}">`}
-        <label>Day${daySelect()}</label>
-        <label>Space${spaceSelect("space")}</label>
-        <label>Start<input name="start" type="time" value="09:00" required></label>
-        <label>End<input name="end" type="time" value="17:00" required></label>
+        ${includeWorkerSelect && !editSlot ? `<label class="span-2">Student${workerSelect(workerId)}</label>` : `<input type="hidden" name="workerId" value="${workerId}">${includeWorkerSelect ? `<label class="span-2">Student<input value="${escapeHtml(worker?.name || "Student")}" disabled></label>` : ""}`}
+        ${editSlot ? `<input type="hidden" name="slotIndex" value="${editing.slotIndex}">` : ""}
+        <label>Day${daySelect(day)}</label>
+        <label>Space${spaceSelect("space", space)}</label>
+        <label>Start<input name="start" type="time" value="${start}" required></label>
+        <label>End<input name="end" type="time" value="${end}" required></label>
         <label class="span-2">Change Type
           <select name="mode">
-            <option value="replace-space">Replace this space/day</option>
+            ${editSlot ? `<option value="edit-slot">Edit selected block</option>` : ""}
+            <option value="replace-space" ${editSlot ? "" : "selected"}>Replace this space/day</option>
             <option value="add">Add block</option>
             <option value="replace-day">Replace full day</option>
           </select>
         </label>
-        <div class="span-6 action-row"><button class="primary-button" type="submit">Save Schedule</button></div>
+        <div class="span-6 action-row">
+          <button class="primary-button" type="submit">${editSlot ? "Save Edited Hours" : "Save Schedule"}</button>
+          ${editSlot ? `<button class="ghost-button" type="button" data-action="clear-schedule-edit">Cancel Edit</button>` : ""}
+        </div>
       </div>
     </form>
   `;
@@ -866,7 +924,7 @@ function workerCard(worker) {
       <div class="task-head"><h4>${escapeHtml(worker.name)}</h4><span class="badge">${escapeHtml(worker.initials)}</span></div>
       <div class="badge-row">${worker.primarySpaces.map(spaceChip).join("")}</div>
       <div class="badge-row">${skillBadges(worker.skills)}</div>
-      <p class="task-meta">${worker.availability.length} schedule block${worker.availability.length === 1 ? "" : "s"}</p>
+      <p class="task-meta">${worker.availability.length} schedule block${worker.availability.length === 1 ? "" : "s"} · ${formatHours(worker.weeklyHours || 0)}/${formatHours(worker.weeklyLimit || 20)} hours</p>
     </article>
   `;
 }
@@ -878,7 +936,7 @@ function workerSummaryRow(worker) {
       <td><strong>${escapeHtml(worker.name)}</strong><div class="task-meta">${escapeHtml(worker.primarySpaces.join(", "))}</div></td>
       <td><div class="badge-row">${skillBadges(worker.skills.slice(0, 5))}</div></td>
       <td>${active}</td>
-      <td>${worker.availability.length}</td>
+      <td>${worker.availability.length}<div class="task-meta">${formatHours(worker.weeklyHours || 0)}/${formatHours(worker.weeklyLimit || 20)}h</div></td>
     </tr>
   `;
 }
@@ -902,7 +960,10 @@ function scheduleMiniCard(slot, worker, index, editable) {
     <article class="slot" style="color:${app.data.spaceColors[slot.space] || app.data.spaceColors.General}">
       <strong>${escapeHtml(slot.space)}</strong>
       <span>${formatTime(slot.start)}-${formatTime(slot.end)}</span>
-      ${editable ? `<button class="mini-button slot-action" type="button" data-action="remove-schedule" data-worker-id="${worker.id}" data-slot-index="${index}">Remove</button>` : ""}
+      ${editable ? `<div class="slot-actions">
+        <button class="mini-button slot-action" type="button" data-action="edit-schedule" data-worker-id="${worker.id}" data-slot-index="${index}">Edit</button>
+        <button class="mini-button slot-action" type="button" data-action="remove-schedule" data-worker-id="${worker.id}" data-slot-index="${index}">Remove</button>
+      </div>` : ""}
     </article>
   `;
 }
@@ -961,6 +1022,61 @@ function studentRequestHint(status) {
   }[status] || status;
 }
 
+function projectedHoursForRequest(worker, event, request) {
+  const limit = worker.weeklyLimit || 20;
+  const current = Number(worker.weeklyHours || 0);
+  const eventBlockHours = hoursBetween(event.start, event.end);
+  const alreadyScheduled = hasExactSchedule(worker, event);
+  const projected = request.status === "scheduled" || alreadyScheduled ? current : current + eventBlockHours;
+  return {
+    current,
+    eventHours: eventBlockHours,
+    projected,
+    limit,
+    alreadyScheduled
+  };
+}
+
+function hourSummaryText(summary, status) {
+  if (summary.alreadyScheduled || status === "scheduled") {
+    return `Already on schedule. Weekly total: ${formatHours(summary.current)}/${formatHours(summary.limit)} hours.`;
+  }
+  const projectedText = `${formatHours(summary.projected)}/${formatHours(summary.limit)} hours`;
+  if (summary.projected > summary.limit) {
+    return `This adds ${formatHours(summary.eventHours)} hours and would put you at ${projectedText}. Edit your schedule before adding it.`;
+  }
+  return `This adds ${formatHours(summary.eventHours)} hours. Projected weekly total: ${projectedText}.`;
+}
+
+function hasExactSchedule(worker, event) {
+  const day = dayFromDate(event.date);
+  return worker.availability.some((slot) =>
+    slot.day === day &&
+    slot.space === event.space &&
+    slot.start === event.start &&
+    slot.end === event.end
+  );
+}
+
+function dayFromDate(dateString) {
+  const date = new Date(`${dateString}T12:00:00`);
+  return DAYS[date.getDay() === 0 ? 6 : date.getDay() - 1] || "";
+}
+
+function hoursBetween(start, end) {
+  return Math.max(0, minutes(end) - minutes(start)) / 60;
+}
+
+function minutes(time) {
+  const [hour, minute] = String(time || "00:00").split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function formatHours(value) {
+  const rounded = Math.round((Number(value) || 0) * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+}
+
 function categorySelect() {
   return `<select name="category">
     ${["WorldLabs Post", "Data Pull", "Event Coverage", "On-site Coverage", "Supervisor Task"].map((item) => `<option>${item}</option>`).join("")}
@@ -971,12 +1087,13 @@ function prioritySelect() {
   return `<select name="priority"><option>Normal</option><option>High</option><option>Urgent</option></select>`;
 }
 
-function spaceSelect(name) {
-  return `<select name="${name}">${app.data.spaces.map((space) => `<option>${escapeHtml(space.name)}</option>`).join("")}<option>General</option></select>`;
+function spaceSelect(name, selected = "") {
+  const options = [...app.data.spaces.map((space) => space.name), "General"];
+  return `<select name="${name}">${options.map((space) => `<option ${space === selected ? "selected" : ""}>${escapeHtml(space)}</option>`).join("")}</select>`;
 }
 
-function daySelect() {
-  return `<select name="day">${DAYS.map((day) => `<option>${day}</option>`).join("")}</select>`;
+function daySelect(selected = "") {
+  return `<select name="day">${DAYS.map((day) => `<option ${day === selected ? "selected" : ""}>${day}</option>`).join("")}</select>`;
 }
 
 function workerSelect(selectedId) {

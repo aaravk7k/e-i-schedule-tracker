@@ -20,6 +20,7 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const SOURCE_WEEK_START = "2026-04-27";
 const FALLBACK_FOCUS_DATE = "2026-05-01";
 const CURRENT_SEED_VERSION = "pbis-may-2026-simple-scheduler-v2";
+const WEEKLY_HOUR_LIMIT = 20;
 
 const SKILL_OPTIONS = [
   { id: "administrative", label: "Administrative" },
@@ -313,6 +314,7 @@ async function handleApi(req, res) {
       start: body.start,
       end: body.end,
       mode: body.mode,
+      slotIndex: body.slotIndex,
       source: user.role === "staff" ? "Staff schedule edit" : "Student schedule change",
       by: user.name
     });
@@ -569,6 +571,7 @@ function publicUser(user) {
 }
 
 function publicWorker(worker, forStaff) {
+  const weeklyHours = weeklyHoursFor(worker.availability);
   return {
     id: worker.id,
     name: worker.name,
@@ -577,7 +580,11 @@ function publicWorker(worker, forStaff) {
     supervisor: forStaff ? worker.supervisor : "",
     primarySpaces: worker.primarySpaces,
     skills: worker.skills,
-    availability: worker.availability
+    availability: worker.availability,
+    weeklyHours,
+    weeklyLimit: WEEKLY_HOUR_LIMIT,
+    remainingHours: Math.max(0, roundHours(WEEKLY_HOUR_LIMIT - weeklyHours)),
+    overLimit: weeklyHours > WEEKLY_HOUR_LIMIT
   };
 }
 
@@ -1324,24 +1331,57 @@ function applyScheduleChange(worker, change) {
   const start = normalizeTimeValue(change.start, "09:00");
   const end = normalizeTimeValue(change.end, "17:00");
   const mode = cleanText(change.mode) || "add";
+  const slotIndex = Number(change.slotIndex);
 
   if (!DAYS.includes(day) || minutes(end) <= minutes(start)) {
     throw new Error("Invalid schedule block");
   }
 
   const before = worker.availability.length;
+  const beforeHours = weeklyHoursFor(worker.availability);
+  let nextAvailability = [...worker.availability];
   if (mode === "replace-day") {
-    worker.availability = worker.availability.filter((item) => item.day !== day);
+    nextAvailability = nextAvailability.filter((item) => item.day !== day);
   }
   if (mode === "replace-space") {
-    worker.availability = worker.availability.filter((item) => !(item.day === day && item.space === space));
+    nextAvailability = nextAvailability.filter((item) => !(item.day === day && item.space === space));
   }
-  worker.availability.push(slot(day, space, start, end, change.source));
-  worker.availability.sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || minutes(a.start) - minutes(b.start));
+  if (mode === "edit-slot") {
+    if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= nextAvailability.length) {
+      const error = new Error("Choose a schedule block to edit");
+      error.status = 400;
+      throw error;
+    }
+    nextAvailability = nextAvailability.filter((_, index) => index !== slotIndex);
+  }
+  nextAvailability.push(slot(day, space, start, end, change.source));
+  nextAvailability.sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || minutes(a.start) - minutes(b.start));
 
-  const modeLabel = mode === "add" ? "added" : "changed";
-  addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${space} on ${day}, ${formatTime(start)}-${formatTime(end)}.`);
-  addActivity(`${worker.name} ${modeLabel} schedule at ${space}; ${before} block${before === 1 ? "" : "s"} became ${worker.availability.length}.`);
+  const nextHours = weeklyHoursFor(nextAvailability);
+  if (nextHours > WEEKLY_HOUR_LIMIT) {
+    const error = new Error(`${worker.name} would be scheduled for ${formatHourTotal(nextHours)} hours this week. Student workers must stay at or under ${WEEKLY_HOUR_LIMIT} hours, so edit or remove another block first.`);
+    error.status = 400;
+    throw error;
+  }
+
+  worker.availability = nextAvailability;
+
+  const modeLabel = mode === "add" ? "added" : mode === "edit-slot" ? "edited" : "changed";
+  addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${space} on ${day}, ${formatTime(start)}-${formatTime(end)}. Weekly total: ${formatHourTotal(nextHours)}/${WEEKLY_HOUR_LIMIT} hours.`);
+  addActivity(`${worker.name} ${modeLabel} schedule at ${space}; ${before} block${before === 1 ? "" : "s"} became ${worker.availability.length}, ${formatHourTotal(beforeHours)}h became ${formatHourTotal(nextHours)}h.`);
+}
+
+function weeklyHoursFor(availability) {
+  const hours = (availability || []).reduce((total, item) => total + Math.max(0, minutes(item.end) - minutes(item.start)) / 60, 0);
+  return roundHours(hours);
+}
+
+function roundHours(value) {
+  return Math.round((Number(value) || 0) * 100) / 100;
+}
+
+function formatHourTotal(value) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 function addAlert(level, title, message) {

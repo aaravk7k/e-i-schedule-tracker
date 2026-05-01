@@ -10,7 +10,8 @@ Deployable web app for Edson E+I student-worker schedules, space coverage, skill
 - Students can update their own availability, update their skills, and view shared schedules/spaces.
 - Coverage alerts point out gaps by space and time if business-hour coverage is missing.
 - After-hours events automatically create coverage requests for the best-fit student workers from that space.
-- Students can accept or deny coverage requests. If they accept, they can add the event directly to their schedule and supervisors get an alert.
+- Students can accept or deny coverage requests. If they accept, they can add the event directly to their schedule only if it keeps them at or under 20 hours for the week.
+- If an after-hours request would push a student over 20 hours, the app sends them to edit/remove schedule blocks before adding it.
 - Skills are tracked so scheduling can recommend students by space, schedule, and coverage/event skill.
 
 ## Run Locally
@@ -68,7 +69,7 @@ Use the `schedule-manager` branch to show:
 - the automatic `Needs Attention` panel
 - PBIS student schedules, staff schedules, and space coverage together
 - after-hours event requests that get sent to students
-- student accept/deny and add-to-schedule flow
+- student accept/deny, 20-hour cap, edit-hours, and add-to-schedule flow
 - space business hours
 
 ## Important Next Step

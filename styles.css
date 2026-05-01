@@ -456,25 +456,34 @@ tr:last-child td {
   color: #7a4d00;
 }
 
-.status-pill.accepted {
+.status-pill.accepted,
+.status-pill.requesting {
   background: #e7f4ff;
   color: #174a7c;
 }
 
-.status-pill.done {
+.status-pill.done,
+.status-pill.scheduled {
   background: #e8f5e9;
   color: #1b5e20;
 }
 
 .status-pill.denied,
-.status-pill.unassigned {
+.status-pill.unassigned,
+.status-pill.needs-review {
   background: #fff0ee;
   color: var(--danger);
 }
 
-.status-pill.draft {
+.status-pill.draft,
+.status-pill.closed {
   background: #f0edff;
   color: #4f2fb0;
+}
+
+.warning-badge {
+  background: #fff4d6;
+  color: #7a4d00;
 }
 
 .primary-button,
@@ -758,6 +767,21 @@ tr:last-child td {
   color: var(--muted);
   font-size: 0.84rem;
   line-height: 1.35;
+}
+
+.candidate-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.candidate-row {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .toast {

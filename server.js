@@ -105,6 +105,34 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/schedule-events") {
+    requireStaff(user);
+    const body = await readJson(req);
+    const event = createScheduleEvent(body);
+    if (!event.title || !event.date) {
+      sendJson(res, 400, { error: "Event title and date are required" });
+      return;
+    }
+    db.events.push(event);
+    const requests = createCoverageRequestsForEvent(event, db);
+    addActivity(`Added event "${event.title}" and suggested ${requests.length} student worker${requests.length === 1 ? "" : "s"}.`);
+    saveDb();
+    sendJson(res, 201, viewForUser(user));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/staff-schedules") {
+    requireStaff(user);
+    const body = await readJson(req);
+    const staffSchedule = createStaffSchedule(body);
+    db.staffSchedules.push(staffSchedule);
+    addAlert("info", "Staff schedule added", `${staffSchedule.name} is listed at ${staffSchedule.space} on ${staffSchedule.day}, ${formatTime(staffSchedule.start)}-${formatTime(staffSchedule.end)}.`);
+    addActivity(`Added staff schedule for ${staffSchedule.name}.`);
+    saveDb();
+    sendJson(res, 201, viewForUser(user));
+    return;
+  }
+
   if (req.method === "GET" && url.pathname === "/api/airtable/status") {
     requireStaff(user);
     sendJson(res, 200, airtableStatus());
@@ -357,6 +385,29 @@ async function handleApi(req, res) {
     return;
   }
 
+  const coverageRequestMatch = url.pathname.match(/^\/api\/coverage-requests\/([^/]+)\/action$/);
+  if (req.method === "POST" && coverageRequestMatch) {
+    const request = db.coverageRequests.find((item) => item.id === decodeURIComponent(coverageRequestMatch[1]));
+    if (!request) {
+      sendJson(res, 404, { error: "Coverage request not found" });
+      return;
+    }
+    const body = await readJson(req);
+    const action = cleanText(body.action);
+    if (user.role !== "student" || request.workerId !== user.workerId) {
+      sendJson(res, 403, { error: "Students can only update their own coverage requests" });
+      return;
+    }
+    if (!["accept", "deny", "add-to-schedule"].includes(action)) {
+      sendJson(res, 400, { error: "Action not allowed" });
+      return;
+    }
+    handleCoverageRequestAction(request, action, user);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/reset") {
     requireStaff(user);
     db = createInitialDb();
@@ -399,8 +450,77 @@ function handleTaskAction(task, action, user) {
   }
 }
 
+function handleCoverageRequestAction(request, action, user) {
+  const event = db.events.find((item) => item.id === request.eventId);
+  const worker = db.workers.find((item) => item.id === request.workerId);
+  if (!event || !worker) {
+    const error = new Error("Coverage request is missing event or worker data");
+    error.status = 404;
+    throw error;
+  }
+
+  if (action === "accept") {
+    request.status = "accepted";
+    request.respondedAt = new Date().toISOString();
+    event.status = "accepted";
+    event.assignedTo = worker.id;
+    db.coverageRequests
+      .filter((item) => item.eventId === event.id && item.id !== request.id && item.status === "pending")
+      .forEach((item) => {
+        item.status = "closed";
+        item.respondedAt = new Date().toISOString();
+      });
+    addAlert("info", "Coverage accepted", `${worker.name} accepted ${event.title} at ${event.space}, ${formatShortDate(event.date)} ${formatTime(event.start)}-${formatTime(event.end)}.`);
+    addActivity(`${worker.name} accepted after-hours coverage for "${event.title}".`);
+    return;
+  }
+
+  if (action === "deny") {
+    request.status = "denied";
+    request.respondedAt = new Date().toISOString();
+    const openRequests = db.coverageRequests.filter((item) => item.eventId === event.id && ["pending", "accepted", "scheduled"].includes(item.status));
+    if (!openRequests.length) event.status = "needs-review";
+    addAlert("warning", "Coverage denied", `${worker.name} denied ${event.title}. ${openRequests.length ? "Other requests are still open." : "Supervisor review needed."}`);
+    addActivity(`${worker.name} denied coverage for "${event.title}".`);
+    return;
+  }
+
+  if (action === "add-to-schedule") {
+    if (!["accepted", "scheduled"].includes(request.status)) {
+      const error = new Error("Accept the coverage request before adding it to your schedule");
+      error.status = 400;
+      throw error;
+    }
+    const day = dayFromDate(event.date);
+    const alreadyScheduled = worker.availability.some((slotItem) =>
+      slotItem.day === day &&
+      slotItem.space === event.space &&
+      slotItem.start === event.start &&
+      slotItem.end === event.end
+    );
+    if (!alreadyScheduled) {
+      applyScheduleChange(worker, {
+        day,
+        space: event.space,
+        start: event.start,
+        end: event.end,
+        mode: "add",
+        source: "Accepted event coverage",
+        by: user.name
+      });
+    }
+    request.status = "scheduled";
+    request.respondedAt = new Date().toISOString();
+    event.status = "scheduled";
+    event.assignedTo = worker.id;
+    addAlert("info", "Event added to schedule", `${worker.name} added ${event.title} to their schedule. Supervisors can now see it on the weekly board.`);
+    addActivity(`${worker.name} added "${event.title}" to their schedule.`);
+  }
+}
+
 function viewForUser(user) {
   const coverageGaps = getCoverageGaps();
+  const coverageSuggestions = getCoverageSuggestions(coverageGaps);
   const currentUser = publicUser(user);
   const base = {
     currentUser,
@@ -408,27 +528,32 @@ function viewForUser(user) {
     focusDate: db.focusDate,
     focusWeekStart: db.focusWeekStart,
     spaces: db.spaces,
+    events: db.events.map(publicEvent),
+    staffSchedules: db.staffSchedules,
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
     workers: db.workers.map((worker) => publicWorker(worker, user.role === "staff")),
-    coverageGaps
+    coverageGaps,
+    coverageSuggestions
   };
 
   if (user.role === "staff") {
     return {
       ...base,
       tasks: db.tasks,
+      coverageRequests: db.coverageRequests.map(publicCoverageRequest),
       alerts: buildAlerts(coverageGaps),
       activity: db.activity,
-      users: db.users.map(publicUser),
-      airtable: airtableStatus()
+      users: db.users.map(publicUser)
     };
   }
 
+  const studentRequests = db.coverageRequests.filter((request) => request.workerId === user.workerId);
   return {
     ...base,
     tasks: db.tasks.filter((task) => task.assignedTo === user.workerId),
-    alerts: coverageGaps.slice(0, 8).map(gapToAlert)
+    coverageRequests: studentRequests.map(publicCoverageRequest),
+    alerts: [...studentRequests.filter((request) => ["pending", "accepted"].includes(request.status)).map(requestToAlert), ...coverageGaps.slice(0, 6).map(gapToAlert)]
   };
 }
 
@@ -455,9 +580,42 @@ function publicWorker(worker, forStaff) {
   };
 }
 
+function publicEvent(event) {
+  return {
+    id: event.id,
+    title: event.title,
+    date: event.date,
+    space: event.space,
+    start: event.start,
+    end: event.end,
+    notes: event.notes || "",
+    afterHours: Boolean(event.afterHours),
+    status: event.status || "requesting",
+    assignedTo: event.assignedTo || "",
+    createdAt: event.createdAt || ""
+  };
+}
+
+function publicCoverageRequest(request) {
+  return {
+    id: request.id,
+    eventId: request.eventId,
+    workerId: request.workerId,
+    status: request.status,
+    score: request.score || 0,
+    reason: request.reason || "",
+    createdAt: request.createdAt || "",
+    respondedAt: request.respondedAt || ""
+  };
+}
+
 function buildAlerts(gaps) {
   const gapAlerts = gaps.slice(0, 10).map(gapToAlert);
-  return [...gapAlerts, ...(db.alerts || []).slice(0, 8)];
+  const eventAlerts = db.events
+    .filter((event) => ["needs-review", "requesting", "accepted"].includes(event.status))
+    .slice(0, 8)
+    .map(eventToAlert);
+  return [...eventAlerts, ...gapAlerts, ...(db.alerts || []).slice(0, 8)];
 }
 
 function gapToAlert(gap) {
@@ -468,12 +626,33 @@ function gapToAlert(gap) {
   };
 }
 
+function eventToAlert(event) {
+  const assigned = db.workers.find((worker) => worker.id === event.assignedTo)?.name;
+  return {
+    level: event.status === "needs-review" ? "warning" : "info",
+    title: `${event.afterHours ? "After-hours" : "Event"} coverage: ${event.space}`,
+    message: `${event.title} is ${formatShortDate(event.date)} ${formatTime(event.start)}-${formatTime(event.end)}. ${assigned ? `${assigned} has accepted; schedule update may still be needed.` : "Waiting on student response."}`
+  };
+}
+
+function requestToAlert(request) {
+  const event = db.events.find((item) => item.id === request.eventId);
+  return {
+    level: request.status === "pending" ? "warning" : "info",
+    title: request.status === "pending" ? "Coverage request waiting" : "Coverage accepted",
+    message: event ? `${event.title} at ${event.space}, ${formatShortDate(event.date)} ${formatTime(event.start)}-${formatTime(event.end)}.` : "Coverage request needs review."
+  };
+}
+
 function createInitialDb() {
   const initial = {
     focusDate: FALLBACK_FOCUS_DATE,
     focusWeekStart: SOURCE_WEEK_START,
     spaces: structuredClone(seedSpaces),
     workers: structuredClone(seedWorkers),
+    staffSchedules: structuredClone(seedStaffSchedules),
+    events: seedEvents.map(createScheduleEvent),
+    coverageRequests: [],
     tasks: [],
     activity: [],
     alerts: [],
@@ -512,6 +691,7 @@ function createInitialDb() {
     initial.tasks.push(task);
   });
 
+  initial.events.forEach((event) => createCoverageRequestsForEvent(event, initial, { silent: true }));
   initial.tasks.sort(sortTasks);
   return initial;
 }
@@ -533,6 +713,9 @@ function migrateDb(appDb) {
   appDb.activity ||= [];
   appDb.alerts ||= [];
   appDb.airtable ||= {};
+  appDb.staffSchedules ||= structuredClone(seedStaffSchedules);
+  appDb.events ||= seedEvents.map(createScheduleEvent);
+  appDb.coverageRequests ||= [];
   appDb.users ||= [];
   appDb.workers.forEach((worker) => {
     worker.skills = normalizeSkillList(worker.skills || []);
@@ -546,6 +729,17 @@ function migrateDb(appDb) {
     task.priority ||= "Normal";
     task.status ||= "draft";
   });
+  appDb.events = appDb.events.map((event) => normalizeScheduleEvent(event));
+  appDb.coverageRequests.forEach((request) => {
+    request.status ||= "pending";
+    request.createdAt ||= new Date().toISOString();
+    request.respondedAt ||= "";
+    request.reason ||= "";
+    request.score ||= 0;
+  });
+  if (!appDb.coverageRequests.length) {
+    appDb.events.forEach((event) => createCoverageRequestsForEvent(event, appDb, { silent: true }));
+  }
   if (!appDb.users.length) {
     appDb.users = createInitialDb().users;
   }
@@ -725,6 +919,62 @@ function maskValue(value) {
   return `${clean.slice(0, 4)}...${clean.slice(-4)}`;
 }
 
+function createScheduleEvent(input) {
+  const event = normalizeScheduleEvent({
+    id: input.id || `event-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+    title: cleanText(input.title).slice(0, 160),
+    date: normalizeDateValue(input.date || input.dueDate) || FALLBACK_FOCUS_DATE,
+    space: normalizeSpaceName(input.space || "General"),
+    start: normalizeTimeValue(input.start, "17:00"),
+    end: normalizeTimeValue(input.end, "19:00"),
+    notes: cleanText(input.notes),
+    status: input.status || "requesting",
+    assignedTo: input.assignedTo || "",
+    createdAt: input.createdAt || new Date().toISOString()
+  });
+  if (minutes(event.end) <= minutes(event.start)) {
+    const error = new Error("Invalid event time");
+    error.status = 400;
+    throw error;
+  }
+  return event;
+}
+
+function normalizeScheduleEvent(event) {
+  const normalized = {
+    id: event.id || `event-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+    title: cleanText(event.title).slice(0, 160),
+    date: normalizeDateValue(event.date || event.dueDate) || FALLBACK_FOCUS_DATE,
+    space: normalizeSpaceName(event.space || "General"),
+    start: normalizeTimeValue(event.start, "17:00"),
+    end: normalizeTimeValue(event.end, "19:00"),
+    notes: cleanText(event.notes),
+    status: cleanText(event.status) || "requesting",
+    assignedTo: cleanText(event.assignedTo),
+    createdAt: event.createdAt || new Date().toISOString()
+  };
+  normalized.afterHours = isAfterHoursEvent(normalized);
+  return normalized;
+}
+
+function createStaffSchedule(input) {
+  const schedule = {
+    id: input.id || `staff-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+    name: cleanText(input.name).slice(0, 120) || "Staff member",
+    day: cleanText(input.day),
+    space: normalizeSpaceName(input.space || "General"),
+    start: normalizeTimeValue(input.start, "09:00"),
+    end: normalizeTimeValue(input.end, "17:00"),
+    notes: cleanText(input.notes)
+  };
+  if (!DAYS.includes(schedule.day) || minutes(schedule.end) <= minutes(schedule.start)) {
+    const error = new Error("Invalid staff schedule block");
+    error.status = 400;
+    throw error;
+  }
+  return schedule;
+}
+
 function createTask(input) {
   const task = {
     id: input.id || `task-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
@@ -875,6 +1125,125 @@ function scoreWorkerForTask(worker, task, appDb) {
   };
 }
 
+function createCoverageRequestsForEvent(event, appDb, options = {}) {
+  const candidates = recommendWorkersForEvent(event, appDb).slice(0, 4);
+  const created = [];
+
+  candidates.forEach((candidate) => {
+    const exists = appDb.coverageRequests.some((request) => request.eventId === event.id && request.workerId === candidate.worker.id);
+    if (exists) return;
+    appDb.coverageRequests.push({
+      id: `request-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+      eventId: event.id,
+      workerId: candidate.worker.id,
+      status: "pending",
+      score: Math.min(100, Math.round(candidate.score)),
+      reason: candidate.reason,
+      createdAt: new Date().toISOString(),
+      respondedAt: ""
+    });
+    created.push(candidate.worker);
+  });
+
+  if (!created.length) {
+    event.status = event.assignedTo ? event.status : "needs-review";
+    if (!options.silent) {
+      pushAlert(appDb, "warning", "Event needs supervisor review", `${event.title} at ${event.space} did not have a strong student-worker match.`);
+    }
+    return created;
+  }
+
+  if (!event.assignedTo) event.status = "requesting";
+  if (!options.silent) {
+    pushAlert(appDb, "info", "Coverage requests sent", `${event.title}: asked ${created.map((worker) => worker.name).join(", ")} about coverage.`);
+  }
+  return created;
+}
+
+function recommendWorkersForEvent(event, appDb) {
+  return appDb.workers
+    .map((worker) => scoreWorkerForScheduleNeed(worker, event, appDb))
+    .filter((candidate) => candidate.score >= 20)
+    .sort((a, b) => b.score - a.score || a.worker.name.localeCompare(b.worker.name));
+}
+
+function getCoverageSuggestions(gaps) {
+  return gaps.slice(0, 20).map((gap) => ({
+    ...gap,
+    candidates: recommendWorkersForScheduleNeedForGap(gap, db).slice(0, 3).map((candidate) => ({
+      workerId: candidate.worker.id,
+      name: candidate.worker.name,
+      score: Math.min(100, Math.round(candidate.score)),
+      reason: candidate.reason
+    }))
+  }));
+}
+
+function recommendWorkersForScheduleNeedForGap(gap, appDb) {
+  return appDb.workers
+    .map((worker) => scoreWorkerForScheduleNeed(worker, {
+      title: `${gap.space} coverage gap`,
+      date: gap.date,
+      space: gap.space,
+      start: gap.start,
+      end: gap.end,
+      afterHours: false
+    }, appDb))
+    .filter((candidate) => candidate.score >= 18)
+    .sort((a, b) => b.score - a.score || a.worker.name.localeCompare(b.worker.name));
+}
+
+function scoreWorkerForScheduleNeed(worker, need, appDb) {
+  const day = dayFromDate(need.date);
+  const needStart = minutes(need.start);
+  const needEnd = minutes(need.end);
+  const shifts = worker.availability.filter((item) => item.day === day);
+  const sameSpaceShifts = shifts.filter((item) => item.space === need.space);
+  const bestOverlap = shifts.reduce((best, item) => Math.max(best, overlap(needStart, needEnd, minutes(item.start), minutes(item.end))), 0);
+  const closeShift = sameSpaceShifts.find((item) => Math.abs(minutes(item.end) - needStart) <= 180 || Math.abs(minutes(item.start) - needEnd) <= 180);
+  const requestLoad = appDb.coverageRequests.filter((request) => request.workerId === worker.id && ["pending", "accepted"].includes(request.status)).length;
+  let score = 0;
+  const reasons = [];
+
+  if (worker.primarySpaces.includes(need.space)) {
+    score += 34;
+    reasons.push("primary space");
+  }
+  if (sameSpaceShifts.length) {
+    score += 26;
+    reasons.push("already works that space");
+  }
+  if (bestOverlap > 0) {
+    score += 28 + Math.min(18, bestOverlap / 20);
+    reasons.push(`${Math.round((bestOverlap / 60) * 10) / 10}h overlap`);
+  } else if (closeShift) {
+    score += 18;
+    reasons.push("shift is near that time");
+  } else if (shifts.length) {
+    score += 8;
+    reasons.push("works that day");
+  }
+  if (worker.skills.includes("events")) {
+    score += 16;
+    reasons.push("event coverage skill");
+  }
+  if (worker.skills.includes("coverage") || worker.skills.includes("customer-service")) {
+    score += 12;
+    reasons.push("coverage/front desk skill");
+  }
+  if (need.afterHours && worker.primarySpaces.includes(need.space)) {
+    score += 12;
+    reasons.push("after-hours space owner");
+  }
+  score += Math.max(0, 10 - requestLoad * 3);
+
+  return {
+    worker,
+    score: Math.max(0, score),
+    reason: reasons.length ? reasons.join(", ") : "No strong schedule match"
+  };
+}
+
 function getCoverageGaps() {
   const gaps = [];
   db.spaces
@@ -908,6 +1277,8 @@ function getCoverageGaps() {
           gaps.push({
             space: space.name,
             date,
+            start: hours[0],
+            end: hours[1],
             detail: `${formatTime(hours[0])}-${formatTime(hours[1])}`,
             level: "No coverage",
             blocks: allBlocks.map((block) => block.label)
@@ -921,6 +1292,8 @@ function getCoverageGaps() {
             gaps.push({
               space: space.name,
               date,
+              start: timeFromMinutes(cursor),
+              end: timeFromMinutes(interval.start),
               detail: `${formatTimeFromMinutes(cursor)}-${formatTimeFromMinutes(interval.start)}`,
               level: "Coverage gap",
               blocks: allBlocks.map((block) => block.label)
@@ -932,6 +1305,8 @@ function getCoverageGaps() {
           gaps.push({
             space: space.name,
             date,
+            start: timeFromMinutes(cursor),
+            end: hours[1],
             detail: `${formatTimeFromMinutes(cursor)}-${formatTime(hours[1])}`,
             level: "Coverage gap",
             blocks: allBlocks.map((block) => block.label)
@@ -960,7 +1335,7 @@ function applyScheduleChange(worker, change) {
   if (mode === "replace-space") {
     worker.availability = worker.availability.filter((item) => !(item.day === day && item.space === space));
   }
-  worker.availability.push(slot(day, space, start, end));
+  worker.availability.push(slot(day, space, start, end, change.source));
   worker.availability.sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || minutes(a.start) - minutes(b.start));
 
   const modeLabel = mode === "add" ? "added" : "changed";
@@ -969,15 +1344,19 @@ function applyScheduleChange(worker, change) {
 }
 
 function addAlert(level, title, message) {
-  db.alerts ||= [];
-  db.alerts.unshift({
-    id: `alert-${Date.now()}-${db.alerts.length}`,
+  pushAlert(db, level, title, message);
+}
+
+function pushAlert(appDb, level, title, message) {
+  appDb.alerts ||= [];
+  appDb.alerts.unshift({
+    id: `alert-${Date.now()}-${appDb.alerts.length}`,
     level,
     title,
     message,
     at: new Date().toISOString()
   });
-  db.alerts = db.alerts.slice(0, 25);
+  appDb.alerts = appDb.alerts.slice(0, 25);
 }
 
 function addActivity(message) {
@@ -1093,8 +1472,8 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function slot(day, space, start, end) {
-  return { day, space, start, end, source: "Staff and Space Schedule, Apr 20-26 2026" };
+function slot(day, space, start, end, source = "Staff and Space Schedule, Apr 20-26 2026") {
+  return { day, space, start, end, source };
 }
 
 function parseEventList(value) {
@@ -1268,6 +1647,19 @@ function overlap(startA, endA, startB, endB) {
   return Math.max(0, Math.min(endA, endB) - Math.max(startA, startB));
 }
 
+function isAfterHoursEvent(event) {
+  const space = (db?.spaces || seedSpaces).find((item) => item.name === event.space);
+  const hours = space?.hours?.[dayFromDate(event.date)];
+  if (!hours) return true;
+  return minutes(event.start) < minutes(hours[0]) || minutes(event.end) > minutes(hours[1]);
+}
+
+function timeFromMinutes(total) {
+  const hour = Math.floor(total / 60);
+  const minute = total % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 function formatTime(time) {
   if (!time) return "";
   const [hourText, minuteText] = time.split(":");
@@ -1321,6 +1713,18 @@ const seedWorkers = [
   { id: "daksh-preetha", name: "Daksh Preetha", role: "Student Worker", initials: "DP", supervisor: "Sarah Zarr", primarySpaces: ["Mesa", "850PBC", "Event Coverage"], skills: ["events", "coverage", "operations", "customer-service"], availability: [slot("Tuesday", "850PBC", "16:00", "19:00"), slot("Friday", "Mesa", "08:00", "17:00"), slot("Saturday", "Mesa", "08:30", "16:30")] },
   { id: "aditya-patil", name: "Aditya Patil", role: "Student Worker", initials: "AP", supervisor: "Sarah Zarr", primarySpaces: ["ACIC", "WorldLabs Remote"], skills: ["worldlabs", "coverage", "events", "graphic-design", "communications"], availability: [slot("Monday", "ACIC", "08:00", "13:00"), slot("Tuesday", "ACIC", "08:00", "13:00"), slot("Wednesday", "ACIC", "08:00", "13:00")] },
   { id: "mitchell-tecun", name: "Mitchell Tecun", role: "Student Worker", initials: "MT", supervisor: "Sarah Zarr", primarySpaces: ["ACIC", "WorldLabs Remote"], skills: ["worldlabs", "coverage", "events", "data", "graphic-design", "communications"], availability: [slot("Tuesday", "ACIC", "13:00", "17:00"), slot("Wednesday", "ACIC", "13:00", "17:00"), slot("Thursday", "ACIC", "08:00", "12:00"), slot("Friday", "ACIC", "11:00", "17:00")] }
+];
+
+const seedStaffSchedules = [
+  { id: "staff-dania-mon", name: "Dania Alcala-Calvillo", day: "Monday", space: "1951@SkySong", start: "09:00", end: "17:00", notes: "Supervisor on-site" },
+  { id: "staff-matthew-tue", name: "Matthew Kohlbeck", day: "Tuesday", space: "850PBC", start: "09:00", end: "15:00", notes: "Supervisor on-site" },
+  { id: "staff-sarah-wed", name: "Sarah Zarr", day: "Wednesday", space: "ACIC", start: "10:00", end: "16:00", notes: "Supervisor on-site" },
+  { id: "staff-sarah-fri", name: "Sarah Zarr", day: "Friday", space: "Mesa", start: "09:00", end: "14:00", notes: "Supervisor on-site" }
+];
+
+const seedEvents = [
+  { id: "event-1951-pitch-in", title: "Pitch In evening check-in", date: "2026-04-24", space: "1951@SkySong", start: "17:30", end: "19:30", notes: "After-hours visitor check-in and room support", status: "requesting" },
+  { id: "event-acic-founder-night", title: "Founder Night setup", date: "2026-04-23", space: "ACIC", start: "17:15", end: "20:00", notes: "After-hours event setup and front desk support", status: "requesting" }
 ];
 
 const sourceTaskTemplates = [

@@ -7,13 +7,14 @@ const app = {
 
 const staffViews = [
   ["schedules", "Schedules"],
+  ["events", "Events"],
   ["people", "Students"],
-  ["spaces", "Spaces"],
-  ["airtable", "Airtable"]
+  ["spaces", "Spaces"]
 ];
 
 const studentViews = [
   ["schedules", "Schedules"],
+  ["requests", "Coverage Requests"],
   ["profile", "My Availability"],
   ["spaces", "Spaces"]
 ];
@@ -127,9 +128,10 @@ function render() {
 
   if (app.data.role === "staff" && app.view === "dashboard") region.innerHTML = renderStaffDashboard();
   if (app.data.role === "staff" && app.view === "tasks") region.innerHTML = renderTaskManager();
+  if (app.data.role === "staff" && app.view === "events") region.innerHTML = renderEvents();
   if (app.data.role === "staff" && app.view === "people") region.innerHTML = renderPeople();
-  if (app.data.role === "staff" && app.view === "airtable") region.innerHTML = renderAirtable();
   if (app.view === "my-tasks") region.innerHTML = renderMyTasks();
+  if (app.view === "requests") region.innerHTML = renderRequests();
   if (app.view === "profile") region.innerHTML = renderProfile();
   if (app.view === "schedules") region.innerHTML = renderSchedules();
   if (app.view === "spaces") region.innerHTML = renderSpaces();
@@ -317,6 +319,8 @@ function renderProfile() {
 function renderSchedules() {
   const staff = app.data.role === "staff";
   const totalBlocks = app.data.workers.reduce((sum, worker) => sum + worker.availability.length, 0);
+  const pendingRequests = (app.data.coverageRequests || []).filter((request) => request.status === "pending").length;
+  const openEvents = (app.data.events || []).filter((event) => event.status !== "scheduled").length;
   return `
     <section class="band">
       <div class="band-header">
@@ -327,16 +331,16 @@ function renderSchedules() {
       </div>
       <div class="kpi-grid">
         ${kpiCard(totalBlocks, "Schedule blocks")}
-        ${kpiCard(app.data.workers.length, "Students")}
-        ${kpiCard(app.data.spaces.length, "Spaces")}
+        ${kpiCard(openEvents, "Open events")}
+        ${kpiCard(pendingRequests, "Pending requests")}
         ${kpiCard(app.data.coverageGaps.length, "Coverage gaps")}
       </div>
     </section>
     ${staff ? `
     <section class="split-grid">
       <div class="panel">
-        <h3>Coverage Alerts</h3>
-        ${app.data.coverageGaps.length ? `<div class="alert-stack">${app.data.coverageGaps.map((gap) => alertCard(gapToAlert(gap))).join("")}</div>` : emptyState("All spaces are covered for configured business hours.")}
+        <h3>Smart Coverage Alerts</h3>
+        ${app.data.coverageSuggestions?.length ? `<div class="alert-stack">${app.data.coverageSuggestions.map(coverageGapCard).join("")}</div>` : emptyState("All spaces are covered for configured business hours.")}
       </div>
       <div class="panel">
         <h3>Add or Change Schedule</h3>
@@ -351,6 +355,63 @@ function renderSchedules() {
     `}
     <section class="panel flush">
       <div class="table-wrap">${scheduleGrid()}</div>
+    </section>
+    <section class="split-grid">
+      <div class="panel">
+        <h3>Staff Schedules</h3>
+        ${staffScheduleTable()}
+      </div>
+      ${staff ? `<div class="panel"><h3>Add Staff Schedule</h3>${staffScheduleForm()}</div>` : `<div class="panel"><h3>Event Coverage Requests</h3>${renderRequestList(app.data.coverageRequests || [])}</div>`}
+    </section>
+  `;
+}
+
+function renderEvents() {
+  return `
+    <section class="split-grid">
+      <div class="panel">
+        <h3>Add Event</h3>
+        ${smartEventForm()}
+      </div>
+      <div class="panel">
+        <h3>Smart Requests</h3>
+        ${renderRequestList(app.data.coverageRequests || [])}
+      </div>
+    </section>
+    <section class="band">
+      <div class="band-header">
+        <div>
+          <p class="eyebrow">After-Hours + Event Coverage</p>
+          <h3>Events Needing Student Coverage</h3>
+        </div>
+      </div>
+      <div class="task-list">${(app.data.events || []).map(eventCard).join("") || emptyState("No events added yet.")}</div>
+    </section>
+  `;
+}
+
+function renderRequests() {
+  const requests = app.data.coverageRequests || [];
+  const pending = requests.filter((request) => request.status === "pending").length;
+  const accepted = requests.filter((request) => request.status === "accepted").length;
+  const scheduled = requests.filter((request) => request.status === "scheduled").length;
+  return `
+    <section class="band">
+      <div class="band-header">
+        <div>
+          <p class="eyebrow">Student Coverage Requests</p>
+          <h3>Extra Coverage I Can Respond To</h3>
+        </div>
+      </div>
+      <div class="kpi-grid">
+        ${kpiCard(pending, "Need response")}
+        ${kpiCard(accepted, "Accepted")}
+        ${kpiCard(scheduled, "Added to schedule")}
+        ${kpiCard(requests.filter((request) => request.status === "denied").length, "Denied")}
+      </div>
+    </section>
+    <section class="panel">
+      ${renderRequestList(requests)}
     </section>
   `;
 }
@@ -368,44 +429,130 @@ function renderSpaces() {
   `;
 }
 
-function renderAirtable() {
-  const status = app.data.airtable || {};
-  const configured = status.configured;
-  const summary = status.lastSyncSummary;
+function smartEventForm() {
   return `
-    <section class="split-grid">
-      <div class="panel">
-        <h3>Airtable Connection</h3>
-        <div class="task-list">
-          <article class="task-card">
-            <div class="task-head">
-              <h4>${configured ? "Connected" : "Not Connected Yet"}</h4>
-              <span class="status-pill ${configured ? "done" : "unassigned"}">${configured ? "Ready" : "Needs Setup"}</span>
-            </div>
-            <p class="task-meta">${configured ? `Base ${escapeHtml(status.baseId)} is configured.` : `Missing: ${escapeHtml((status.missing || []).join(", ") || "Airtable environment variables")}`}</p>
-            <div class="badge-row">
-              ${Object.entries(status.tables || {}).map(([key, table]) => `<span class="badge">${escapeHtml(key)}: ${escapeHtml(table)}</span>`).join("")}
-            </div>
-            <div class="action-row">
-              <button class="primary-button" type="button" data-action="sync-airtable" ${configured ? "" : "disabled"}>Push Current Data to Airtable</button>
-            </div>
-          </article>
+    <form id="smartEventForm" class="form-grid">
+      <label class="span-3">Event Name<input name="title" required maxlength="160" placeholder="Pitch In evening check-in"></label>
+      <label>Event Date<input name="date" type="date" value="${app.data.focusDate}" required></label>
+      <label>Space${spaceSelect("space")}</label>
+      <label>Start<input name="start" type="time" value="17:30" required></label>
+      <label>End<input name="end" type="time" value="19:30" required></label>
+      <label class="span-6">Notes<textarea name="notes" placeholder="What does the student need to cover?"></textarea></label>
+      <div class="span-6 action-row"><button class="primary-button" type="submit">Create Event + Ask Best Students</button></div>
+    </form>
+  `;
+}
+
+function staffScheduleForm() {
+  return `
+    <form id="staffScheduleForm" class="form-grid">
+      <label class="span-2">Staff Name<input name="name" required placeholder="Supervisor name"></label>
+      <label>Day${daySelect()}</label>
+      <label>Space${spaceSelect("space")}</label>
+      <label>Start<input name="start" type="time" value="09:00" required></label>
+      <label>End<input name="end" type="time" value="17:00" required></label>
+      <label class="span-6">Notes<input name="notes" placeholder="On-site, remote, event support"></label>
+      <div class="span-6 action-row"><button class="primary-button" type="submit">Add Staff Schedule</button></div>
+    </form>
+  `;
+}
+
+function renderRequestList(requests) {
+  const sorted = [...requests].sort((a, b) => requestSortValue(a) - requestSortValue(b));
+  return sorted.length ? `<div class="task-list">${sorted.map(coverageRequestCard).join("")}</div>` : emptyState("No coverage requests yet.");
+}
+
+function requestSortValue(request) {
+  const event = eventById(request.eventId);
+  const statusRank = { pending: 0, accepted: 1, scheduled: 2, denied: 3, closed: 4 };
+  return (statusRank[request.status] ?? 9) * 100000000 + new Date(`${event?.date || "2099-12-31"}T12:00:00`).getTime();
+}
+
+function coverageRequestCard(request) {
+  const event = eventById(request.eventId);
+  const worker = workerById(request.workerId);
+  const staff = app.data.role === "staff";
+  const canAct = !staff && request.workerId === app.data.currentUser.workerId;
+  if (!event) return "";
+  return `
+    <article class="task-card">
+      <div class="task-head">
+        <h4>${escapeHtml(event.title)}</h4>
+        ${statusPill(request.status)}
+      </div>
+      <div class="badge-row">
+        ${spaceChip(event.space)}
+        <span class="badge">${formatShortDate(event.date)}</span>
+        <span class="badge">${formatTime(event.start)}-${formatTime(event.end)}</span>
+        ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
+        ${staff ? `<span class="badge">${escapeHtml(worker?.name || "Unknown student")}</span>` : ""}
+      </div>
+      <p class="task-meta">${escapeHtml(request.reason || "Matched by space, schedule, and coverage skill.")} ${Math.min(100, Math.round(request.score || 0))}% fit.</p>
+      <div class="task-footer">
+        <span class="task-meta">${staff ? `Student response: ${request.status}` : studentRequestHint(request.status)}</span>
+        <div class="action-row">
+          ${canAct && request.status === "pending" ? requestButton(request, "accept", "Accept", "primary-button") + requestButton(request, "deny", "Deny", "danger-button") : ""}
+          ${canAct && request.status === "accepted" ? requestButton(request, "add-to-schedule", "Add to My Schedule", "secondary-button") : ""}
         </div>
       </div>
-      <div class="panel">
-        <h3>How To Set It Up</h3>
-        <div class="plain-list">
-          <p>1. Create four Airtable tables: Tasks, Students, Schedules, Spaces.</p>
-          <p>2. Add a text field called External ID to every table.</p>
-          <p>3. Create a Personal Access Token in Airtable with read/write record access to your base.</p>
-          <p>4. Add the token and base ID as server environment variables.</p>
-        </div>
+    </article>
+  `;
+}
+
+function eventCard(event) {
+  const assigned = workerById(event.assignedTo)?.name || "Waiting for student response";
+  const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
+  return `
+    <article class="task-card">
+      <div class="task-head">
+        <h4>${escapeHtml(event.title)}</h4>
+        ${statusPill(event.status)}
       </div>
-    </section>
-    <section class="panel">
-      <h3>Last Sync</h3>
-      ${summary ? `<div class="table-wrap"><table><thead><tr><th>Table</th><th>Created</th><th>Updated</th></tr></thead><tbody>${Object.entries(summary).filter(([key]) => key !== "total").map(([key, value]) => `<tr><td>${escapeHtml(key)}</td><td>${value.created}</td><td>${value.updated}</td></tr>`).join("")}</tbody></table></div><p class="task-meta">Last synced: ${escapeHtml(status.lastSyncAt || "")}</p>` : emptyState("No Airtable sync has run yet.")}
-    </section>
+      <div class="badge-row">
+        ${spaceChip(event.space)}
+        <span class="badge">${formatShortDate(event.date)}</span>
+        <span class="badge">${formatTime(event.start)}-${formatTime(event.end)}</span>
+        ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
+      </div>
+      <p class="task-meta">${escapeHtml(event.notes || "No notes added.")}</p>
+      <p class="task-meta">Coverage: ${escapeHtml(assigned)}. Requests sent: ${requests.length}.</p>
+    </article>
+  `;
+}
+
+function coverageGapCard(gap) {
+  return `
+    <article class="alert-card warning">
+      <strong>Gap: ${escapeHtml(gap.space)}</strong>
+      <span>No coverage on ${formatShortDate(gap.date)} from ${escapeHtml(gap.detail)}.</span>
+      ${gap.candidates?.length ? `<div class="candidate-list">${gap.candidates.map((candidate) => `
+        <div class="candidate-row">
+          <strong>${escapeHtml(candidate.name)}</strong>
+          <span>${Math.min(100, Math.round(candidate.score))}% · ${escapeHtml(candidate.reason)}</span>
+        </div>
+      `).join("")}</div>` : `<span>No strong student match yet. Supervisor review needed.</span>`}
+    </article>
+  `;
+}
+
+function staffScheduleTable() {
+  const schedules = app.data.staffSchedules || [];
+  if (!schedules.length) return emptyState("No staff schedules added yet.");
+  return `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Staff</th><th>Day</th><th>Space</th><th>Time</th><th>Notes</th></tr></thead>
+        <tbody>${schedules.map((item) => `
+          <tr>
+            <td><strong>${escapeHtml(item.name)}</strong></td>
+            <td>${escapeHtml(item.day)}</td>
+            <td>${spaceChip(item.space)}</td>
+            <td>${formatTime(item.start)}-${formatTime(item.end)}</td>
+            <td>${escapeHtml(item.notes || "")}</td>
+          </tr>
+        `).join("")}</tbody>
+      </table>
+    </div>
   `;
 }
 
@@ -423,6 +570,8 @@ function bindEvents() {
 
   bindForm("taskForm", createTask);
   bindForm("eventForm", createEvents);
+  bindForm("smartEventForm", createSmartEvent);
+  bindForm("staffScheduleForm", createStaffSchedule);
   bindForm("workerForm", createWorker);
   bindForm("skillForm", saveSkills);
   bindForm("scheduleForm", saveSchedule);
@@ -465,17 +614,19 @@ async function handleAction(action, button) {
       render();
       return;
     }
-    if (action === "sync-airtable") {
-      app.data = await api("/api/airtable/sync-push", { method: "POST" });
-      showToast("Current data pushed to Airtable.");
-      render();
-      return;
-    }
     if (action === "task-action") {
       const taskId = button.dataset.taskId;
       const taskAction = button.dataset.taskAction;
       app.data = await api(`/api/tasks/${encodeURIComponent(taskId)}/action`, { method: "POST", body: { action: taskAction } });
       showToast("Task updated.");
+      render();
+      return;
+    }
+    if (action === "coverage-request") {
+      const requestId = button.dataset.requestId;
+      const requestAction = button.dataset.requestAction;
+      app.data = await api(`/api/coverage-requests/${encodeURIComponent(requestId)}/action`, { method: "POST", body: { action: requestAction } });
+      showToast(requestAction === "add-to-schedule" ? "Added to your schedule. Supervisor alerted." : "Coverage request updated.");
       render();
       return;
     }
@@ -516,6 +667,40 @@ async function createEvents(form) {
   const data = new FormData(form);
   app.data = await api("/api/events", { method: "POST", body: { events: data.get("events") } });
   showToast("Event coverage tasks created.");
+  render();
+}
+
+async function createSmartEvent(form) {
+  const data = new FormData(form);
+  app.data = await api("/api/schedule-events", {
+    method: "POST",
+    body: {
+      title: data.get("title"),
+      date: data.get("date"),
+      space: data.get("space"),
+      start: data.get("start"),
+      end: data.get("end"),
+      notes: data.get("notes")
+    }
+  });
+  showToast("Event added. Best-fit students were alerted.");
+  render();
+}
+
+async function createStaffSchedule(form) {
+  const data = new FormData(form);
+  app.data = await api("/api/staff-schedules", {
+    method: "POST",
+    body: {
+      name: data.get("name"),
+      day: data.get("day"),
+      space: data.get("space"),
+      start: data.get("start"),
+      end: data.get("end"),
+      notes: data.get("notes")
+    }
+  });
+  showToast("Staff schedule added.");
   render();
 }
 
@@ -662,6 +847,10 @@ function taskButton(task, taskAction, label, className) {
   return `<button class="${className}" type="button" data-action="task-action" data-task-id="${task.id}" data-task-action="${taskAction}">${label}</button>`;
 }
 
+function requestButton(request, requestAction, label, className) {
+  return `<button class="${className}" type="button" data-action="coverage-request" data-request-id="${request.id}" data-request-action="${requestAction}">${label}</button>`;
+}
+
 function workerCard(worker) {
   return `
     <article class="task-card">
@@ -749,6 +938,20 @@ function workerById(id) {
   return app.data.workers.find((worker) => worker.id === id);
 }
 
+function eventById(id) {
+  return (app.data.events || []).find((event) => event.id === id);
+}
+
+function studentRequestHint(status) {
+  return {
+    pending: "Can you cover this?",
+    accepted: "Accepted. Add it to your schedule when ready.",
+    scheduled: "This is now on your schedule.",
+    denied: "You denied this request.",
+    closed: "Another student accepted this one."
+  }[status] || status;
+}
+
 function categorySelect() {
   return `<select name="category">
     ${["WorldLabs Post", "Data Pull", "Event Coverage", "On-site Coverage", "Supervisor Task"].map((item) => `<option>${item}</option>`).join("")}
@@ -790,7 +993,7 @@ function skillLabel(skill) {
 }
 
 function statusPill(status) {
-  const label = { pending: "Pending", accepted: "Accepted", done: "Complete", denied: "Denied", unassigned: "Needs Assignment", draft: "Draft" }[status] || status;
+  const label = { pending: "Pending", accepted: "Accepted", scheduled: "Scheduled", requesting: "Requesting", closed: "Closed", "needs-review": "Needs Review", done: "Complete", denied: "Denied", unassigned: "Needs Assignment", draft: "Draft" }[status] || status;
   return `<span class="status-pill ${status}">${label}</span>`;
 }
 

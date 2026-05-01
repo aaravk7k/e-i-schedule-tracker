@@ -5,11 +5,12 @@ Deployable web app for Edson E+I student-worker schedules, space coverage, skill
 ## What It Does
 
 - Staff login and student login are separate.
-- Staff can add students, edit weekly student-worker schedules, view space business hours, and sync schedule data to Airtable.
+- Staff can add students, edit weekly student-worker schedules, view staff schedules, add events, and see space business hours.
 - Students can update their own availability, update their skills, and view shared schedules/spaces.
 - Coverage alerts point out gaps by space and time, for example: `Gap: 1951@SkySong. No coverage on Apr 24 from 11:00AM-5:00PM.`
-- Skills are still tracked so this branch can later connect schedule coverage to task/event assignment.
-- Task assignment endpoints still exist in the codebase, but the user interface on this branch is focused on scheduling for the SW meeting demo.
+- After-hours events automatically create coverage requests for the best-fit student workers from that space.
+- Students can accept or deny coverage requests. If they accept, they can add the event directly to their schedule and supervisors get an alert.
+- Skills are tracked so scheduling can recommend students by space, schedule, and coverage/event skill.
 
 ## Run Locally
 
@@ -43,12 +44,6 @@ STAFF_EMAIL=your-staff-email@asu.edu
 STAFF_PASSWORD=change-this-password
 STUDENT_DEFAULT_PASSWORD=change-this-too
 DATA_DIR=/data
-AIRTABLE_PAT=pat_your_token_here
-AIRTABLE_BASE_ID=app_your_base_id_here
-AIRTABLE_TABLE_TASKS=Tasks
-AIRTABLE_TABLE_STUDENTS=Students
-AIRTABLE_TABLE_SCHEDULES=Schedules
-AIRTABLE_TABLE_SPACES=Spaces
 ```
 
 For Render, Railway, Fly.io, or similar:
@@ -63,19 +58,6 @@ The app saves live data to `data/db.json` by default. For real workplace use, ma
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for Docker and production rollout notes.
 
-## Airtable Setup
-
-Create these Airtable tables:
-
-- `Tasks`
-- `Students`
-- `Schedules`
-- `Spaces`
-
-Add a text field named `External ID` to every table. The app uses that field to update existing Airtable records instead of creating duplicates on every sync.
-
-The default table names can be changed with the `AIRTABLE_TABLE_*` environment variables above. The Airtable token must stay server-side in `AIRTABLE_PAT`; never paste it into browser code.
-
 ## Meeting Demo Focus
 
 Use the `schedule-manager` branch to show:
@@ -83,10 +65,12 @@ Use the `schedule-manager` branch to show:
 - separate staff and student sign-ins
 - the shared weekly schedule board
 - coverage-gap alerts when a space is open with no student scheduled
+- staff schedules alongside student schedules
+- after-hours event coverage requests
+- student accept/deny and add-to-schedule flow
 - staff schedule edits
 - student self-service availability updates
 - space business hours
-- future Airtable sync path
 
 ## Important Next Step
 

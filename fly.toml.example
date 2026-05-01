@@ -1,0 +1,33 @@
+app = "edson-ei-taskops"
+primary_region = "phx"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8787"
+  DATA_DIR = "/data"
+  AIRTABLE_TABLE_TASKS = "Tasks"
+  AIRTABLE_TABLE_STUDENTS = "Students"
+  AIRTABLE_TABLE_SCHEDULES = "Schedules"
+  AIRTABLE_TABLE_SPACES = "Spaces"
+
+[[mounts]]
+  source = "taskops_data"
+  destination = "/data"
+
+[[services]]
+  internal_port = 8787
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]

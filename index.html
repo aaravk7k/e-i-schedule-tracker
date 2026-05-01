@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edson E+I TaskOps</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary">
+        <div class="brand-lockup">
+          <div class="brand-mark">E+I</div>
+          <div>
+            <p class="eyebrow">J. Orin Edson</p>
+            <h1>TaskOps</h1>
+          </div>
+        </div>
+
+        <nav id="primaryNav" class="nav-stack" aria-label="Views"></nav>
+
+        <div class="source-box">
+          <p class="eyebrow">Sources</p>
+          <p>WorldLabs Calendar E+I.xlsx</p>
+          <p>PBIS Coverage and Staff Calendar.xlsx</p>
+          <p>Screenshot roster, Apr 24, 2026</p>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">ASU Entrepreneurship + Innovation</p>
+            <h2 id="viewTitle">Command Center</h2>
+          </div>
+          <div class="topbar-actions">
+            <label class="compact-field">
+              <span>Focus Date</span>
+              <input id="focusDateInput" type="date">
+            </label>
+            <button class="ghost-button" id="resetDataBtn" type="button">Reset Demo</button>
+            <button class="ghost-button" type="button" data-action="logout">Sign Out</button>
+          </div>
+        </header>
+
+        <section id="appView" class="view-region" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

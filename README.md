@@ -4,10 +4,11 @@ Deployable web app for Edson E+I student-worker schedules, space coverage, skill
 
 ## What It Does
 
+- Starts with the PBIS Staff and Space Schedule for Apr 27-May 3, 2026.
 - Staff login and student login are separate.
 - Staff can add students, edit weekly student-worker schedules, view staff schedules, add events, and see space business hours.
 - Students can update their own availability, update their skills, and view shared schedules/spaces.
-- Coverage alerts point out gaps by space and time, for example: `Gap: 1951@SkySong. No coverage on Apr 24 from 11:00AM-5:00PM.`
+- Coverage alerts point out gaps by space and time if business-hour coverage is missing.
 - After-hours events automatically create coverage requests for the best-fit student workers from that space.
 - Students can accept or deny coverage requests. If they accept, they can add the event directly to their schedule and supervisors get an alert.
 - Skills are tracked so scheduling can recommend students by space, schedule, and coverage/event skill.
@@ -63,13 +64,11 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for Docker and production rollout notes.
 Use the `schedule-manager` branch to show:
 
 - separate staff and student sign-ins
-- the shared weekly schedule board
-- coverage-gap alerts when a space is open with no student scheduled
-- staff schedules alongside student schedules
-- after-hours event coverage requests
+- the shared weekly coverage board
+- the automatic `Needs Attention` panel
+- PBIS student schedules, staff schedules, and space coverage together
+- after-hours event requests that get sent to students
 - student accept/deny and add-to-schedule flow
-- staff schedule edits
-- student self-service availability updates
 - space business hours
 
 ## Important Next Step

@@ -6,17 +6,15 @@ const app = {
 };
 
 const staffViews = [
-  ["schedules", "Schedules"],
-  ["events", "Events"],
-  ["people", "Students"],
+  ["schedules", "Coverage"],
+  ["people", "People"],
   ["spaces", "Spaces"]
 ];
 
 const studentViews = [
-  ["schedules", "Schedules"],
-  ["requests", "Coverage Requests"],
-  ["profile", "My Availability"],
-  ["spaces", "Spaces"]
+  ["requests", "Requests"],
+  ["profile", "My Schedule"],
+  ["schedules", "Coverage"]
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -62,7 +60,7 @@ function renderLogin() {
       <div>
         <p class="eyebrow">Edson E+I Schedule Manager</p>
         <h3>Sign in to continue</h3>
-        <p class="microcopy">Staff manage student-worker coverage. Students update their own availability and view shared schedules.</p>
+        <p class="microcopy">One simple place to see who is covering each space, what is missing, and which student should be asked.</p>
       </div>
       <form id="loginForm" class="login-form">
         <label>
@@ -150,7 +148,7 @@ function availableViews() {
 }
 
 function defaultViewForRole() {
-  return "schedules";
+  return app.data?.role === "student" ? "requests" : "schedules";
 }
 
 function renderStaffDashboard() {
@@ -325,32 +323,32 @@ function renderSchedules() {
     <section class="band">
       <div class="band-header">
         <div>
-          <p class="eyebrow">Schedule Manager</p>
-          <h3>Weekly Coverage Board</h3>
+          <p class="eyebrow">Automated Coverage Check</p>
+          <h3>This Week</h3>
         </div>
       </div>
       <div class="kpi-grid">
-        ${kpiCard(totalBlocks, "Schedule blocks")}
-        ${kpiCard(openEvents, "Open events")}
-        ${kpiCard(pendingRequests, "Pending requests")}
-        ${kpiCard(app.data.coverageGaps.length, "Coverage gaps")}
+        ${kpiCard(app.data.coverageGaps.length, "Needs attention")}
+        ${kpiCard(pendingRequests, "Student requests")}
+        ${kpiCard(openEvents, "Events being handled")}
+        ${kpiCard(totalBlocks, "Student shifts")}
       </div>
     </section>
     ${staff ? `
     <section class="split-grid">
       <div class="panel">
-        <h3>Smart Coverage Alerts</h3>
-        ${app.data.coverageSuggestions?.length ? `<div class="alert-stack">${app.data.coverageSuggestions.map(coverageGapCard).join("")}</div>` : emptyState("All spaces are covered for configured business hours.")}
+        <h3>Needs Attention</h3>
+        ${renderAttentionList()}
       </div>
       <div class="panel">
-        <h3>Add or Change Schedule</h3>
-        ${scheduleForm(app.data.workers[0]?.id, true)}
+        <h3>Add Event</h3>
+        ${smartEventForm()}
       </div>
     </section>
     ` : `
     <section class="panel">
-      <h3>Coverage Alerts</h3>
-      ${app.data.coverageGaps.length ? `<div class="alert-stack">${app.data.coverageGaps.map((gap) => alertCard(gapToAlert(gap))).join("")}</div>` : emptyState("All spaces are covered for configured business hours.")}
+      <h3>Coverage Status</h3>
+      ${app.data.coverageGaps.length ? `<div class="alert-stack">${app.data.coverageGaps.slice(0, 6).map((gap) => alertCard(gapToAlert(gap))).join("")}</div>` : emptyState("All spaces are covered for configured business hours.")}
     </section>
     `}
     <section class="panel flush">
@@ -358,10 +356,10 @@ function renderSchedules() {
     </section>
     <section class="split-grid">
       <div class="panel">
-        <h3>Staff Schedules</h3>
+        <h3>Staff / Space Coverage</h3>
         ${staffScheduleTable()}
       </div>
-      ${staff ? `<div class="panel"><h3>Add Staff Schedule</h3>${staffScheduleForm()}</div>` : `<div class="panel"><h3>Event Coverage Requests</h3>${renderRequestList(app.data.coverageRequests || [])}</div>`}
+      ${staff ? `<div class="panel"><h3>Quick Schedule Edit</h3>${scheduleForm(app.data.workers[0]?.id, true)}</div>` : `<div class="panel"><h3>My Requests</h3>${renderRequestList(app.data.coverageRequests || [])}</div>`}
     </section>
   `;
 }
@@ -438,7 +436,7 @@ function smartEventForm() {
       <label>Start<input name="start" type="time" value="17:30" required></label>
       <label>End<input name="end" type="time" value="19:30" required></label>
       <label class="span-6">Notes<textarea name="notes" placeholder="What does the student need to cover?"></textarea></label>
-      <div class="span-6 action-row"><button class="primary-button" type="submit">Create Event + Ask Best Students</button></div>
+      <div class="span-6 action-row"><button class="primary-button" type="submit">Add Event</button></div>
     </form>
   `;
 }
@@ -460,6 +458,16 @@ function staffScheduleForm() {
 function renderRequestList(requests) {
   const sorted = [...requests].sort((a, b) => requestSortValue(a) - requestSortValue(b));
   return sorted.length ? `<div class="task-list">${sorted.map(coverageRequestCard).join("")}</div>` : emptyState("No coverage requests yet.");
+}
+
+function renderAttentionList() {
+  const eventAlerts = (app.data.alerts || [])
+    .filter((alert) => !alert.title.includes("uncovered time") && !alert.title.startsWith("Gap:"))
+    .slice(0, 4)
+    .map(alertCard);
+  const gapAlerts = (app.data.coverageSuggestions || []).slice(0, 6).map(coverageGapCard);
+  const cards = [...eventAlerts, ...gapAlerts];
+  return cards.length ? `<div class="alert-stack">${cards.join("")}</div>` : emptyState("Nothing needs attention. All spaces are covered during business hours.");
 }
 
 function requestSortValue(request) {
@@ -487,7 +495,7 @@ function coverageRequestCard(request) {
         ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
         ${staff ? `<span class="badge">${escapeHtml(worker?.name || "Unknown student")}</span>` : ""}
       </div>
-      <p class="task-meta">${escapeHtml(request.reason || "Matched by space, schedule, and coverage skill.")} ${Math.min(100, Math.round(request.score || 0))}% fit.</p>
+      <p class="task-meta">${escapeHtml(request.reason || "Matched by space, schedule, and coverage skill.")}</p>
       <div class="task-footer">
         <span class="task-meta">${staff ? `Student response: ${request.status}` : studentRequestHint(request.status)}</span>
         <div class="action-row">
@@ -521,16 +529,17 @@ function eventCard(event) {
 }
 
 function coverageGapCard(gap) {
+  const candidate = gap.candidates?.[0];
   return `
     <article class="alert-card warning">
       <strong>Gap: ${escapeHtml(gap.space)}</strong>
       <span>No coverage on ${formatShortDate(gap.date)} from ${escapeHtml(gap.detail)}.</span>
-      ${gap.candidates?.length ? `<div class="candidate-list">${gap.candidates.map((candidate) => `
+      ${candidate ? `<div class="candidate-list">
         <div class="candidate-row">
-          <strong>${escapeHtml(candidate.name)}</strong>
-          <span>${Math.min(100, Math.round(candidate.score))}% · ${escapeHtml(candidate.reason)}</span>
+          <strong>Suggested: ${escapeHtml(candidate.name)}</strong>
+          <span>${escapeHtml(candidate.reason)}</span>
         </div>
-      `).join("")}</div>` : `<span>No strong student match yet. Supervisor review needed.</span>`}
+      </div>` : `<span>No obvious student match. Supervisor review needed.</span>`}
     </article>
   `;
 }
@@ -683,7 +692,7 @@ async function createSmartEvent(form) {
       notes: data.get("notes")
     }
   });
-  showToast("Event added. Best-fit students were alerted.");
+  showToast("Event added. Student requests were created automatically.");
   render();
 }
 

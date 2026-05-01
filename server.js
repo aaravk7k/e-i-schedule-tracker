@@ -17,8 +17,9 @@ const AIRTABLE_TABLES = {
 };
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const SOURCE_WEEK_START = "2026-04-20";
-const FALLBACK_FOCUS_DATE = "2026-04-24";
+const SOURCE_WEEK_START = "2026-04-27";
+const FALLBACK_FOCUS_DATE = "2026-05-01";
+const CURRENT_SEED_VERSION = "pbis-may-2026-simple-scheduler-v2";
 
 const SKILL_OPTIONS = [
   { id: "administrative", label: "Administrative" },
@@ -646,6 +647,7 @@ function requestToAlert(request) {
 
 function createInitialDb() {
   const initial = {
+    seedVersion: CURRENT_SEED_VERSION,
     focusDate: FALLBACK_FOCUS_DATE,
     focusWeekStart: SOURCE_WEEK_START,
     spaces: structuredClone(seedSpaces),
@@ -679,20 +681,7 @@ function createInitialDb() {
     }));
   });
 
-  sourceTaskTemplates.forEach((template, index) => {
-    const task = normalizeTemplateTask(template, index, initial.focusDate);
-    assignTask(task, initial, { honorPreferred: true });
-    initial.tasks.push(task);
-  });
-
-  coverageTaskTemplates.forEach((template, index) => {
-    const task = normalizeTemplateTask(template, index + 100, initial.focusDate);
-    assignTask(task, initial, { honorPreferred: false });
-    initial.tasks.push(task);
-  });
-
   initial.events.forEach((event) => createCoverageRequestsForEvent(event, initial, { silent: true }));
-  initial.tasks.sort(sortTasks);
   return initial;
 }
 
@@ -708,6 +697,10 @@ function loadDb() {
 }
 
 function migrateDb(appDb) {
+  if (appDb.seedVersion !== CURRENT_SEED_VERSION && process.env.PRESERVE_DEMO_DATA !== "true") {
+    return createInitialDb();
+  }
+  appDb.seedVersion ||= CURRENT_SEED_VERSION;
   appDb.focusDate ||= FALLBACK_FOCUS_DATE;
   appDb.focusWeekStart ||= SOURCE_WEEK_START;
   appDb.activity ||= [];
@@ -1255,7 +1248,7 @@ function getCoverageGaps() {
         const date = addDays(db.focusWeekStart, dayIndex);
         const open = minutes(hours[0]);
         const close = minutes(hours[1]);
-        const allBlocks = db.workers.flatMap((worker) =>
+        const studentBlocks = db.workers.flatMap((worker) =>
           worker.availability
             .filter((slotItem) => slotItem.day === day && slotItem.space === space.name)
             .map((slotItem) => ({
@@ -1264,6 +1257,14 @@ function getCoverageGaps() {
               label: `${worker.name} ${formatTime(slotItem.start)}-${formatTime(slotItem.end)}`
             }))
         );
+        const staffBlocks = (db.staffSchedules || [])
+          .filter((slotItem) => slotItem.day === day && slotItem.space === space.name)
+          .map((slotItem) => ({
+            start: minutes(slotItem.start),
+            end: minutes(slotItem.end),
+            label: `${slotItem.name} ${formatTime(slotItem.start)}-${formatTime(slotItem.end)}`
+          }));
+        const allBlocks = [...studentBlocks, ...staffBlocks];
         const intervals = allBlocks
           .map((block) => ({
             start: Math.max(open, block.start),
@@ -1472,7 +1473,7 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function slot(day, space, start, end, source = "Staff and Space Schedule, Apr 20-26 2026") {
+function slot(day, space, start, end, source = "PBIS Staff and Space Schedule, Apr 27-May 3 2026") {
   return { day, space, start, end, source };
 }
 
@@ -1604,6 +1605,11 @@ function normalizeTimeValue(value, fallback) {
 
 function normalizeSpaceName(value) {
   const clean = cleanText(value);
+  const lowered = clean.toLowerCase();
+  if (["1951", "1951.0", "skysong", "sky song"].includes(lowered)) return "1951@SkySong";
+  if (lowered === "850pbc") return "850PBC";
+  if (lowered === "acic") return "ACIC";
+  if (lowered === "mesa") return "Mesa";
   const exact = db?.spaces?.find((space) => space.name.toLowerCase() === clean.toLowerCase());
   if (exact) return exact.name;
   const source = db?.spaces || seedSpaces;
@@ -1701,30 +1707,63 @@ const seedSpaces = [
   { id: "1951", name: "1951@SkySong", campus: "SkySong", hours: { Monday: ["08:00", "17:00"], Tuesday: ["08:00", "17:00"], Wednesday: ["08:00", "17:00"], Thursday: ["08:00", "17:00"], Friday: ["08:00", "17:00"] } },
   { id: "850pbc", name: "850PBC", campus: "Downtown Phoenix", hours: { Monday: ["08:00", "17:00"], Tuesday: ["08:00", "17:00"], Wednesday: ["08:00", "17:00"], Thursday: ["08:00", "17:00"], Friday: ["08:00", "17:00"] } },
   { id: "acic", name: "ACIC", campus: "Tempe", hours: { Monday: ["08:00", "17:00"], Tuesday: ["08:00", "17:00"], Wednesday: ["08:00", "17:00"], Thursday: ["08:00", "17:00"], Friday: ["08:00", "17:00"] } },
-  { id: "mesa", name: "Mesa", campus: "Media and Immersive eXperience Center", hours: { Monday: ["08:00", "17:00"], Tuesday: ["08:00", "17:00"], Wednesday: ["08:00", "17:00"], Thursday: ["08:00", "17:00"], Friday: ["08:00", "17:00"], Saturday: ["08:30", "16:30"] } },
-  { id: "fusion", name: "Fusion on First", campus: "Downtown Phoenix", hours: { Wednesday: ["16:00", "22:00"], Thursday: ["16:00", "22:00"], Friday: ["16:00", "22:00"] } },
-  { id: "studios", name: "The Studios", campus: "Tempe", hours: { Monday: ["09:00", "17:00"], Tuesday: ["09:00", "17:00"], Wednesday: ["09:00", "17:00"], Thursday: ["09:00", "17:00"], Friday: ["09:00", "17:00"] } },
-  { id: "worldlabs", name: "WorldLabs Remote", campus: "Online", hours: { Monday: ["08:00", "17:00"], Tuesday: ["08:00", "17:00"], Wednesday: ["08:00", "17:00"], Thursday: ["08:00", "17:00"], Friday: ["08:00", "17:00"] } }
+  { id: "mesa", name: "Mesa", campus: "Media and Immersive eXperience Center", hours: { Monday: ["08:00", "17:00"], Tuesday: ["08:00", "17:00"], Wednesday: ["08:00", "17:00"], Thursday: ["08:00", "17:00"], Friday: ["08:00", "17:00"] } }
 ];
 
 const seedWorkers = [
-  { id: "aarav-kapoor", name: "Aarav Kapoor", role: "Student Worker", initials: "AK", supervisor: "Dania Alcala-Calvillo", primarySpaces: ["1951@SkySong", "WorldLabs Remote", "General"], skills: ["worldlabs", "data", "coverage", "operations", "administrative", "communications", "customer-service"], availability: [slot("Monday", "1951@SkySong", "12:30", "17:00"), slot("Tuesday", "1951@SkySong", "14:00", "17:00"), slot("Wednesday", "1951@SkySong", "12:30", "17:00"), slot("Friday", "1951@SkySong", "09:00", "17:00")] },
-  { id: "sakshi-katargamwala", name: "Sakshi Ritesh Katargamwala", role: "Student Worker", initials: "SRK", supervisor: "Matthew Kohlbeck", primarySpaces: ["850PBC", "WorldLabs Remote"], skills: ["worldlabs", "coverage", "operations", "administrative", "customer-service"], availability: [slot("Monday", "850PBC", "13:00", "17:00"), slot("Tuesday", "850PBC", "08:00", "11:00"), slot("Wednesday", "850PBC", "13:00", "17:00"), slot("Friday", "850PBC", "08:00", "17:00")] },
-  { id: "daksh-preetha", name: "Daksh Preetha", role: "Student Worker", initials: "DP", supervisor: "Sarah Zarr", primarySpaces: ["Mesa", "850PBC", "Event Coverage"], skills: ["events", "coverage", "operations", "customer-service"], availability: [slot("Tuesday", "850PBC", "16:00", "19:00"), slot("Friday", "Mesa", "08:00", "17:00"), slot("Saturday", "Mesa", "08:30", "16:30")] },
-  { id: "aditya-patil", name: "Aditya Patil", role: "Student Worker", initials: "AP", supervisor: "Sarah Zarr", primarySpaces: ["ACIC", "WorldLabs Remote"], skills: ["worldlabs", "coverage", "events", "graphic-design", "communications"], availability: [slot("Monday", "ACIC", "08:00", "13:00"), slot("Tuesday", "ACIC", "08:00", "13:00"), slot("Wednesday", "ACIC", "08:00", "13:00")] },
-  { id: "mitchell-tecun", name: "Mitchell Tecun", role: "Student Worker", initials: "MT", supervisor: "Sarah Zarr", primarySpaces: ["ACIC", "WorldLabs Remote"], skills: ["worldlabs", "coverage", "events", "data", "graphic-design", "communications"], availability: [slot("Tuesday", "ACIC", "13:00", "17:00"), slot("Wednesday", "ACIC", "13:00", "17:00"), slot("Thursday", "ACIC", "08:00", "12:00"), slot("Friday", "ACIC", "11:00", "17:00")] }
+  { id: "aarav-kapoor", name: "Aarav Kapoor", role: "Student Worker", initials: "AK", supervisor: "Unassigned", primarySpaces: ["General", "1951@SkySong"], skills: ["coverage", "operations", "administrative", "communications", "customer-service"], availability: [slot("Monday", "1951@SkySong", "12:30", "17:00"), slot("Tuesday", "1951@SkySong", "14:00", "17:00"), slot("Wednesday", "1951@SkySong", "12:30", "17:00"), slot("Friday", "1951@SkySong", "09:00", "17:00")] },
+  { id: "sakshi-katargamwala", name: "Sakshi Ritesh Katargamwala", role: "Student Worker", initials: "SRK", supervisor: "Alexa Ruona", primarySpaces: ["850PBC"], skills: ["coverage", "operations", "administrative", "customer-service"], availability: [slot("Monday", "850PBC", "13:00", "17:00"), slot("Tuesday", "850PBC", "08:00", "11:00"), slot("Wednesday", "850PBC", "13:00", "17:00"), slot("Friday", "850PBC", "08:00", "17:00")] },
+  { id: "daksh-preetha", name: "Daksh Preetha", role: "Student Worker", initials: "DP", supervisor: "Unassigned", primarySpaces: ["Mesa"], skills: ["events", "coverage", "operations", "customer-service"], availability: [slot("Tuesday", "Mesa", "17:00", "19:00"), slot("Thursday", "Mesa", "16:00", "20:00"), slot("Friday", "Mesa", "08:00", "17:00")] },
+  { id: "aditya-patil", name: "Aditya Patil", role: "Student Worker", initials: "AP", supervisor: "Khandle Hedrick", primarySpaces: ["ACIC"], skills: ["coverage", "events", "graphic-design", "communications"], availability: [slot("Monday", "ACIC", "08:00", "13:00"), slot("Tuesday", "ACIC", "08:00", "13:00"), slot("Wednesday", "ACIC", "08:00", "13:00")] },
+  { id: "mitchell-tecun", name: "Mitchell Tecun", role: "Student Worker", initials: "MT", supervisor: "Kristin Slice", primarySpaces: ["ACIC"], skills: ["coverage", "events", "data", "graphic-design", "communications"], availability: [slot("Tuesday", "ACIC", "13:00", "17:00"), slot("Wednesday", "ACIC", "13:00", "17:00"), slot("Thursday", "ACIC", "08:00", "12:00"), slot("Friday", "ACIC", "11:00", "17:00")] },
+  { id: "srusti-sudhakar", name: "Srusti Sudhakar", role: "Student Worker", initials: "SS", supervisor: "Eric Heimbecker", primarySpaces: ["1951@SkySong"], skills: ["coverage", "customer-service", "communications"], availability: [] },
+  { id: "simon-ngo", name: "Simon Ngo", role: "Student Worker", initials: "SN", supervisor: "Stevie Campbell", primarySpaces: ["General"], skills: ["coverage", "customer-service", "operations"], availability: [] }
 ];
 
 const seedStaffSchedules = [
-  { id: "staff-dania-mon", name: "Dania Alcala-Calvillo", day: "Monday", space: "1951@SkySong", start: "09:00", end: "17:00", notes: "Supervisor on-site" },
-  { id: "staff-matthew-tue", name: "Matthew Kohlbeck", day: "Tuesday", space: "850PBC", start: "09:00", end: "15:00", notes: "Supervisor on-site" },
-  { id: "staff-sarah-wed", name: "Sarah Zarr", day: "Wednesday", space: "ACIC", start: "10:00", end: "16:00", notes: "Supervisor on-site" },
-  { id: "staff-sarah-fri", name: "Sarah Zarr", day: "Friday", space: "Mesa", start: "09:00", end: "14:00", notes: "Supervisor on-site" }
+  { id: "staff-lynn-mon", name: "Lynn Romero", day: "Monday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-lynn-tue", name: "Lynn Romero", day: "Tuesday", space: "Mesa", start: "08:00", end: "19:30", notes: "Staff schedule" },
+  { id: "staff-lynn-wed", name: "Lynn Romero", day: "Wednesday", space: "Work Offsite", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-lynn-thu", name: "Lynn Romero", day: "Thursday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-lynn-fri", name: "Lynn Romero", day: "Friday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dania-mon", name: "Dania Alcala-Calvillo", day: "Monday", space: "850PBC", start: "08:00", end: "14:00", notes: "Staff schedule" },
+  { id: "staff-dania-tue", name: "Dania Alcala-Calvillo", day: "Tuesday", space: "850PBC", start: "08:00", end: "19:00", notes: "Staff schedule" },
+  { id: "staff-dania-wed", name: "Dania Alcala-Calvillo", day: "Wednesday", space: "850PBC", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dania-thu", name: "Dania Alcala-Calvillo", day: "Thursday", space: "850PBC", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dania-fri", name: "Dania Alcala-Calvillo", day: "Friday", space: "850PBC", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dalena-mon", name: "Dalena Nguyen", day: "Monday", space: "Work Offsite", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dalena-tue", name: "Dalena Nguyen", day: "Tuesday", space: "Work Offsite", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dalena-wed", name: "Dalena Nguyen", day: "Wednesday", space: "Work Offsite", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dalena-thu", name: "Dalena Nguyen", day: "Thursday", space: "Work Offsite", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-dalena-fri", name: "Dalena Nguyen", day: "Friday", space: "Work Offsite", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-matthew-mon", name: "Matthew Kohlbeck", day: "Monday", space: "Mesa", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-matthew-tue", name: "Matthew Kohlbeck", day: "Tuesday", space: "850PBC", start: "15:00", end: "20:00", notes: "Staff schedule" },
+  { id: "staff-matthew-wed", name: "Matthew Kohlbeck", day: "Wednesday", space: "Mesa", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-matthew-thu", name: "Matthew Kohlbeck", day: "Thursday", space: "Work Offsite", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-matthew-fri", name: "Matthew Kohlbeck", day: "Friday", space: "ACIC", start: "08:00", end: "13:00", notes: "Staff schedule" },
+  { id: "staff-sarah-mon", name: "Sarah Zarr", day: "Monday", space: "ACIC", start: "12:00", end: "17:00", notes: "Staff schedule" },
+  { id: "staff-sarah-thu", name: "Sarah Zarr", day: "Thursday", space: "Mesa", start: "08:00", end: "17:00", notes: "Staff schedule" },
+  { id: "coverage-1951-mon", name: "Lynn Romero", day: "Monday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-1951-tue", name: "Matthew Kohlbeck", day: "Tuesday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-1951-wed", name: "Gere Clark", day: "Wednesday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-1951-thu", name: "Lynn Romero", day: "Thursday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-1951-fri", name: "Lynn Romero", day: "Friday", space: "1951@SkySong", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-850-mon", name: "Dania Alcala-Calvillo", day: "Monday", space: "850PBC", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-850-tue", name: "Dania Alcala-Calvillo", day: "Tuesday", space: "850PBC", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-850-wed", name: "Dania Alcala-Calvillo", day: "Wednesday", space: "850PBC", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-850-thu", name: "Dania Alcala-Calvillo", day: "Thursday", space: "850PBC", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-acic-mon", name: "Sarah Zarr", day: "Monday", space: "ACIC", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-acic-thu", name: "Aditya Patil", day: "Thursday", space: "ACIC", start: "12:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-acic-fri", name: "Matthew Kohlbeck", day: "Friday", space: "ACIC", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-mesa-mon", name: "Matthew Kohlbeck", day: "Monday", space: "Mesa", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-mesa-tue", name: "Lynn Romero", day: "Tuesday", space: "Mesa", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-mesa-wed", name: "Matthew Kohlbeck", day: "Wednesday", space: "Mesa", start: "08:00", end: "17:00", notes: "Space coverage" },
+  { id: "coverage-mesa-thu", name: "Sarah Zarr", day: "Thursday", space: "Mesa", start: "08:00", end: "17:00", notes: "Space coverage" }
 ];
 
 const seedEvents = [
-  { id: "event-1951-pitch-in", title: "Pitch In evening check-in", date: "2026-04-24", space: "1951@SkySong", start: "17:30", end: "19:30", notes: "After-hours visitor check-in and room support", status: "requesting" },
-  { id: "event-acic-founder-night", title: "Founder Night setup", date: "2026-04-23", space: "ACIC", start: "17:15", end: "20:00", notes: "After-hours event setup and front desk support", status: "requesting" }
+  { id: "event-venturestart", title: "VentureStart", date: "2026-04-28", space: "850PBC", start: "15:00", end: "19:00", notes: "Imported from after-hours event schedule", status: "requesting" },
+  { id: "event-tmv-studios", title: "TMV Studios", date: "2026-04-28", space: "Mesa", start: "17:00", end: "19:00", notes: "Imported from after-hours event schedule", status: "requesting" }
 ];
 
 const sourceTaskTemplates = [

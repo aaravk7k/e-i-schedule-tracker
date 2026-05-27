@@ -19,6 +19,7 @@ PORT=8787
 STAFF_EMAIL=your-supervisor-email@asu.edu
 STAFF_PASSWORD=make-a-strong-password
 STUDENT_DEFAULT_PASSWORD=make-a-temporary-student-password
+STUDENT_WEEKLY_HOUR_LIMIT=40
 DATA_DIR=/data
 ```
 

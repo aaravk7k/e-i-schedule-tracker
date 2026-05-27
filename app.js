@@ -8,6 +8,7 @@ const app = {
 
 const staffViews = [
   ["schedules", "Coverage"],
+  ["events", "Bookings"],
   ["people", "People"],
   ["spaces", "Spaces"]
 ];
@@ -296,12 +297,13 @@ function renderMyTasks() {
 function renderProfile() {
   const worker = currentWorker();
   if (!worker) return emptyState("No student profile linked to this login.");
+  const availability = availabilityInFocusWeek(worker);
   return `
     <section class="split-grid">
       <div class="panel">
         <h3>My Availability</h3>
         ${weeklyHourPanel(worker)}
-        <div class="task-list">${worker.availability.length ? worker.availability.map((slot, index) => scheduleMiniCard(slot, worker, index, true)).join("") : emptyState("No schedule blocks yet.")}</div>
+        <div class="task-list">${availability.length ? availability.map(({ slot, index }) => scheduleMiniCard(slot, worker, index, true)).join("") : emptyState("No schedule blocks this week.")}</div>
         ${scheduleForm(worker.id, false)}
       </div>
       <div class="panel">
@@ -329,16 +331,18 @@ function weeklyHourPanel(worker) {
         <span>${over ? "Over weekly limit" : `${formatHours(remaining)} hours left`}</span>
       </div>
       <div class="hour-bar"><span style="width:${percent}%"></span></div>
-      <p class="task-meta">Student workers should stay at or under ${formatHours(limit)} hours during the semester.</p>
+      <p class="task-meta">Student workers should stay within the configured weekly limit.</p>
     </div>
   `;
 }
 
 function renderSchedules() {
   const staff = app.data.role === "staff";
-  const totalBlocks = app.data.workers.reduce((sum, worker) => sum + worker.availability.length, 0);
-  const pendingRequests = (app.data.coverageRequests || []).filter((request) => request.status === "pending").length;
-  const openEvents = (app.data.events || []).filter((event) => event.status !== "scheduled").length;
+  const totalBlocks = app.data.workers.reduce((sum, worker) => sum + availabilityInFocusWeek(worker).length, 0);
+  const focusRequests = requestsInFocusWeek(app.data.coverageRequests || []);
+  const pendingRequests = focusRequests.filter((request) => request.status === "pending").length;
+  const focusEvents = eventsInFocusWeek(app.data.events || []);
+  const afterHoursNeeds = focusEvents.filter((event) => event.afterHours && event.status !== "scheduled").length;
   return `
     <section class="band">
       <div class="band-header">
@@ -350,7 +354,8 @@ function renderSchedules() {
       <div class="kpi-grid">
         ${kpiCard(app.data.coverageGaps.length, "Needs attention")}
         ${kpiCard(pendingRequests, "Student requests")}
-        ${kpiCard(openEvents, "Events being handled")}
+        ${kpiCard(focusEvents.length, "Bookings this week")}
+        ${kpiCard(afterHoursNeeds, "After-hours needs")}
         ${kpiCard(totalBlocks, "Student shifts")}
       </div>
     </section>
@@ -379,37 +384,55 @@ function renderSchedules() {
         <h3>Staff / Space Coverage</h3>
         ${staffScheduleTable()}
       </div>
-      ${staff ? `<div class="panel"><h3>Quick Schedule Edit</h3>${scheduleForm(app.editingSchedule?.workerId || app.data.workers[0]?.id, true)}</div>` : `<div class="panel"><h3>My Requests</h3>${renderRequestList(app.data.coverageRequests || [])}</div>`}
+      ${staff ? `<div class="panel"><h3>Quick Schedule Edit</h3>${scheduleForm(app.editingSchedule?.workerId || app.data.workers[0]?.id, true)}</div>` : `<div class="panel"><h3>My Requests</h3>${renderRequestList(focusRequests)}</div>`}
     </section>
   `;
 }
 
 function renderEvents() {
+  const focusEvents = eventsInFocusWeek(app.data.events || []);
+  const afterHours = focusEvents.filter((event) => event.afterHours);
+  const handled = focusEvents.filter((event) => !event.afterHours || event.status === "scheduled").length;
+  const focusRequests = requestsInFocusWeek(app.data.coverageRequests || []);
   return `
+    <section class="band">
+      <div class="band-header">
+        <div>
+          <p class="eyebrow">Imported Bookings</p>
+          <h3>${formatShortDate(app.data.focusWeekStart)}-${formatShortDate(addDays(app.data.focusWeekStart, 6))}</h3>
+        </div>
+      </div>
+      <div class="kpi-grid">
+        ${kpiCard(focusEvents.length, "Bookings this week")}
+        ${kpiCard(afterHours.length, "After-hours events")}
+        ${kpiCard(focusRequests.filter((request) => request.status === "pending").length, "Student requests")}
+        ${kpiCard(handled, "Already covered")}
+      </div>
+    </section>
     <section class="split-grid">
       <div class="panel">
-        <h3>Add Event</h3>
+        <h3>Add Booking</h3>
         ${smartEventForm()}
       </div>
       <div class="panel">
-        <h3>Smart Requests</h3>
-        ${renderRequestList(app.data.coverageRequests || [])}
+        <h3>Student Requests</h3>
+        ${renderRequestList(focusRequests)}
       </div>
     </section>
     <section class="band">
       <div class="band-header">
         <div>
           <p class="eyebrow">After-Hours + Event Coverage</p>
-          <h3>Events Needing Student Coverage</h3>
+          <h3>Bookings This Week</h3>
         </div>
       </div>
-      <div class="task-list">${(app.data.events || []).map(eventCard).join("") || emptyState("No events added yet.")}</div>
+      <div class="task-list">${focusEvents.map(eventCard).join("") || emptyState("No bookings this week.")}</div>
     </section>
   `;
 }
 
 function renderRequests() {
-  const requests = app.data.coverageRequests || [];
+  const requests = requestsInFocusWeek(app.data.coverageRequests || []);
   const pending = requests.filter((request) => request.status === "pending").length;
   const accepted = requests.filter((request) => request.status === "accepted").length;
   const scheduled = requests.filter((request) => request.status === "scheduled").length;
@@ -532,8 +555,11 @@ function coverageRequestCard(request) {
 }
 
 function eventCard(event) {
-  const assigned = workerById(event.assignedTo)?.name || "Waiting for student response";
+  const assigned = workerById(event.assignedTo)?.name || (event.afterHours ? "Waiting for student response" : "Inside business hours");
   const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
+  const coverageText = event.afterHours
+    ? `Coverage: ${assigned}. Requests sent: ${requests.length}.`
+    : "Inside business hours. No extra student request needed.";
   return `
     <article class="task-card">
       <div class="task-head">
@@ -547,7 +573,7 @@ function eventCard(event) {
         ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
       </div>
       <p class="task-meta">${escapeHtml(event.notes || "No notes added.")}</p>
-      <p class="task-meta">Coverage: ${escapeHtml(assigned)}. Requests sent: ${requests.length}.</p>
+      <p class="task-meta">${escapeHtml(coverageText)}</p>
     </article>
   `;
 }
@@ -569,7 +595,9 @@ function coverageGapCard(gap) {
 }
 
 function staffScheduleTable() {
-  const schedules = app.data.staffSchedules || [];
+  const schedules = (app.data.staffSchedules || [])
+    .filter(scheduleItemInFocusWeek)
+    .sort((a, b) => (a.date || "").localeCompare(b.date || "") || DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || minutes(a.start) - minutes(b.start) || a.space.localeCompare(b.space));
   if (!schedules.length) return emptyState("No staff schedules added yet.");
   return `
     <div class="table-wrap">
@@ -919,24 +947,26 @@ function requestButton(request, requestAction, label, className) {
 }
 
 function workerCard(worker) {
+  const availability = availabilityInFocusWeek(worker);
   return `
     <article class="task-card">
       <div class="task-head"><h4>${escapeHtml(worker.name)}</h4><span class="badge">${escapeHtml(worker.initials)}</span></div>
       <div class="badge-row">${worker.primarySpaces.map(spaceChip).join("")}</div>
       <div class="badge-row">${skillBadges(worker.skills)}</div>
-      <p class="task-meta">${worker.availability.length} schedule block${worker.availability.length === 1 ? "" : "s"} · ${formatHours(worker.weeklyHours || 0)}/${formatHours(worker.weeklyLimit || 20)} hours</p>
+      <p class="task-meta">${availability.length} schedule block${availability.length === 1 ? "" : "s"} this week · ${formatHours(worker.weeklyHours || 0)}/${formatHours(worker.weeklyLimit || 20)} hours</p>
     </article>
   `;
 }
 
 function workerSummaryRow(worker) {
   const active = app.data.tasks.filter((task) => task.assignedTo === worker.id && ["pending", "accepted"].includes(task.status)).length;
+  const availability = availabilityInFocusWeek(worker);
   return `
     <tr>
       <td><strong>${escapeHtml(worker.name)}</strong><div class="task-meta">${escapeHtml(worker.primarySpaces.join(", "))}</div></td>
       <td><div class="badge-row">${skillBadges(worker.skills.slice(0, 5))}</div></td>
       <td>${active}</td>
-      <td>${worker.availability.length}<div class="task-meta">${formatHours(worker.weeklyHours || 0)}/${formatHours(worker.weeklyLimit || 20)}h</div></td>
+      <td>${availability.length}<div class="task-meta">${formatHours(worker.weeklyHours || 0)}/${formatHours(worker.weeklyLimit || 20)}h</div></td>
     </tr>
   `;
 }
@@ -946,9 +976,12 @@ function scheduleGrid() {
     .concat(DAYS.map((day, index) => `<div class="schedule-cell schedule-head">${day}<br>${formatShortDate(addDays(app.data.focusWeekStart, index))}</div>`))
     .join("");
   const rows = app.data.workers.map((worker) => {
-    const cells = DAYS.map((day) => {
-      const slots = worker.availability.filter((item) => item.day === day);
-      return `<div class="schedule-cell">${slots.length ? slots.map((slot) => scheduleMiniCard(slot, worker, worker.availability.indexOf(slot), app.data.role === "staff" || app.data.currentUser.workerId === worker.id)).join("") : `<span class="task-meta">Off</span>`}</div>`;
+    const cells = DAYS.map((day, dayIndex) => {
+      const date = addDays(app.data.focusWeekStart, dayIndex);
+      const slots = worker.availability
+        .map((slot, index) => ({ slot, index }))
+        .filter(({ slot }) => scheduleItemMatchesDate(slot, day, date));
+      return `<div class="schedule-cell">${slots.length ? slots.map(({ slot, index }) => scheduleMiniCard(slot, worker, index, app.data.role === "staff" || app.data.currentUser.workerId === worker.id)).join("") : `<span class="task-meta">Off</span>`}</div>`;
     }).join("");
     return `<div class="schedule-cell worker-name">${escapeHtml(worker.name)}<div class="task-meta">${escapeHtml(worker.primarySpaces.join(", "))}</div></div>${cells}`;
   }).join("");
@@ -989,7 +1022,8 @@ function spaceHoursRow(space) {
   const hours = DAYS.filter((day) => space.hours[day])
     .map((day) => `${day.slice(0, 3)} ${formatTime(space.hours[day][0])}-${formatTime(space.hours[day][1])}`)
     .join(", ");
-  return `<tr><td>${spaceChip(space.name)}</td><td>${escapeHtml(space.campus)}</td><td>${escapeHtml(hours || "By event")}</td></tr>`;
+  const closed = (space.closedDates || []).map(formatShortDate).join(", ");
+  return `<tr><td>${spaceChip(space.name)}</td><td>${escapeHtml(space.campus)}</td><td>${escapeHtml(hours || "By event")}${closed ? `<div class="task-meta">Closed: ${escapeHtml(closed)}</div>` : ""}</td></tr>`;
 }
 
 function kpiCard(value, label) {
@@ -1010,6 +1044,37 @@ function workerById(id) {
 
 function eventById(id) {
   return (app.data.events || []).find((event) => event.id === id);
+}
+
+function availabilityInFocusWeek(worker) {
+  return (worker.availability || [])
+    .map((slot, index) => ({ slot, index }))
+    .filter(({ slot }) => scheduleItemInFocusWeek(slot))
+    .sort((a, b) => (a.slot.date || "").localeCompare(b.slot.date || "") || DAYS.indexOf(a.slot.day) - DAYS.indexOf(b.slot.day) || minutes(a.slot.start) - minutes(b.slot.start) || a.slot.space.localeCompare(b.slot.space));
+}
+
+function scheduleItemInFocusWeek(item) {
+  if (!item.date) return true;
+  return item.date >= app.data.focusWeekStart && item.date <= addDays(app.data.focusWeekStart, 6);
+}
+
+function scheduleItemMatchesDate(item, day, date) {
+  return item.day === day && (!item.date || item.date === date);
+}
+
+function eventsInFocusWeek(events) {
+  const start = app.data.focusWeekStart;
+  const end = addDays(start, 6);
+  return [...events]
+    .filter((event) => event.date >= start && event.date <= end)
+    .sort((a, b) => a.date.localeCompare(b.date) || minutes(a.start) - minutes(b.start) || a.space.localeCompare(b.space));
+}
+
+function requestsInFocusWeek(requests) {
+  return (requests || []).filter((request) => {
+    const event = eventById(request.eventId);
+    return event && eventsInFocusWeek([event]).length > 0;
+  });
 }
 
 function studentRequestHint(status) {
@@ -1051,7 +1116,7 @@ function hourSummaryText(summary, status) {
 function hasExactSchedule(worker, event) {
   const day = dayFromDate(event.date);
   return worker.availability.some((slot) =>
-    slot.day === day &&
+    scheduleItemMatchesDate(slot, day, event.date) &&
     slot.space === event.space &&
     slot.start === event.start &&
     slot.end === event.end

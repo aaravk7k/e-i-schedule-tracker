@@ -4,14 +4,15 @@ Deployable web app for Edson E+I student-worker schedules, space coverage, skill
 
 ## What It Does
 
-- Starts with the PBIS Staff and Space Schedule for Apr 27-May 3, 2026.
+- Starts with the PBIS Schedule for May 25-May 31, 2026, plus imported May, June, and July booking exports.
+- June and July use a simple summer rule: space owners are scheduled at their primary spaces, with Aarav on SkySong operations coverage from 9:00AM-5:00PM and 1951@SkySong covered from 8:00AM-5:00PM.
 - Staff login and student login are separate.
 - Staff can add students, edit weekly student-worker schedules, view staff schedules, add events, and see space business hours.
 - Students can update their own availability, update their skills, and view shared schedules/spaces.
 - Coverage alerts point out gaps by space and time if business-hour coverage is missing.
-- After-hours events automatically create coverage requests for the best-fit student workers from that space.
-- Students can accept or deny coverage requests. If they accept, they can add the event directly to their schedule only if it keeps them at or under 20 hours for the week.
-- If an after-hours request would push a student over 20 hours, the app sends them to edit/remove schedule blocks before adding it.
+- After-hours events automatically create a coverage request for the student managing that space.
+- Students can accept or deny coverage requests. If they accept, they can add the event directly to their schedule only if it keeps them under the configured weekly hour limit.
+- If an after-hours request would push a student over the weekly limit, the app sends them to edit/remove schedule blocks before adding it.
 - Skills are tracked so scheduling can recommend students by space, schedule, and coverage/event skill.
 
 ## Run Locally
@@ -45,6 +46,7 @@ PORT=8787
 STAFF_EMAIL=your-staff-email@asu.edu
 STAFF_PASSWORD=change-this-password
 STUDENT_DEFAULT_PASSWORD=change-this-too
+STUDENT_WEEKLY_HOUR_LIMIT=40
 DATA_DIR=/data
 ```
 
@@ -68,8 +70,9 @@ Use the `schedule-manager` branch to show:
 - the shared weekly coverage board
 - the automatic `Needs Attention` panel
 - PBIS student schedules, staff schedules, and space coverage together
-- after-hours event requests that get sent to students
-- student accept/deny, 20-hour cap, edit-hours, and add-to-schedule flow
+- May, June, and July imported bookings on the `Bookings` page
+- after-hours event requests that get sent to students for the selected week
+- student accept/deny, weekly hour cap, edit-hours, and add-to-schedule flow
 - space business hours
 
 ## Important Next Step

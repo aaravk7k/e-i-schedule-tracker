@@ -1,0 +1,6810 @@
+{
+  "spaces": [
+    {
+      "id": "1951",
+      "name": "1951@SkySong",
+      "campus": "SkySong",
+      "hours": {
+        "Monday": [
+          "08:00",
+          "17:00"
+        ],
+        "Tuesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Wednesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Thursday": [
+          "08:00",
+          "17:00"
+        ],
+        "Friday": [
+          "08:00",
+          "17:00"
+        ]
+      },
+      "closedDates": [
+        "2026-05-25"
+      ]
+    },
+    {
+      "id": "850pbc",
+      "name": "850PBC",
+      "campus": "Downtown Phoenix",
+      "hours": {
+        "Monday": [
+          "08:00",
+          "17:00"
+        ],
+        "Tuesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Wednesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Thursday": [
+          "08:00",
+          "17:00"
+        ],
+        "Friday": [
+          "08:00",
+          "17:00"
+        ]
+      },
+      "closedDates": [
+        "2026-05-25"
+      ]
+    },
+    {
+      "id": "acic",
+      "name": "ACIC",
+      "campus": "Chandler",
+      "hours": {
+        "Monday": [
+          "08:00",
+          "17:00"
+        ],
+        "Tuesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Wednesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Thursday": [
+          "08:00",
+          "17:00"
+        ],
+        "Friday": [
+          "08:00",
+          "17:00"
+        ]
+      },
+      "closedDates": [
+        "2026-05-25"
+      ]
+    },
+    {
+      "id": "the-studios",
+      "name": "The Studios",
+      "campus": "Mesa City Center",
+      "hours": {
+        "Monday": [
+          "08:00",
+          "17:00"
+        ],
+        "Tuesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Wednesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Thursday": [
+          "08:00",
+          "17:00"
+        ],
+        "Friday": [
+          "08:00",
+          "17:00"
+        ]
+      },
+      "closedDates": [
+        "2026-05-25"
+      ]
+    },
+    {
+      "id": "skysong",
+      "name": "SkySong",
+      "campus": "SkySong",
+      "hours": {
+        "Monday": [
+          "09:00",
+          "17:00"
+        ],
+        "Tuesday": [
+          "09:00",
+          "17:00"
+        ],
+        "Wednesday": [
+          "09:00",
+          "17:00"
+        ],
+        "Thursday": [
+          "09:00",
+          "17:00"
+        ],
+        "Friday": [
+          "09:00",
+          "17:00"
+        ]
+      },
+      "closedDates": [
+        "2026-05-25"
+      ]
+    }
+  ],
+  "workers": [
+    {
+      "id": "aarav-kapoor",
+      "name": "Aarav Kapoor",
+      "role": "Student Worker",
+      "initials": "AK",
+      "supervisor": "Unassigned",
+      "primarySpaces": [
+        "SkySong"
+      ],
+      "skills": [
+        "coverage",
+        "customer-service",
+        "events"
+      ],
+      "availability": [
+        {
+          "date": "2026-05-26",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-05-27",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-05-28",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-05-29",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-01",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-02",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-03",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-04",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-05",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-08",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-09",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-10",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-11",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-12",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-15",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-16",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-17",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-18",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-19",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-22",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-23",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-24",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-25",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-26",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-29",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-06-30",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-01",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-02",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-03",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-06",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-07",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-08",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-09",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-10",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-13",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-14",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-15",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-16",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-17",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-20",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-21",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-22",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-23",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-24",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-27",
+          "day": "Monday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-28",
+          "day": "Tuesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-29",
+          "day": "Wednesday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-30",
+          "day": "Thursday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        },
+        {
+          "date": "2026-07-31",
+          "day": "Friday",
+          "space": "SkySong",
+          "start": "09:00",
+          "end": "17:00",
+          "source": "Operations aide schedule: Monday-Friday 9AM-5PM"
+        }
+      ]
+    },
+    {
+      "id": "aditya-patil",
+      "name": "Aditya Patil",
+      "role": "Student Worker",
+      "initials": "AP",
+      "supervisor": "Khandle Hedrick",
+      "primarySpaces": [
+        "ACIC"
+      ],
+      "skills": [
+        "coverage",
+        "customer-service",
+        "events"
+      ],
+      "availability": [
+        {
+          "date": "2026-06-01",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-02",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-03",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-04",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-05",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-08",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-09",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-10",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-11",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-12",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-15",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-16",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-17",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-18",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-19",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-22",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-23",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-24",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-25",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-26",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-29",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-30",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-01",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-02",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-03",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-06",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-07",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-08",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-09",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-10",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-13",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-14",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-15",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-16",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-17",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-20",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-21",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-22",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-23",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-24",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-27",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-28",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-29",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-30",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-31",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        }
+      ]
+    },
+    {
+      "id": "amanda",
+      "name": "Amanda",
+      "role": "Student Worker",
+      "initials": "A",
+      "supervisor": "Unassigned",
+      "primarySpaces": [
+        "1951@SkySong"
+      ],
+      "skills": [
+        "coverage",
+        "customer-service",
+        "events"
+      ],
+      "availability": [
+        {
+          "date": "2026-05-26",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-27",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-28",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-29",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-06-01",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-02",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-03",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-04",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-05",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-08",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-09",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-10",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-11",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-12",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-15",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-16",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-17",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-18",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-19",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-22",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-23",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-24",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-25",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-26",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-29",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-30",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-01",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-02",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-03",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-06",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-07",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-08",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-09",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-10",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-13",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-14",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-15",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-16",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-17",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-20",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-21",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-22",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-23",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-24",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-27",
+          "day": "Monday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-28",
+          "day": "Tuesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-29",
+          "day": "Wednesday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-30",
+          "day": "Thursday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-31",
+          "day": "Friday",
+          "space": "1951@SkySong",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        }
+      ]
+    },
+    {
+      "id": "deepinderjit-singh",
+      "name": "Deepinderjit Singh",
+      "role": "Student Worker",
+      "initials": "DS",
+      "supervisor": "Unassigned",
+      "primarySpaces": [
+        "ACIC"
+      ],
+      "skills": [
+        "coverage",
+        "customer-service",
+        "events"
+      ],
+      "availability": [
+        {
+          "date": "2026-05-26",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-27",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-28",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "14:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-29",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-06-01",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-02",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-03",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-04",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-05",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-08",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-09",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-10",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-11",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-12",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-15",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-16",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-17",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-18",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-19",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-22",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-23",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-24",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-25",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-26",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-29",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-30",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-01",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-02",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-03",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-06",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-07",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-08",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-09",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-10",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-13",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-14",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-15",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-16",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-17",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-20",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-21",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-22",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-23",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-24",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-27",
+          "day": "Monday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-28",
+          "day": "Tuesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-29",
+          "day": "Wednesday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-30",
+          "day": "Thursday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-31",
+          "day": "Friday",
+          "space": "ACIC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        }
+      ]
+    },
+    {
+      "id": "palash",
+      "name": "Palash",
+      "role": "Student Worker",
+      "initials": "P",
+      "supervisor": "Unassigned",
+      "primarySpaces": [
+        "850PBC"
+      ],
+      "skills": [
+        "coverage",
+        "customer-service",
+        "events"
+      ],
+      "availability": [
+        {
+          "date": "2026-05-26",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-27",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-28",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-29",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-06-01",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-02",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-03",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-04",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-05",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-08",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-09",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-10",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-11",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-12",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-15",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-16",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-17",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-18",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-19",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-22",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-23",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-24",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-25",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-26",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-29",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-30",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-01",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-02",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-03",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-06",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-07",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-08",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-09",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-10",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-13",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-14",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-15",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-16",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-17",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-20",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-21",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-22",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-23",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-24",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-27",
+          "day": "Monday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-28",
+          "day": "Tuesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-29",
+          "day": "Wednesday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-30",
+          "day": "Thursday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-31",
+          "day": "Friday",
+          "space": "850PBC",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        }
+      ]
+    },
+    {
+      "id": "shreyas",
+      "name": "Shreyas",
+      "role": "Student Worker",
+      "initials": "S",
+      "supervisor": "Unassigned",
+      "primarySpaces": [
+        "The Studios"
+      ],
+      "skills": [
+        "coverage",
+        "customer-service",
+        "events"
+      ],
+      "availability": [
+        {
+          "date": "2026-05-26",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-27",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-28",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "14:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-29",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-05-30",
+          "day": "Saturday",
+          "space": "The Studios",
+          "start": "09:00",
+          "end": "13:00",
+          "source": "PBIS Schedule.xlsx space coverage"
+        },
+        {
+          "date": "2026-06-01",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-02",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-03",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-04",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-05",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-08",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-09",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-10",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-11",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-12",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-15",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-16",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-17",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-18",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-19",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-22",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-23",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-24",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-25",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-26",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-29",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-06-30",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-01",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-02",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-03",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-06",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-07",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-08",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-09",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-10",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-13",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-14",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-15",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-16",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-17",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-20",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-21",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-22",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-23",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-24",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-27",
+          "day": "Monday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-28",
+          "day": "Tuesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-29",
+          "day": "Wednesday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-30",
+          "day": "Thursday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        },
+        {
+          "date": "2026-07-31",
+          "day": "Friday",
+          "space": "The Studios",
+          "start": "08:00",
+          "end": "17:00",
+          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
+        }
+      ]
+    }
+  ],
+  "staffSchedules": [
+    {
+      "id": "coverage-1951-skysong-2026-05-26-4-3",
+      "date": "2026-05-26",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-05-26-3",
+      "date": "2026-05-26",
+      "name": "Lynn Romero",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-850pbc-2026-05-26-4-3",
+      "date": "2026-05-26",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-acic-2026-05-26-4-3",
+      "date": "2026-05-26",
+      "name": "Deeps",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-skysong-2026-05-26-4-3",
+      "date": "2026-05-26",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "coverage-mesa-2026-05-26-4-3",
+      "date": "2026-05-26",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-05-26-3",
+      "date": "2026-05-26",
+      "name": "Dalena Nguyen",
+      "day": "Tuesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-1951-skysong-2026-05-27-4-4",
+      "date": "2026-05-27",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-850pbc-2026-05-27-4-4",
+      "date": "2026-05-27",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-acic-2026-05-27-4-4",
+      "date": "2026-05-27",
+      "name": "Deeps",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-05-27-4",
+      "date": "2026-05-27",
+      "name": "Lynn Romero",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "20:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-skysong-2026-05-27-4-4",
+      "date": "2026-05-27",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "coverage-mesa-2026-05-27-4-4",
+      "date": "2026-05-27",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-05-27-4",
+      "date": "2026-05-27",
+      "name": "Dalena Nguyen",
+      "day": "Wednesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-1951-skysong-2026-05-28-4-5",
+      "date": "2026-05-28",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-850pbc-2026-05-28-4-5",
+      "date": "2026-05-28",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-acic-2026-05-28-4-5",
+      "date": "2026-05-28",
+      "name": "Paula",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "14:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-05-28-5",
+      "date": "2026-05-28",
+      "name": "Lynn Romero",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "10:00",
+      "end": "20:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-acic-2026-05-28-5-5",
+      "date": "2026-05-28",
+      "name": "Deeps",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "14:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-skysong-2026-05-28-4-5",
+      "date": "2026-05-28",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "coverage-mesa-2026-05-28-4-5",
+      "date": "2026-05-28",
+      "name": "Lynn",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-mesa-2026-05-28-5-5",
+      "date": "2026-05-28",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "14:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-05-28-5",
+      "date": "2026-05-28",
+      "name": "Dalena Nguyen",
+      "day": "Thursday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-1951-skysong-2026-05-29-4-6",
+      "date": "2026-05-29",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-850pbc-2026-05-29-4-6",
+      "date": "2026-05-29",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-acic-2026-05-29-4-6",
+      "date": "2026-05-29",
+      "name": "Deeps",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "coverage-skysong-2026-05-29-4-6",
+      "date": "2026-05-29",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-05-29-6",
+      "date": "2026-05-29",
+      "name": "Lynn Romero",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-mesa-2026-05-29-4-6",
+      "date": "2026-05-29",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-05-29-6",
+      "date": "2026-05-29",
+      "name": "Dalena Nguyen",
+      "day": "Friday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-mesa-2026-05-30-4-7",
+      "date": "2026-05-30",
+      "name": "Shreyas",
+      "day": "Saturday",
+      "space": "The Studios",
+      "start": "09:00",
+      "end": "13:00",
+      "notes": "Space coverage"
+    },
+    {
+      "id": "summer-amanda-2026-06-01-1951-skysong",
+      "date": "2026-06-01",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-01-2",
+      "date": "2026-06-01",
+      "name": "Lynn Romero",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-01-850pbc",
+      "date": "2026-06-01",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-01-acic",
+      "date": "2026-06-01",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-01-acic",
+      "date": "2026-06-01",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "coverage-skysong-2026-06-01-23-2",
+      "date": "2026-06-01",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-01-mesa",
+      "date": "2026-06-01",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-01-2",
+      "date": "2026-06-01",
+      "name": "Dalena Nguyen",
+      "day": "Monday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-02-1951-skysong",
+      "date": "2026-06-02",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-02-3",
+      "date": "2026-06-02",
+      "name": "Lynn Romero",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-02-850pbc",
+      "date": "2026-06-02",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-02-acic",
+      "date": "2026-06-02",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-02-acic",
+      "date": "2026-06-02",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "coverage-skysong-2026-06-02-23-3",
+      "date": "2026-06-02",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-02-mesa",
+      "date": "2026-06-02",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-02-3",
+      "date": "2026-06-02",
+      "name": "Dalena Nguyen",
+      "day": "Tuesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-03-1951-skysong",
+      "date": "2026-06-03",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-03-850pbc",
+      "date": "2026-06-03",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-03-acic",
+      "date": "2026-06-03",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-03-acic",
+      "date": "2026-06-03",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-03-4",
+      "date": "2026-06-03",
+      "name": "Lynn Romero",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "10:00",
+      "end": "20:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "coverage-skysong-2026-06-03-23-4",
+      "date": "2026-06-03",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-03-mesa",
+      "date": "2026-06-03",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-03-4",
+      "date": "2026-06-03",
+      "name": "Dalena Nguyen",
+      "day": "Wednesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-04-1951-skysong",
+      "date": "2026-06-04",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-04-5",
+      "date": "2026-06-04",
+      "name": "Lynn Romero",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-04-850pbc",
+      "date": "2026-06-04",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-04-acic",
+      "date": "2026-06-04",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-04-acic",
+      "date": "2026-06-04",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "coverage-skysong-2026-06-04-23-5",
+      "date": "2026-06-04",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-04-mesa",
+      "date": "2026-06-04",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-04-5",
+      "date": "2026-06-04",
+      "name": "Dalena Nguyen",
+      "day": "Thursday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-05-1951-skysong",
+      "date": "2026-06-05",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-05-6",
+      "date": "2026-06-05",
+      "name": "Lynn Romero",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-05-850pbc",
+      "date": "2026-06-05",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-05-acic",
+      "date": "2026-06-05",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-05-acic",
+      "date": "2026-06-05",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "coverage-skysong-2026-06-05-23-6",
+      "date": "2026-06-05",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-05-mesa",
+      "date": "2026-06-05",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-05-6",
+      "date": "2026-06-05",
+      "name": "Dalena Nguyen",
+      "day": "Friday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-08-1951-skysong",
+      "date": "2026-06-08",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-08-850pbc",
+      "date": "2026-06-08",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-08-acic",
+      "date": "2026-06-08",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-08-acic",
+      "date": "2026-06-08",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-08-2",
+      "date": "2026-06-08",
+      "name": "Lynn Romero",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "10:00",
+      "end": "19:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-08",
+      "date": "2026-06-08",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-08-mesa",
+      "date": "2026-06-08",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-08-2",
+      "date": "2026-06-08",
+      "name": "Dalena Nguyen",
+      "day": "Monday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-09-1951-skysong",
+      "date": "2026-06-09",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-09-3",
+      "date": "2026-06-09",
+      "name": "Lynn Romero",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-09-850pbc",
+      "date": "2026-06-09",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-09-acic",
+      "date": "2026-06-09",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-09-acic",
+      "date": "2026-06-09",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-09",
+      "date": "2026-06-09",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-09-mesa",
+      "date": "2026-06-09",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-09-3",
+      "date": "2026-06-09",
+      "name": "Dalena Nguyen",
+      "day": "Tuesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-10-1951-skysong",
+      "date": "2026-06-10",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-10-4",
+      "date": "2026-06-10",
+      "name": "Lynn Romero",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-10-850pbc",
+      "date": "2026-06-10",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-10-acic",
+      "date": "2026-06-10",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-10-acic",
+      "date": "2026-06-10",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-10",
+      "date": "2026-06-10",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-10-mesa",
+      "date": "2026-06-10",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-10-4",
+      "date": "2026-06-10",
+      "name": "Dalena Nguyen",
+      "day": "Wednesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-11-1951-skysong",
+      "date": "2026-06-11",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-11-5",
+      "date": "2026-06-11",
+      "name": "Lynn Romero",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-11-850pbc",
+      "date": "2026-06-11",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-11-acic",
+      "date": "2026-06-11",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-11-acic",
+      "date": "2026-06-11",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-11",
+      "date": "2026-06-11",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-11-mesa",
+      "date": "2026-06-11",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-11-5",
+      "date": "2026-06-11",
+      "name": "Dalena Nguyen",
+      "day": "Thursday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-12-1951-skysong",
+      "date": "2026-06-12",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-12-850pbc",
+      "date": "2026-06-12",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-12-acic",
+      "date": "2026-06-12",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-12-acic",
+      "date": "2026-06-12",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-12-6",
+      "date": "2026-06-12",
+      "name": "Lynn Romero",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-12",
+      "date": "2026-06-12",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-12-mesa",
+      "date": "2026-06-12",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-12-6",
+      "date": "2026-06-12",
+      "name": "Dalena Nguyen",
+      "day": "Friday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-15-1951-skysong",
+      "date": "2026-06-15",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-15-2",
+      "date": "2026-06-15",
+      "name": "Lynn Romero",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-15-850pbc",
+      "date": "2026-06-15",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-15-acic",
+      "date": "2026-06-15",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-15-acic",
+      "date": "2026-06-15",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-15",
+      "date": "2026-06-15",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-15-mesa",
+      "date": "2026-06-15",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-15-2",
+      "date": "2026-06-15",
+      "name": "Dalena Nguyen",
+      "day": "Monday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-16-1951-skysong",
+      "date": "2026-06-16",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-16-3",
+      "date": "2026-06-16",
+      "name": "Lynn Romero",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-palash-2026-06-16-850pbc",
+      "date": "2026-06-16",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-16-acic",
+      "date": "2026-06-16",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-16-acic",
+      "date": "2026-06-16",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-16",
+      "date": "2026-06-16",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-16-mesa",
+      "date": "2026-06-16",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-16-3",
+      "date": "2026-06-16",
+      "name": "Dalena Nguyen",
+      "day": "Tuesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-17-1951-skysong",
+      "date": "2026-06-17",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-17-850pbc",
+      "date": "2026-06-17",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-17-acic",
+      "date": "2026-06-17",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-17-acic",
+      "date": "2026-06-17",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-17",
+      "date": "2026-06-17",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-17-4",
+      "date": "2026-06-17",
+      "name": "Lynn Romero",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-shreyas-2026-06-17-mesa",
+      "date": "2026-06-17",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-17-4",
+      "date": "2026-06-17",
+      "name": "Dalena Nguyen",
+      "day": "Wednesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-18-1951-skysong",
+      "date": "2026-06-18",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-18-850pbc",
+      "date": "2026-06-18",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-18-5",
+      "date": "2026-06-18",
+      "name": "Lynn Romero",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "09:00",
+      "end": "11:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-18-acic",
+      "date": "2026-06-18",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-18-acic",
+      "date": "2026-06-18",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-18",
+      "date": "2026-06-18",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-18-mesa",
+      "date": "2026-06-18",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-18-5",
+      "date": "2026-06-18",
+      "name": "Dalena Nguyen",
+      "day": "Thursday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-19-1951-skysong",
+      "date": "2026-06-19",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-19-850pbc",
+      "date": "2026-06-19",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-19-acic",
+      "date": "2026-06-19",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-19-acic",
+      "date": "2026-06-19",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-19",
+      "date": "2026-06-19",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-19-mesa",
+      "date": "2026-06-19",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-lynn-romero-2026-06-19-6",
+      "date": "2026-06-19",
+      "name": "Lynn Romero",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "19:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-19-6",
+      "date": "2026-06-19",
+      "name": "Dalena Nguyen",
+      "day": "Friday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-22-1951-skysong",
+      "date": "2026-06-22",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-22-850pbc",
+      "date": "2026-06-22",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-22-acic",
+      "date": "2026-06-22",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-22-acic",
+      "date": "2026-06-22",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-22",
+      "date": "2026-06-22",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-22-mesa",
+      "date": "2026-06-22",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-22-2",
+      "date": "2026-06-22",
+      "name": "Dalena Nguyen",
+      "day": "Monday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-23-1951-skysong",
+      "date": "2026-06-23",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-23-850pbc",
+      "date": "2026-06-23",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-23-acic",
+      "date": "2026-06-23",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-23-acic",
+      "date": "2026-06-23",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-23",
+      "date": "2026-06-23",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-23-mesa",
+      "date": "2026-06-23",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-23-3",
+      "date": "2026-06-23",
+      "name": "Dalena Nguyen",
+      "day": "Tuesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-24-1951-skysong",
+      "date": "2026-06-24",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-24-850pbc",
+      "date": "2026-06-24",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-24-acic",
+      "date": "2026-06-24",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-24-acic",
+      "date": "2026-06-24",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-24",
+      "date": "2026-06-24",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-24-mesa",
+      "date": "2026-06-24",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-24-4",
+      "date": "2026-06-24",
+      "name": "Dalena Nguyen",
+      "day": "Wednesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-25-1951-skysong",
+      "date": "2026-06-25",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-25-850pbc",
+      "date": "2026-06-25",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-25-acic",
+      "date": "2026-06-25",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-25-acic",
+      "date": "2026-06-25",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-25",
+      "date": "2026-06-25",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-25-mesa",
+      "date": "2026-06-25",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-25-5",
+      "date": "2026-06-25",
+      "name": "Dalena Nguyen",
+      "day": "Thursday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-26-1951-skysong",
+      "date": "2026-06-26",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-26-850pbc",
+      "date": "2026-06-26",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-26-acic",
+      "date": "2026-06-26",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-26-acic",
+      "date": "2026-06-26",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-26",
+      "date": "2026-06-26",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-26-mesa",
+      "date": "2026-06-26",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-06-26-6",
+      "date": "2026-06-26",
+      "name": "Dalena Nguyen",
+      "day": "Friday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-06-29-1951-skysong",
+      "date": "2026-06-29",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-29-850pbc",
+      "date": "2026-06-29",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-29-acic",
+      "date": "2026-06-29",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-29-acic",
+      "date": "2026-06-29",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-29",
+      "date": "2026-06-29",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-29-mesa",
+      "date": "2026-06-29",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-06-30-1951-skysong",
+      "date": "2026-06-30",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-06-30-850pbc",
+      "date": "2026-06-30",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-06-30-acic",
+      "date": "2026-06-30",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-06-30-acic",
+      "date": "2026-06-30",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-06-30",
+      "date": "2026-06-30",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-06-30-mesa",
+      "date": "2026-06-30",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-01-1951-skysong",
+      "date": "2026-07-01",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-01-850pbc",
+      "date": "2026-07-01",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-01-acic",
+      "date": "2026-07-01",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-01-acic",
+      "date": "2026-07-01",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-01",
+      "date": "2026-07-01",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-01-mesa",
+      "date": "2026-07-01",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-07-01-4",
+      "date": "2026-07-01",
+      "name": "Dalena Nguyen",
+      "day": "Wednesday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-07-02-1951-skysong",
+      "date": "2026-07-02",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-02-850pbc",
+      "date": "2026-07-02",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-02-acic",
+      "date": "2026-07-02",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-02-acic",
+      "date": "2026-07-02",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-02",
+      "date": "2026-07-02",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-02-mesa",
+      "date": "2026-07-02",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-07-02-5",
+      "date": "2026-07-02",
+      "name": "Dalena Nguyen",
+      "day": "Thursday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-07-03-1951-skysong",
+      "date": "2026-07-03",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-03-850pbc",
+      "date": "2026-07-03",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-03-acic",
+      "date": "2026-07-03",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-03-acic",
+      "date": "2026-07-03",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-03",
+      "date": "2026-07-03",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-03-mesa",
+      "date": "2026-07-03",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "staff-dalena-nguyen-2026-07-03-6",
+      "date": "2026-07-03",
+      "name": "Dalena Nguyen",
+      "day": "Friday",
+      "space": "Work Offsite",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Staff schedule"
+    },
+    {
+      "id": "summer-amanda-2026-07-06-1951-skysong",
+      "date": "2026-07-06",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-06-850pbc",
+      "date": "2026-07-06",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-06-acic",
+      "date": "2026-07-06",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-06-acic",
+      "date": "2026-07-06",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-06",
+      "date": "2026-07-06",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-06-mesa",
+      "date": "2026-07-06",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-07-1951-skysong",
+      "date": "2026-07-07",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-07-850pbc",
+      "date": "2026-07-07",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-07-acic",
+      "date": "2026-07-07",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-07-acic",
+      "date": "2026-07-07",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-07",
+      "date": "2026-07-07",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-07-mesa",
+      "date": "2026-07-07",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-08-1951-skysong",
+      "date": "2026-07-08",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-08-850pbc",
+      "date": "2026-07-08",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-08-acic",
+      "date": "2026-07-08",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-08-acic",
+      "date": "2026-07-08",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-08",
+      "date": "2026-07-08",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-08-mesa",
+      "date": "2026-07-08",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-09-1951-skysong",
+      "date": "2026-07-09",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-09-850pbc",
+      "date": "2026-07-09",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-09-acic",
+      "date": "2026-07-09",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-09-acic",
+      "date": "2026-07-09",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-09",
+      "date": "2026-07-09",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-09-mesa",
+      "date": "2026-07-09",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-10-1951-skysong",
+      "date": "2026-07-10",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-10-850pbc",
+      "date": "2026-07-10",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-10-acic",
+      "date": "2026-07-10",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-10-acic",
+      "date": "2026-07-10",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-10",
+      "date": "2026-07-10",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-10-mesa",
+      "date": "2026-07-10",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-13-1951-skysong",
+      "date": "2026-07-13",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-13-850pbc",
+      "date": "2026-07-13",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-13-acic",
+      "date": "2026-07-13",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-13-acic",
+      "date": "2026-07-13",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-13",
+      "date": "2026-07-13",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-13-mesa",
+      "date": "2026-07-13",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-14-1951-skysong",
+      "date": "2026-07-14",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-14-850pbc",
+      "date": "2026-07-14",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-14-acic",
+      "date": "2026-07-14",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-14-acic",
+      "date": "2026-07-14",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-14",
+      "date": "2026-07-14",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-14-mesa",
+      "date": "2026-07-14",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-15-1951-skysong",
+      "date": "2026-07-15",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-15-850pbc",
+      "date": "2026-07-15",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-15-acic",
+      "date": "2026-07-15",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-15-acic",
+      "date": "2026-07-15",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-15",
+      "date": "2026-07-15",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-15-mesa",
+      "date": "2026-07-15",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-16-1951-skysong",
+      "date": "2026-07-16",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-16-850pbc",
+      "date": "2026-07-16",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-16-acic",
+      "date": "2026-07-16",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-16-acic",
+      "date": "2026-07-16",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-16",
+      "date": "2026-07-16",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-16-mesa",
+      "date": "2026-07-16",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-17-1951-skysong",
+      "date": "2026-07-17",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-17-850pbc",
+      "date": "2026-07-17",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-17-acic",
+      "date": "2026-07-17",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-17-acic",
+      "date": "2026-07-17",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-17",
+      "date": "2026-07-17",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-17-mesa",
+      "date": "2026-07-17",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-20-1951-skysong",
+      "date": "2026-07-20",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-20-850pbc",
+      "date": "2026-07-20",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-20-acic",
+      "date": "2026-07-20",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-20-acic",
+      "date": "2026-07-20",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-20",
+      "date": "2026-07-20",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-20-mesa",
+      "date": "2026-07-20",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-21-1951-skysong",
+      "date": "2026-07-21",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-21-850pbc",
+      "date": "2026-07-21",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-21-acic",
+      "date": "2026-07-21",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-21-acic",
+      "date": "2026-07-21",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-21",
+      "date": "2026-07-21",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-21-mesa",
+      "date": "2026-07-21",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-22-1951-skysong",
+      "date": "2026-07-22",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-22-850pbc",
+      "date": "2026-07-22",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-22-acic",
+      "date": "2026-07-22",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-22-acic",
+      "date": "2026-07-22",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-22",
+      "date": "2026-07-22",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-22-mesa",
+      "date": "2026-07-22",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-23-1951-skysong",
+      "date": "2026-07-23",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-23-850pbc",
+      "date": "2026-07-23",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-23-acic",
+      "date": "2026-07-23",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-23-acic",
+      "date": "2026-07-23",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-23",
+      "date": "2026-07-23",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-23-mesa",
+      "date": "2026-07-23",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-24-1951-skysong",
+      "date": "2026-07-24",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-24-850pbc",
+      "date": "2026-07-24",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-24-acic",
+      "date": "2026-07-24",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-24-acic",
+      "date": "2026-07-24",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-24",
+      "date": "2026-07-24",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-24-mesa",
+      "date": "2026-07-24",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-27-1951-skysong",
+      "date": "2026-07-27",
+      "name": "Amanda",
+      "day": "Monday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-27-850pbc",
+      "date": "2026-07-27",
+      "name": "Palash",
+      "day": "Monday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-27-acic",
+      "date": "2026-07-27",
+      "name": "Aditya Patil",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-27-acic",
+      "date": "2026-07-27",
+      "name": "Deepinderjit Singh",
+      "day": "Monday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-27",
+      "date": "2026-07-27",
+      "name": "Aarav Kapoor",
+      "day": "Monday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-27-mesa",
+      "date": "2026-07-27",
+      "name": "Shreyas",
+      "day": "Monday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-28-1951-skysong",
+      "date": "2026-07-28",
+      "name": "Amanda",
+      "day": "Tuesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-28-850pbc",
+      "date": "2026-07-28",
+      "name": "Palash",
+      "day": "Tuesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-28-acic",
+      "date": "2026-07-28",
+      "name": "Aditya Patil",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-28-acic",
+      "date": "2026-07-28",
+      "name": "Deepinderjit Singh",
+      "day": "Tuesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-28",
+      "date": "2026-07-28",
+      "name": "Aarav Kapoor",
+      "day": "Tuesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-28-mesa",
+      "date": "2026-07-28",
+      "name": "Shreyas",
+      "day": "Tuesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-29-1951-skysong",
+      "date": "2026-07-29",
+      "name": "Amanda",
+      "day": "Wednesday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-29-850pbc",
+      "date": "2026-07-29",
+      "name": "Palash",
+      "day": "Wednesday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-29-acic",
+      "date": "2026-07-29",
+      "name": "Aditya Patil",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-29-acic",
+      "date": "2026-07-29",
+      "name": "Deepinderjit Singh",
+      "day": "Wednesday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-29",
+      "date": "2026-07-29",
+      "name": "Aarav Kapoor",
+      "day": "Wednesday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-29-mesa",
+      "date": "2026-07-29",
+      "name": "Shreyas",
+      "day": "Wednesday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-30-1951-skysong",
+      "date": "2026-07-30",
+      "name": "Amanda",
+      "day": "Thursday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-30-850pbc",
+      "date": "2026-07-30",
+      "name": "Palash",
+      "day": "Thursday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-30-acic",
+      "date": "2026-07-30",
+      "name": "Aditya Patil",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-30-acic",
+      "date": "2026-07-30",
+      "name": "Deepinderjit Singh",
+      "day": "Thursday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-30",
+      "date": "2026-07-30",
+      "name": "Aarav Kapoor",
+      "day": "Thursday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-30-mesa",
+      "date": "2026-07-30",
+      "name": "Shreyas",
+      "day": "Thursday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-amanda-2026-07-31-1951-skysong",
+      "date": "2026-07-31",
+      "name": "Amanda",
+      "day": "Friday",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-palash-2026-07-31-850pbc",
+      "date": "2026-07-31",
+      "name": "Palash",
+      "day": "Friday",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-aditya-patil-2026-07-31-acic",
+      "date": "2026-07-31",
+      "name": "Aditya Patil",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "summer-deepinderjit-singh-2026-07-31-acic",
+      "date": "2026-07-31",
+      "name": "Deepinderjit Singh",
+      "day": "Friday",
+      "space": "ACIC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    },
+    {
+      "id": "operations-aide-aarav-2026-07-31",
+      "date": "2026-07-31",
+      "name": "Aarav Kapoor",
+      "day": "Friday",
+      "space": "SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "Operations aide coverage"
+    },
+    {
+      "id": "summer-shreyas-2026-07-31-mesa",
+      "date": "2026-07-31",
+      "name": "Shreyas",
+      "day": "Friday",
+      "space": "The Studios",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "Summer student coverage"
+    }
+  ],
+  "events": [
+    {
+      "id": "booking-y9272-2026-05-27-1951-skysong-52",
+      "title": "Pitch-In Event",
+      "date": "2026-05-27",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "10:00",
+      "notes": "Y9272 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u6762-2026-05-27-850pbc-53",
+      "title": "Pitch In",
+      "date": "2026-05-27",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "12:00",
+      "notes": "U6762 | Confirmed | Event Space (Suite 130) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Dania Alcala-Calvillo | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-a2396-2026-05-27-1951-skysong-55",
+      "title": "The Young Reporters",
+      "date": "2026-05-27",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "17:00",
+      "notes": "A2396 | Confirmed | Conference Room (Suite 151B) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-h4894-2026-05-27-mesa-54",
+      "title": "Pitch In",
+      "date": "2026-05-27",
+      "space": "The Studios",
+      "start": "09:00",
+      "end": "10:00",
+      "notes": "H4894 | Confirmed | Conference Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u2151-2026-05-27-mesa-56",
+      "title": "Proof L10 Mtg",
+      "date": "2026-05-27",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "12:00",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-a2396-2026-05-27-1951-skysong-57",
+      "title": "The Young Reporters",
+      "date": "2026-05-27",
+      "space": "1951@SkySong",
+      "start": "11:00",
+      "end": "16:00",
+      "notes": "A2396 | Confirmed | Event Space (Suite 150) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-x4308-2026-05-27-mesa-58",
+      "title": "Mesa Rotary Weekly Meeting",
+      "date": "2026-05-27",
+      "space": "The Studios",
+      "start": "12:00",
+      "end": "13:00",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-r9475-2026-05-28-1951-skysong-59",
+      "title": "ASU Enterprise Partners Leadership Retreat",
+      "date": "2026-05-28",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "R9475 | Under Review | Event Space (Suite 150) | ASU Enterprise Partners | Contact: Kathy Reynolds | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-f8591-2026-05-28-850pbc-60",
+      "title": "Venture Cafe Phoenix",
+      "date": "2026-05-28",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings.xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-u2151-2026-05-29-mesa-61",
+      "title": "Proof L10 Mtg",
+      "date": "2026-05-29",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "11:30",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-w8102-2026-05-29-mesa-62",
+      "title": "SCUP Tour with Elaine Becherer",
+      "date": "2026-05-29",
+      "space": "The Studios",
+      "start": "13:00",
+      "end": "17:00",
+      "notes": "W8102 | Confirmed | Community Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-c5979-2026-05-30-mesa-63",
+      "title": "SCBWI AZ East Valley Critique-nic",
+      "date": "2026-05-30",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "12:00",
+      "notes": "C5979 | Confirmed | Community Room | Society of Children's Book Writers and Illustrators | Contact: Karen Chow | Source: Bookings.xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u8601-2026-06-01-mesa-2",
+      "title": "Edson E+I/City of Mesa Quarterly Update Meeting",
+      "date": "2026-06-01",
+      "space": "The Studios",
+      "start": "15:00",
+      "end": "16:00",
+      "notes": "U8601 | Confirmed | Conference Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-q9092-2026-06-01-850pbc-3",
+      "title": "2026 Demo Day - June 1 Rehearsal",
+      "date": "2026-06-01",
+      "space": "850PBC",
+      "start": "16:30",
+      "end": "19:30",
+      "notes": "Q9092 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-y7811-2026-06-02-1951-skysong-4",
+      "title": "LATAM360",
+      "date": "2026-06-02",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "12:00",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-k0731-2026-06-03-850pbc-6",
+      "title": "Building the Future of Pediatric Innovation",
+      "date": "2026-06-03",
+      "space": "850PBC",
+      "start": "10:00",
+      "end": "14:00",
+      "notes": "K0731 | FUA Pending | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Connie Gillespie | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u2151-2026-06-03-mesa-5",
+      "title": "Proof L10 Mtg",
+      "date": "2026-06-03",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "12:00",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-l9914-2026-06-03-1951-skysong-7",
+      "title": "ET Engineering All Hands",
+      "date": "2026-06-03",
+      "space": "1951@SkySong",
+      "start": "11:00",
+      "end": "14:00",
+      "notes": "L9914 | Under Review | Event Space (Suite 150) | ASU Enterprise Technology | Contact: Victoria Blusiewicz | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-x4308-2026-06-03-mesa-8",
+      "title": "Mesa Rotary Weekly Meeting",
+      "date": "2026-06-03",
+      "space": "The Studios",
+      "start": "12:00",
+      "end": "13:00",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-p5389-2026-06-03-850pbc-9",
+      "title": "Meetings: Building the Future of Pediatric Innovation",
+      "date": "2026-06-03",
+      "space": "850PBC",
+      "start": "14:00",
+      "end": "17:00",
+      "notes": "P5389 | FUA Pending | Conference Room (Suite 130H) | Center for Entrepreneurial Innovation (CEI) | Contact: Connie Gillespie | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-f8591-2026-06-04-850pbc-10",
+      "title": "Venture Cafe Phoenix",
+      "date": "2026-06-04",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-w9436-2026-06-06-850pbc-11",
+      "title": "ABRC - Prostate Cancer Focus Group",
+      "date": "2026-06-06",
+      "space": "850PBC",
+      "start": "12:30",
+      "end": "16:00",
+      "notes": "W9436 | Confirmed | Event Space (Suite 130) | ASU Edson College of Nursing and Health Innovation | Contact: Addey Rascon | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-w2264-2026-06-08-850pbc-12",
+      "title": "2026 Demo Day - June 8 Rehersal",
+      "date": "2026-06-08",
+      "space": "850PBC",
+      "start": "16:30",
+      "end": "19:30",
+      "notes": "W2264 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-y7811-2026-06-09-1951-skysong-13",
+      "title": "LATAM360",
+      "date": "2026-06-09",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "12:00",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-j7579-2026-06-09-mesa-14",
+      "title": "LEGO\u00ae Serious Play\u00ae Discover and Learn Workshop: Unlock \u201cWhat If \u2026 \u201d",
+      "date": "2026-06-09",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "12:00",
+      "notes": "J7579 | Confirmed | Community Room | Chart House Solutions LLC | Contact: Patrick McNeil | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-t4734-2026-06-10-1951-skysong-15",
+      "title": "Pitch In End of Season Event",
+      "date": "2026-06-10",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "12:00",
+      "notes": "T4734 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u2151-2026-06-10-mesa-16",
+      "title": "Proof L10 Mtg",
+      "date": "2026-06-10",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "12:00",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-s3114-2026-06-10-1951-skysong-17",
+      "title": "The Young Reporters",
+      "date": "2026-06-10",
+      "space": "1951@SkySong",
+      "start": "11:00",
+      "end": "13:00",
+      "notes": "S3114 | Confirmed | Conference Room (Suite 151B) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-x4308-2026-06-10-mesa-18",
+      "title": "Mesa Rotary Weekly Meeting",
+      "date": "2026-06-10",
+      "space": "The Studios",
+      "start": "12:00",
+      "end": "13:00",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-f8591-2026-06-11-850pbc-19",
+      "title": "Venture Cafe Phoenix",
+      "date": "2026-06-11",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-s5061-2026-06-12-850pbc-20",
+      "title": "Healthcare Workforce Action Network meeting",
+      "date": "2026-06-12",
+      "space": "850PBC",
+      "start": "07:30",
+      "end": "12:00",
+      "notes": "S5061 | FUA Pending | Event Space (Suite 130) | ASU College of Health Solutions | Contact: LeShe Hunter | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-w9436-2026-06-13-850pbc-21",
+      "title": "ABRC - Prostate Cancer Focus Group",
+      "date": "2026-06-13",
+      "space": "850PBC",
+      "start": "12:30",
+      "end": "16:00",
+      "notes": "W9436 | Confirmed | Event Space (Suite 130) | ASU Edson College of Nursing and Health Innovation | Contact: Addey Rascon | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-15-1951-skysong-22",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-15",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-15-1951-skysong-23",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-15",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-q0657-2026-06-15-850pbc-24",
+      "title": "2026 Demo Day - June 15 Rehearsal",
+      "date": "2026-06-15",
+      "space": "850PBC",
+      "start": "16:30",
+      "end": "19:30",
+      "notes": "Q0657 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-16-1951-skysong-25",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-16",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-16-1951-skysong-26",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-16",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v5674-2026-06-16-mesa-27",
+      "title": "Historic Preservation Community Meeting",
+      "date": "2026-06-16",
+      "space": "The Studios",
+      "start": "17:00",
+      "end": "19:00",
+      "notes": "V5674 | Confirmed | Community Room | City of Mesa Historic Preservation Office | Contact: Kellie Rorex | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-17-1951-skysong-28",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-17",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-17-1951-skysong-29",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-17",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-b5593-2026-06-17-850pbc-31",
+      "title": "E+I Mentor Mixer",
+      "date": "2026-06-17",
+      "space": "850PBC",
+      "start": "09:00",
+      "end": "10:30",
+      "notes": "B5593 | Confirmed | Event Space (Suite 130) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Alexa Ruona | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-y0799-2026-06-17-mesa-30",
+      "title": "Coffee + Co-Working @ The Studios @ Mesa City Center",
+      "date": "2026-06-17",
+      "space": "The Studios",
+      "start": "09:00",
+      "end": "10:00",
+      "notes": "Y0799 | Confirmed | Community Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Daksh Raghav Preetha | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u2151-2026-06-17-mesa-32",
+      "title": "Proof L10 Mtg",
+      "date": "2026-06-17",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "12:00",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-l7889-2026-06-17-850pbc-34",
+      "title": "2026 Demo Day - Main Event Green Room",
+      "date": "2026-06-17",
+      "space": "850PBC",
+      "start": "12:00",
+      "end": "21:00",
+      "notes": "L7889 | Confirmed | Conference Room (Suite 130H) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-k5195-2026-06-17-850pbc-35",
+      "title": "2026 Demo Day - Main Event Green Room",
+      "date": "2026-06-17",
+      "space": "850PBC",
+      "start": "12:00",
+      "end": "21:00",
+      "notes": "K5195 | Confirmed Sharing | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-x4308-2026-06-17-mesa-33",
+      "title": "Mesa Rotary Weekly Meeting",
+      "date": "2026-06-17",
+      "space": "The Studios",
+      "start": "12:00",
+      "end": "13:00",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-v7837-2026-06-18-1951-skysong-36",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-18",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "15:00",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-18-1951-skysong-37",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-18",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-f8591-2026-06-18-850pbc-38",
+      "title": "Venture Cafe Phoenix",
+      "date": "2026-06-18",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-n8196-2026-06-18-1951-skysong-39",
+      "title": "AZ AI Meetup",
+      "date": "2026-06-18",
+      "space": "1951@SkySong",
+      "start": "17:30",
+      "end": "19:30",
+      "notes": "N8196 | Under Review | Event Space (Suite 150) | Arizona AI & Emerging Tech | Contact: Anjali Nennelli | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-19-1951-skysong-40",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-19",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-v7837-2026-06-19-1951-skysong-41",
+      "title": "E+I Summer Onsite",
+      "date": "2026-06-19",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "19:00",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-a3019-2026-06-19-mesa-42",
+      "title": "The Healing Artist Circle",
+      "date": "2026-06-19",
+      "space": "The Studios",
+      "start": "17:00",
+      "end": "19:00",
+      "notes": "A3019 | Confirmed | Community Room | Third Element Creative Engineering | Contact: Jacob Bush | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-w1057-2026-06-20-mesa-43",
+      "title": "Explore Reflection",
+      "date": "2026-06-20",
+      "space": "The Studios",
+      "start": "09:00",
+      "end": "15:00",
+      "notes": "W1057 | Confirmed | Community Room | Valley Leadership | Contact: Natalka Zeleny | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-d8096-2026-06-22-mesa-44",
+      "title": "City of Mesa - Engineering Dept",
+      "date": "2026-06-22",
+      "space": "The Studios",
+      "start": "09:00",
+      "end": "15:00",
+      "notes": "D8096 | Confirmed | Community Room | City of Mesa | Contact: Stephen Ganstrom | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-s7184-2026-06-22-mesa-45",
+      "title": "Leadership Team meeting",
+      "date": "2026-06-22",
+      "space": "The Studios",
+      "start": "15:30",
+      "end": "17:00",
+      "notes": "S7184 | Confirmed | Conference Room | City of Mesa : Together in Service | Contact: Delynn Bodine | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-y7811-2026-06-23-1951-skysong-46",
+      "title": "LATAM360",
+      "date": "2026-06-23",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "12:00",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u2151-2026-06-24-mesa-47",
+      "title": "Proof L10 Mtg",
+      "date": "2026-06-24",
+      "space": "The Studios",
+      "start": "10:00",
+      "end": "12:00",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-s3114-2026-06-24-1951-skysong-48",
+      "title": "The Young Reporters",
+      "date": "2026-06-24",
+      "space": "1951@SkySong",
+      "start": "11:00",
+      "end": "13:00",
+      "notes": "S3114 | Confirmed | Conference Room (Suite 151B) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-x4308-2026-06-24-mesa-49",
+      "title": "Mesa Rotary Weekly Meeting",
+      "date": "2026-06-24",
+      "space": "The Studios",
+      "start": "12:00",
+      "end": "13:00",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-j0963-2026-06-24-1951-skysong-50",
+      "title": "Arizona AI & Emerging Tech Meetup",
+      "date": "2026-06-24",
+      "space": "1951@SkySong",
+      "start": "17:30",
+      "end": "19:30",
+      "notes": "J0963 | Confirmed | Event Space (Suite 150) | Arizona AI & Emerging Tech | Contact: Anjali Nennelli | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-e2095-2026-06-25-1951-skysong-51",
+      "title": "Sparking Synergy: Resiliance",
+      "date": "2026-06-25",
+      "space": "1951@SkySong",
+      "start": "07:00",
+      "end": "17:00",
+      "notes": "E2095 | Under Review | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Kim Reynolds | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-f8591-2026-06-25-850pbc-52",
+      "title": "Venture Cafe Phoenix",
+      "date": "2026-06-25",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-k0890-2026-06-26-850pbc-53",
+      "title": "Dr Stephanie Carpenter's Intervention Optimization conferenc",
+      "date": "2026-06-26",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "K0890 | FUA Pending | Event Space (Suite 130) | ASU College of Health Solutions | Contact: Gary Gorman | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-y7811-2026-06-30-1951-skysong-54",
+      "title": "LATAM360",
+      "date": "2026-06-30",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "12:00",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-s6055-2026-07-01-1951-skysong-2",
+      "title": "Hackathon",
+      "date": "2026-07-01",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "S6055 | Confirmed | Event Space (Suite 150) | ASU Enterprise Partners | Contact: Marie Kiszczak | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-k1447-2026-07-02-850pbc-3",
+      "title": "Venture Caf\u00e9 Phoenix Thursday Gathering",
+      "date": "2026-07-02",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "K1447 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (1).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-y7811-2026-07-07-1951-skysong-4",
+      "title": "LATAM360",
+      "date": "2026-07-07",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "12:00",
+      "notes": "Y7811 | Under Review | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-k1447-2026-07-09-850pbc-5",
+      "title": "Venture Caf\u00e9 Phoenix Thursday Gathering",
+      "date": "2026-07-09",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "K1447 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (1).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-d8870-2026-07-13-1951-skysong-6",
+      "title": "Venture Start Bootcamp",
+      "date": "2026-07-13",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "D8870 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Khandle Hedrick | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-d8870-2026-07-14-1951-skysong-7",
+      "title": "Venture Start Bootcamp",
+      "date": "2026-07-14",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "D8870 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Khandle Hedrick | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-d8870-2026-07-15-1951-skysong-8",
+      "title": "Venture Start Bootcamp",
+      "date": "2026-07-15",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "D8870 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Khandle Hedrick | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-d8870-2026-07-16-1951-skysong-9",
+      "title": "Venture Start Bootcamp",
+      "date": "2026-07-16",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "D8870 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Khandle Hedrick | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-k1447-2026-07-16-850pbc-10",
+      "title": "Venture Caf\u00e9 Phoenix Thursday Gathering",
+      "date": "2026-07-16",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "K1447 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (1).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-m0744-2026-07-16-mesa-11",
+      "title": "Bossy Babes Networking Group",
+      "date": "2026-07-16",
+      "space": "The Studios",
+      "start": "18:30",
+      "end": "20:00",
+      "notes": "M0744 | Confirmed | Community Room | Bossy | Contact: Acacia Rayford | Source: Bookings (1).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-d8870-2026-07-17-1951-skysong-12",
+      "title": "Venture Start Bootcamp",
+      "date": "2026-07-17",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "D8870 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Khandle Hedrick | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-c4378-2026-07-17-mesa-13",
+      "title": "ASU HIDA and E+I Quarterly Meeting",
+      "date": "2026-07-17",
+      "space": "The Studios",
+      "start": "14:00",
+      "end": "14:45",
+      "notes": "C4378 | Confirmed | Conference Room | ASU Enterprise Partners | Contact: Elaine Becherer | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-s0636-2026-07-20-1951-skysong-14",
+      "title": "Inspired Teaching, Exceptional Learning (ITEL AZ)",
+      "date": "2026-07-20",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "S0636 | Confirmed | Event Space (Suite 150) | ASU Mary Lou Fulton Teachers College | Contact: Melissa Tolson | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-s0636-2026-07-21-1951-skysong-15",
+      "title": "Inspired Teaching, Exceptional Learning (ITEL AZ)",
+      "date": "2026-07-21",
+      "space": "1951@SkySong",
+      "start": "08:00",
+      "end": "17:00",
+      "notes": "S0636 | Confirmed | Event Space (Suite 150) | ASU Mary Lou Fulton Teachers College | Contact: Melissa Tolson | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-k1447-2026-07-23-850pbc-16",
+      "title": "Venture Caf\u00e9 Phoenix Thursday Gathering",
+      "date": "2026-07-23",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "K1447 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (1).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-y7811-2026-07-28-1951-skysong-17",
+      "title": "LATAM360",
+      "date": "2026-07-28",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "12:00",
+      "notes": "Y7811 | Under Review | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-b5671-2026-07-29-mesa-18",
+      "title": "SLAM Awards",
+      "date": "2026-07-29",
+      "space": "The Studios",
+      "start": "11:00",
+      "end": "17:00",
+      "notes": "B5671 | Under Review | Community Room | Support Life And Music (S.L.A.M.) | Contact: Jack Mangan | Source: Bookings (1).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-k1447-2026-07-30-850pbc-19",
+      "title": "Venture Caf\u00e9 Phoenix Thursday Gathering",
+      "date": "2026-07-30",
+      "space": "850PBC",
+      "start": "15:00",
+      "end": "20:00",
+      "notes": "K1447 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (1).xlsx",
+      "status": "requesting"
+    }
+  ]
+}

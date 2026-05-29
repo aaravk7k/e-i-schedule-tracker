@@ -49,6 +49,10 @@ STAFF_PASSWORD=change-this-password
 STUDENT_DEFAULT_PASSWORD=change-this-too
 STUDENT_WEEKLY_HOUR_LIMIT=40
 DATA_DIR=/data
+AIRTABLE_BACKEND=true
+AIRTABLE_PAT=pat_your_token_here
+AIRTABLE_BASE_ID=app_your_sandbox_base_id
+AIRTABLE_TABLE_STATE=Schedule Manager State
 ```
 
 For Render, Railway, Fly.io, or similar:
@@ -56,10 +60,21 @@ For Render, Railway, Fly.io, or similar:
 1. Create a new Node web service from this folder/repo.
 2. Set the start command to `npm start`.
 3. Set the environment variables above.
-4. Add a persistent disk/volume and point `DATA_DIR` at that disk path.
+4. Add a persistent disk/volume and point `DATA_DIR` at that disk path if you are not using Airtable shared storage.
 5. Deploy.
 
-The app saves live data to `data/db.json` by default. For real workplace use, make sure `DATA_DIR` is on persistent storage so schedules do not reset when the service restarts.
+The app saves live data to `data/db.json` by default. For a shared pilot, set `AIRTABLE_BACKEND=true` so Airtable becomes the shared state store and everyone using the deployed URL sees the same updates.
+
+Create a sandbox Airtable base first with one table named `Schedule Manager State` and these fields:
+
+- `Key` as single line text
+- `Chunk Index` as number
+- `Payload` as long text
+- `Updated At` as single line text or date
+
+Do not point this at the department's real project-management base until the pilot flow is approved.
+
+For the Airtable token, grant access only to the sandbox base and use `data.records:read` plus `data.records:write`.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for Docker and production rollout notes.
 

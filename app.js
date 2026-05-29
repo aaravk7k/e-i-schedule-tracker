@@ -266,7 +266,23 @@ function renderPeople() {
 
 function renderAccess() {
   const users = app.data.users || [];
+  const storage = app.data.storage || {};
+  const storageTitle = storage.shared ? "Shared Airtable backend" : "Local prototype storage";
   return `
+    <section class="band">
+      <div class="band-header">
+        <div>
+          <p class="eyebrow">Pilot Storage</p>
+          <h3>${escapeHtml(storageTitle)}</h3>
+          <p class="microcopy">${storage.shared ? `Everyone using the deployed app reads and writes the same Airtable state table: ${escapeHtml(storage.stateTable)}.` : "This copy is using local JSON. Set AIRTABLE_BACKEND=true before sharing one hosted version with the department."}</p>
+        </div>
+        <div class="badge-row">
+          <span class="status-pill ${storage.shared ? "scheduled" : "draft"}">${storage.shared ? "Shared" : "Local"}</span>
+          ${storage.baseId ? `<span class="badge">${escapeHtml(storage.baseId)}</span>` : ""}
+        </div>
+      </div>
+      ${storage.lastStateSaveError ? `<div class="alert-card warning"><strong>Airtable save issue</strong><span>${escapeHtml(storage.lastStateSaveError)}</span></div>` : ""}
+    </section>
     <section class="split-grid">
       <div class="panel">
         <h3>Create Test Login</h3>

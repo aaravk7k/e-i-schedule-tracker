@@ -14,8 +14,12 @@ const AIRTABLE_TABLES = {
   tasks: process.env.AIRTABLE_TABLE_TASKS || "Tasks",
   workers: process.env.AIRTABLE_TABLE_STUDENTS || "Students",
   schedules: process.env.AIRTABLE_TABLE_SCHEDULES || "Schedules",
-  spaces: process.env.AIRTABLE_TABLE_SPACES || "Spaces"
+  spaces: process.env.AIRTABLE_TABLE_SPACES || "Spaces",
+  state: process.env.AIRTABLE_TABLE_STATE || "Schedule Manager State"
 };
+const AIRTABLE_BACKEND_ENABLED = ["1", "true", "yes", "airtable"].includes(String(process.env.AIRTABLE_BACKEND || process.env.STORAGE_BACKEND || "").toLowerCase());
+const AIRTABLE_STATE_KEY = process.env.AIRTABLE_STATE_KEY || "schedule-manager-state";
+const AIRTABLE_STATE_CHUNK_SIZE = Number(process.env.AIRTABLE_STATE_CHUNK_SIZE || 45000);
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const SOURCE_WEEK_START = "2026-05-25";
@@ -66,6 +70,8 @@ const SPACE_OWNER_WORKER_IDS = {
 
 const sessions = new Map();
 let db;
+let airtableStateSaveChain = Promise.resolve();
+let airtableStateActive = false;
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -559,6 +565,7 @@ function viewForUser(user) {
     staffSchedules: db.staffSchedules,
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
+    storage: storageStatusForClient(),
     workers: db.workers.map((worker) => publicWorker(worker, user.role === "staff")),
     coverageGaps,
     coverageSuggestions
@@ -732,6 +739,30 @@ function loadDb() {
   return migrateDb(parsed);
 }
 
+async function loadDbForRuntime() {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (airtableBackendRequested()) {
+    try {
+      const sharedDb = await loadDbFromAirtableState();
+      if (sharedDb) {
+        const migrated = migrateDb(sharedDb);
+        fs.writeFileSync(DATA_FILE, JSON.stringify(migrated, null, 2));
+        airtableStateActive = true;
+        return migrated;
+      }
+      const initial = loadDb();
+      fs.writeFileSync(DATA_FILE, JSON.stringify(initial, null, 2));
+      await saveDbToAirtableState(initial);
+      airtableStateActive = true;
+      return initial;
+    } catch (error) {
+      airtableStateActive = false;
+      console.warn(`Airtable shared backend unavailable: ${error.message}`);
+    }
+  }
+  return loadDb();
+}
+
 function migrateDb(appDb) {
   if (appDb.seedVersion !== CURRENT_SEED_VERSION && process.env.PRESERVE_DEMO_DATA !== "true") {
     return createInitialDb();
@@ -779,23 +810,51 @@ function migrateDb(appDb) {
 function saveDb() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  if (airtableBackendEnabled()) queueAirtableStateSave(db);
 }
 
 function airtableConfigured() {
   return Boolean(process.env.AIRTABLE_PAT && process.env.AIRTABLE_BASE_ID);
 }
 
+function airtableBackendRequested() {
+  return AIRTABLE_BACKEND_ENABLED && airtableConfigured();
+}
+
+function airtableBackendEnabled() {
+  return airtableStateActive;
+}
+
 function airtableStatus() {
   return {
     configured: airtableConfigured(),
+    sharedBackend: airtableBackendEnabled(),
+    storageMode: airtableBackendEnabled() ? "airtable" : "local-json",
     baseId: process.env.AIRTABLE_BASE_ID ? maskValue(process.env.AIRTABLE_BASE_ID) : "",
     tables: AIRTABLE_TABLES,
+    stateKey: AIRTABLE_STATE_KEY,
     missing: [
       process.env.AIRTABLE_PAT ? "" : "AIRTABLE_PAT",
-      process.env.AIRTABLE_BASE_ID ? "" : "AIRTABLE_BASE_ID"
+      process.env.AIRTABLE_BASE_ID ? "" : "AIRTABLE_BASE_ID",
+      AIRTABLE_BACKEND_ENABLED ? "" : "AIRTABLE_BACKEND"
     ].filter(Boolean),
     lastSyncAt: db.airtable?.lastSyncAt || "",
-    lastSyncSummary: db.airtable?.lastSyncSummary || null
+    lastSyncSummary: db.airtable?.lastSyncSummary || null,
+    lastStateSaveAt: db.airtable?.lastStateSaveAt || "",
+    lastStateSaveError: db.airtable?.lastStateSaveError || ""
+  };
+}
+
+function storageStatusForClient() {
+  const status = airtableStatus();
+  return {
+    mode: status.storageMode,
+    shared: status.sharedBackend,
+    configured: status.configured,
+    baseId: status.baseId,
+    stateTable: AIRTABLE_TABLES.state,
+    lastStateSaveAt: status.lastStateSaveAt,
+    lastStateSaveError: status.lastStateSaveError
   };
 }
 
@@ -813,6 +872,69 @@ async function pushDbToAirtable() {
     summary.total += result.created + result.updated;
   }
   return summary;
+}
+
+async function loadDbFromAirtableState() {
+  const records = await listAirtableRecords(AIRTABLE_TABLES.state);
+  const stateRecords = records
+    .filter((record) => record.fields?.Key === AIRTABLE_STATE_KEY)
+    .sort((a, b) => Number(a.fields?.["Chunk Index"] || 0) - Number(b.fields?.["Chunk Index"] || 0));
+  if (!stateRecords.length) return null;
+  const payload = stateRecords.map((record) => record.fields?.Payload || "").join("");
+  if (!payload) return null;
+  return JSON.parse(payload);
+}
+
+function queueAirtableStateSave(appDb) {
+  const serialized = JSON.stringify({
+    ...appDb,
+    airtable: {
+      ...(appDb.airtable || {}),
+      lastStateSaveError: ""
+    }
+  });
+  airtableStateSaveChain = airtableStateSaveChain
+    .then(() => saveSerializedDbToAirtableState(serialized))
+    .then(() => {
+      db.airtable ||= {};
+      db.airtable.lastStateSaveAt = new Date().toISOString();
+      db.airtable.lastStateSaveError = "";
+      fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+    })
+    .catch((error) => {
+      db.airtable ||= {};
+      db.airtable.lastStateSaveError = error.message;
+      console.warn(`Airtable state save failed: ${error.message}`);
+    });
+}
+
+async function saveDbToAirtableState(appDb) {
+  await saveSerializedDbToAirtableState(JSON.stringify(appDb));
+}
+
+async function saveSerializedDbToAirtableState(serialized) {
+  const chunks = chunkString(serialized, AIRTABLE_STATE_CHUNK_SIZE);
+  const existing = (await listAirtableRecords(AIRTABLE_TABLES.state))
+    .filter((record) => record.fields?.Key === AIRTABLE_STATE_KEY)
+    .sort((a, b) => Number(a.fields?.["Chunk Index"] || 0) - Number(b.fields?.["Chunk Index"] || 0));
+  const now = new Date().toISOString();
+  const creates = [];
+  const updates = [];
+
+  chunks.forEach((payload, index) => {
+    const fields = {
+      Key: AIRTABLE_STATE_KEY,
+      "Chunk Index": index,
+      Payload: payload,
+      "Updated At": now
+    };
+    if (existing[index]) updates.push({ id: existing[index].id, fields });
+    else creates.push({ fields });
+  });
+
+  await writeAirtableBatches(AIRTABLE_TABLES.state, "PATCH", updates);
+  await writeAirtableBatches(AIRTABLE_TABLES.state, "POST", creates);
+  await deleteAirtableRecords(AIRTABLE_TABLES.state, existing.slice(chunks.length).map((record) => record.id));
 }
 
 async function syncAirtableTable(tableName, rows) {
@@ -849,6 +971,16 @@ async function writeAirtableBatches(tableName, method, records) {
   for (const batch of chunk(records, 10)) {
     if (!batch.length) continue;
     await airtableRequest(tableName, "", { method, body: { records: batch } });
+    await delay(240);
+  }
+}
+
+async function deleteAirtableRecords(tableName, recordIds) {
+  for (const batch of chunk(recordIds, 10)) {
+    if (!batch.length) continue;
+    const params = new URLSearchParams();
+    batch.forEach((recordId) => params.append("records[]", recordId));
+    await airtableRequest(tableName, `?${params.toString()}`, { method: "DELETE" });
     await delay(240);
   }
 }
@@ -936,6 +1068,12 @@ function workerSchedulesToAirtable(worker) {
 function chunk(items, size) {
   const chunks = [];
   for (let index = 0; index < items.length; index += size) chunks.push(items.slice(index, index + size));
+  return chunks;
+}
+
+function chunkString(text, size) {
+  const chunks = [];
+  for (let index = 0; index < text.length; index += size) chunks.push(text.slice(index, index + size));
   return chunks;
 }
 
@@ -1918,11 +2056,15 @@ const coverageTaskTemplates = [
   { title: "ACIC afternoon coverage", category: "On-site Coverage", space: "ACIC", dueOffset: 0, window: ["13:00", "17:00"], priority: "Normal", source: "Staff and Space Schedule" }
 ];
 
-db = loadDb();
+startServer();
 
-server.listen(PORT, () => {
-  console.log(`Edson E+I Schedule Manager running at http://localhost:${PORT}`);
-  if (!process.env.STAFF_PASSWORD || !process.env.STUDENT_DEFAULT_PASSWORD) {
-    console.log("Default seed passwords are active. Set STAFF_PASSWORD and STUDENT_DEFAULT_PASSWORD before real deployment.");
-  }
-});
+async function startServer() {
+  db = await loadDbForRuntime();
+  server.listen(PORT, () => {
+    console.log(`Edson E+I Schedule Manager running at http://localhost:${PORT}`);
+    console.log(`Storage mode: ${airtableBackendEnabled() ? `Airtable shared state (${AIRTABLE_TABLES.state})` : "local JSON"}`);
+    if (!process.env.STAFF_PASSWORD || !process.env.STUDENT_DEFAULT_PASSWORD) {
+      console.log("Default seed passwords are active. Set STAFF_PASSWORD and STUDENT_DEFAULT_PASSWORD before real deployment.");
+    }
+  });
+}

@@ -21,6 +21,10 @@ STAFF_PASSWORD=make-a-strong-password
 STUDENT_DEFAULT_PASSWORD=make-a-temporary-student-password
 STUDENT_WEEKLY_HOUR_LIMIT=40
 DATA_DIR=/data
+AIRTABLE_BACKEND=true
+AIRTABLE_PAT=pat_your_token_here
+AIRTABLE_BASE_ID=app_your_sandbox_base_id
+AIRTABLE_TABLE_STATE=Schedule Manager State
 ```
 
 ## Important Data Note
@@ -34,9 +38,33 @@ data/db.json
 That is fine for a pilot. For department-wide use, either:
 
 - mount persistent storage and set `DATA_DIR=/data`, or
-- move the storage layer to PostgreSQL/Supabase/Firebase later.
+- set `AIRTABLE_BACKEND=true` and use a sandbox Airtable base as the shared state store.
+- move the storage layer to PostgreSQL/Supabase/Firebase later if IT wants a traditional database.
 
 Do not deploy it on a platform without persistent storage unless it is only a short demo.
+
+## Airtable Shared Pilot
+
+For Level 2 testing, create a separate Airtable sandbox base. Do not use the live department project-management base yet.
+
+Create one table:
+
+```text
+Schedule Manager State
+```
+
+Add these fields:
+
+```text
+Key - single line text
+Chunk Index - number
+Payload - long text
+Updated At - single line text or date
+```
+
+Then create an Airtable personal access token with access to only that sandbox base. Use the `data.records:read` and `data.records:write` scopes. The app stores the schedule manager state in chunks inside that table, so everyone on the deployed URL sees the same schedules, coverage requests, and login records.
+
+This is a pilot backend, not final ASU production security. For real rollout, ask IT about ASU SSO, approved hosting, backups, and audit requirements.
 
 ## Docker Deploy
 
@@ -53,6 +81,7 @@ docker run -p 8787:8787 \
   -e STAFF_EMAIL=your-supervisor-email@asu.edu \
   -e STAFF_PASSWORD=make-a-strong-password \
   -e STUDENT_DEFAULT_PASSWORD=make-a-temporary-student-password \
+  -e DATA_DIR=/data \
   -v schedule-manager-data:/data \
   edson-ei-schedule-manager
 ```

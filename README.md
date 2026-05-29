@@ -7,6 +7,7 @@ Deployable web app for Edson E+I student-worker schedules, space coverage, skill
 - Starts with the PBIS Schedule for May 25-May 31, 2026, plus imported May, June, and July booking exports.
 - June and July use a simple summer rule: space owners are scheduled at their primary spaces, with Aarav on SkySong operations coverage from 9:00AM-5:00PM and 1951@SkySong covered from 8:00AM-5:00PM.
 - Staff login and student login are separate.
+- Staff can create extra staff/student test logins from the Access page.
 - Staff can add students, edit weekly student-worker schedules, view staff schedules, add events, and see space business hours.
 - Students can update their own availability, update their skills, and view shared schedules/spaces.
 - Coverage alerts point out gaps by space and time if business-hour coverage is missing.
@@ -78,3 +79,5 @@ Use the `schedule-manager` branch to show:
 ## Important Next Step
 
 Before using this with everyone at work, change the default passwords with environment variables. The local demo passwords are only for testing.
+
+For a department pilot, use temporary test passwords and share access only with the people testing the app. For long-term use, the clean version should go through IT with ASU SSO or another approved login system.

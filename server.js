@@ -20,7 +20,7 @@ const AIRTABLE_TABLES = {
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const SOURCE_WEEK_START = "2026-05-25";
 const FALLBACK_FOCUS_DATE = "2026-05-27";
-const CURRENT_SEED_VERSION = "pbis-summer-2026-space-names";
+const CURRENT_SEED_VERSION = "pbis-summer-2026-access-logins";
 const WEEKLY_HOUR_LIMIT = Number(process.env.STUDENT_WEEKLY_HOUR_LIMIT || 40);
 
 const SKILL_OPTIONS = [
@@ -310,6 +310,16 @@ async function handleApi(req, res) {
     addActivity(`Added student worker ${worker.name}.`);
     saveDb();
     sendJson(res, 201, viewForUser(user));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/users") {
+    requireStaff(user);
+    const body = await readJson(req);
+    const login = createOrUpdateUser(body);
+    addActivity(`${login.action} ${login.user.role} login for ${login.user.name}.`);
+    saveDb();
+    sendJson(res, login.created ? 201 : 200, viewForUser(user));
     return;
   }
 
@@ -1478,6 +1488,73 @@ function createSeedUser(input) {
   };
 }
 
+function createOrUpdateUser(input) {
+  const role = cleanText(input.role) === "staff" ? "staff" : "student";
+  const email = cleanText(input.email).toLowerCase();
+  const password = cleanText(input.password);
+  if (!email || !email.includes("@")) {
+    const error = new Error("A valid email is required.");
+    error.status = 400;
+    throw error;
+  }
+  if (password.length < 8) {
+    const error = new Error("Use a temporary password with at least 8 characters.");
+    error.status = 400;
+    throw error;
+  }
+
+  if (role === "student") {
+    const workerId = cleanText(input.workerId);
+    const worker = db.workers.find((item) => item.id === workerId);
+    if (!worker) {
+      const error = new Error("Choose a student profile for student logins.");
+      error.status = 400;
+      throw error;
+    }
+    const existingForWorker = db.users.find((item) => item.workerId === worker.id);
+    const emailOwner = db.users.find((item) => item.email.toLowerCase() === email && item.id !== existingForWorker?.id);
+    if (emailOwner) {
+      const error = new Error("That email already has a login.");
+      error.status = 400;
+      throw error;
+    }
+    if (existingForWorker) {
+      existingForWorker.email = email;
+      existingForWorker.name = worker.name;
+      existingForWorker.role = "student";
+      existingForWorker.workerId = worker.id;
+      existingForWorker.password = hashPassword(password);
+      return { user: existingForWorker, action: "Updated", created: false };
+    }
+    const newUser = createSeedUser({
+      id: `user-${worker.id}`,
+      email,
+      name: worker.name,
+      role: "student",
+      workerId: worker.id,
+      password
+    });
+    db.users.push(newUser);
+    return { user: newUser, action: "Created", created: true };
+  }
+
+  if (db.users.some((item) => item.email.toLowerCase() === email)) {
+    const error = new Error("That email already has a login.");
+    error.status = 400;
+    throw error;
+  }
+  const name = cleanText(input.name) || email.split("@")[0];
+  const newUser = createSeedUser({
+    id: `staff-${slugify(name)}-${Date.now()}`,
+    email,
+    name,
+    role: "staff",
+    password
+  });
+  db.users.push(newUser);
+  return { user: newUser, action: "Created", created: true };
+}
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const hash = crypto.pbkdf2Sync(password, salt, 120000, 32, "sha256").toString("hex");
@@ -1820,9 +1897,9 @@ const sourceTaskTemplates = [
   { title: "Prompt: Share something new you learned this week.", category: "WorldLabs Post", sourceDate: "2025-10-01", sourceAssignee: "Aarav", group: "General E+I", dueOffset: 0, window: ["10:00", "16:00"], priority: "Normal" },
   { title: "Save the Date: Pitch In is next week", category: "WorldLabs Post", sourceDate: "2025-10-01", sourceAssignee: "", group: "Pitch In", dueOffset: 0, window: ["10:00", "16:00"], priority: "High" },
   { title: "Save the Date: Coffee + Co-Working", category: "WorldLabs Post", sourceDate: "2025-10-01", sourceAssignee: "", group: "General E+I", dueOffset: 1, window: ["10:00", "16:00"], priority: "Normal" },
-  { title: "Launch: Monthly Bingo Card", category: "WorldLabs Post", sourceDate: "2025-10-02", sourceAssignee: "Aditya", group: "General E+I", dueOffset: 2, window: ["09:00", "14:00"], priority: "Normal", requiredSkills: ["graphic-design", "communications"] },
+  { title: "Launch: Monthly Bingo Card", category: "WorldLabs Post", sourceDate: "2025-10-02", sourceAssignee: "", group: "General E+I", dueOffset: 2, window: ["09:00", "14:00"], priority: "Normal", requiredSkills: ["graphic-design", "communications"] },
   { title: "Prompt: Celebrate a tiny win with us today.", category: "WorldLabs Post", sourceDate: "2025-10-03", sourceAssignee: "Aarav", group: "Chandler Endeavor", dueOffset: 0, window: ["11:00", "16:00"], priority: "Normal" },
-  { title: "Chandler Endeavor weekly WorldLabs post", category: "WorldLabs Post", sourceDate: "2025-10-07", sourceAssignee: "Aditya", group: "Chandler Endeavor", dueOffset: 4, window: ["09:00", "13:00"], priority: "Normal" },
+  { title: "Chandler Endeavor weekly WorldLabs post", category: "WorldLabs Post", sourceDate: "2025-10-07", sourceAssignee: "Deepinderjit", group: "Chandler Endeavor", dueOffset: 4, window: ["09:00", "13:00"], priority: "Normal" },
   { title: "Reminder: Pitch In tomorrow", category: "WorldLabs Post", sourceDate: "2025-10-07", sourceAssignee: "Srusti", group: "Pitch In", dueOffset: 3, window: ["09:00", "13:00"], priority: "High" },
   { title: "Join now: Coffee + Co-Working happening today", category: "WorldLabs Post", sourceDate: "2025-10-08", sourceAssignee: "Aarav", group: "General E+I", dueOffset: 5, window: ["08:00", "11:00"], priority: "High" },
   { title: "Pull CE and PBIS registration and attendee data", category: "Data Pull", sourceDate: "2025-10-01", sourceAssignee: "", group: "Chandler Endeavor, PBIS", dueOffset: 0, window: ["13:00", "17:00"], priority: "High" },

@@ -562,383 +562,6 @@
       ]
     },
     {
-      "id": "aditya-patil",
-      "name": "Aditya Patil",
-      "role": "Student Worker",
-      "initials": "AP",
-      "supervisor": "Khandle Hedrick",
-      "primarySpaces": [
-        "ACIC"
-      ],
-      "skills": [
-        "coverage",
-        "customer-service",
-        "events"
-      ],
-      "availability": [
-        {
-          "date": "2026-06-01",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-02",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-03",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-04",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-05",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-08",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-09",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-10",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-11",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-12",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-15",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-16",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-17",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-18",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-19",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-22",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-23",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-24",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-25",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-26",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-29",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-06-30",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-01",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-02",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-03",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-06",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-07",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-08",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-09",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-10",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-13",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-14",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-15",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-16",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-17",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-20",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-21",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-22",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-23",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-24",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-27",
-          "day": "Monday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-28",
-          "day": "Tuesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-29",
-          "day": "Wednesday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-30",
-          "day": "Thursday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        },
-        {
-          "date": "2026-07-31",
-          "day": "Friday",
-          "space": "ACIC",
-          "start": "08:00",
-          "end": "17:00",
-          "source": "Summer student schedule: Monday-Friday 8AM-5PM"
-        }
-      ]
-    },
-    {
       "id": "amanda",
       "name": "Amanda",
       "role": "Student Worker",
@@ -2925,16 +2548,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-01-acic",
-      "date": "2026-06-01",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-01-acic",
       "date": "2026-06-01",
       "name": "Deepinderjit Singh",
@@ -3005,16 +2618,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-02-acic",
-      "date": "2026-06-02",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-02-acic",
       "date": "2026-06-02",
       "name": "Deepinderjit Singh",
@@ -3070,16 +2673,6 @@
       "name": "Palash",
       "day": "Wednesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-03-acic",
-      "date": "2026-06-03",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -3165,16 +2758,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-04-acic",
-      "date": "2026-06-04",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-04-acic",
       "date": "2026-06-04",
       "name": "Deepinderjit Singh",
@@ -3245,16 +2828,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-05-acic",
-      "date": "2026-06-05",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-05-acic",
       "date": "2026-06-05",
       "name": "Deepinderjit Singh",
@@ -3310,16 +2883,6 @@
       "name": "Palash",
       "day": "Monday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-08-acic",
-      "date": "2026-06-08",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -3405,16 +2968,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-09-acic",
-      "date": "2026-06-09",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-09-acic",
       "date": "2026-06-09",
       "name": "Deepinderjit Singh",
@@ -3480,16 +3033,6 @@
       "name": "Palash",
       "day": "Wednesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-10-acic",
-      "date": "2026-06-10",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -3565,16 +3108,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-11-acic",
-      "date": "2026-06-11",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-11-acic",
       "date": "2026-06-11",
       "name": "Deepinderjit Singh",
@@ -3630,16 +3163,6 @@
       "name": "Palash",
       "day": "Friday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-12-acic",
-      "date": "2026-06-12",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -3725,16 +3248,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-15-acic",
-      "date": "2026-06-15",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-15-acic",
       "date": "2026-06-15",
       "name": "Deepinderjit Singh",
@@ -3805,16 +3318,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-16-acic",
-      "date": "2026-06-16",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-16-acic",
       "date": "2026-06-16",
       "name": "Deepinderjit Singh",
@@ -3870,16 +3373,6 @@
       "name": "Palash",
       "day": "Wednesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-17-acic",
-      "date": "2026-06-17",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -3965,16 +3458,6 @@
       "notes": "Staff schedule"
     },
     {
-      "id": "summer-aditya-patil-2026-06-18-acic",
-      "date": "2026-06-18",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-18-acic",
       "date": "2026-06-18",
       "name": "Deepinderjit Singh",
@@ -4030,16 +3513,6 @@
       "name": "Palash",
       "day": "Friday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-19-acic",
-      "date": "2026-06-19",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -4115,16 +3588,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-22-acic",
-      "date": "2026-06-22",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-22-acic",
       "date": "2026-06-22",
       "name": "Deepinderjit Singh",
@@ -4180,16 +3643,6 @@
       "name": "Palash",
       "day": "Tuesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-23-acic",
-      "date": "2026-06-23",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -4255,16 +3708,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-24-acic",
-      "date": "2026-06-24",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-24-acic",
       "date": "2026-06-24",
       "name": "Deepinderjit Singh",
@@ -4320,16 +3763,6 @@
       "name": "Palash",
       "day": "Thursday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-06-25-acic",
-      "date": "2026-06-25",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -4395,16 +3828,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-26-acic",
-      "date": "2026-06-26",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-26-acic",
       "date": "2026-06-26",
       "name": "Deepinderjit Singh",
@@ -4465,16 +3888,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-29-acic",
-      "date": "2026-06-29",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-29-acic",
       "date": "2026-06-29",
       "name": "Deepinderjit Singh",
@@ -4525,16 +3938,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-06-30-acic",
-      "date": "2026-06-30",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-06-30-acic",
       "date": "2026-06-30",
       "name": "Deepinderjit Singh",
@@ -4580,16 +3983,6 @@
       "name": "Palash",
       "day": "Wednesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-01-acic",
-      "date": "2026-07-01",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -4655,16 +4048,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-02-acic",
-      "date": "2026-07-02",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-02-acic",
       "date": "2026-07-02",
       "name": "Deepinderjit Singh",
@@ -4720,16 +4103,6 @@
       "name": "Palash",
       "day": "Friday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-03-acic",
-      "date": "2026-07-03",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -4795,16 +4168,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-06-acic",
-      "date": "2026-07-06",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-06-acic",
       "date": "2026-07-06",
       "name": "Deepinderjit Singh",
@@ -4850,16 +4213,6 @@
       "name": "Palash",
       "day": "Tuesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-07-acic",
-      "date": "2026-07-07",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -4915,16 +4268,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-08-acic",
-      "date": "2026-07-08",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-08-acic",
       "date": "2026-07-08",
       "name": "Deepinderjit Singh",
@@ -4970,16 +4313,6 @@
       "name": "Palash",
       "day": "Thursday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-09-acic",
-      "date": "2026-07-09",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5035,16 +4368,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-10-acic",
-      "date": "2026-07-10",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-10-acic",
       "date": "2026-07-10",
       "name": "Deepinderjit Singh",
@@ -5090,16 +4413,6 @@
       "name": "Palash",
       "day": "Monday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-13-acic",
-      "date": "2026-07-13",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5155,16 +4468,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-14-acic",
-      "date": "2026-07-14",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-14-acic",
       "date": "2026-07-14",
       "name": "Deepinderjit Singh",
@@ -5210,16 +4513,6 @@
       "name": "Palash",
       "day": "Wednesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-15-acic",
-      "date": "2026-07-15",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5275,16 +4568,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-16-acic",
-      "date": "2026-07-16",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-16-acic",
       "date": "2026-07-16",
       "name": "Deepinderjit Singh",
@@ -5330,16 +4613,6 @@
       "name": "Palash",
       "day": "Friday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-17-acic",
-      "date": "2026-07-17",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5395,16 +4668,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-20-acic",
-      "date": "2026-07-20",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-20-acic",
       "date": "2026-07-20",
       "name": "Deepinderjit Singh",
@@ -5450,16 +4713,6 @@
       "name": "Palash",
       "day": "Tuesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-21-acic",
-      "date": "2026-07-21",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5515,16 +4768,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-22-acic",
-      "date": "2026-07-22",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-22-acic",
       "date": "2026-07-22",
       "name": "Deepinderjit Singh",
@@ -5570,16 +4813,6 @@
       "name": "Palash",
       "day": "Thursday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-23-acic",
-      "date": "2026-07-23",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5635,16 +4868,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-24-acic",
-      "date": "2026-07-24",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-24-acic",
       "date": "2026-07-24",
       "name": "Deepinderjit Singh",
@@ -5690,16 +4913,6 @@
       "name": "Palash",
       "day": "Monday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-27-acic",
-      "date": "2026-07-27",
-      "name": "Aditya Patil",
-      "day": "Monday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5755,16 +4968,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-28-acic",
-      "date": "2026-07-28",
-      "name": "Aditya Patil",
-      "day": "Tuesday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-28-acic",
       "date": "2026-07-28",
       "name": "Deepinderjit Singh",
@@ -5810,16 +5013,6 @@
       "name": "Palash",
       "day": "Wednesday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-29-acic",
-      "date": "2026-07-29",
-      "name": "Aditya Patil",
-      "day": "Wednesday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"
@@ -5875,16 +5068,6 @@
       "notes": "Summer student coverage"
     },
     {
-      "id": "summer-aditya-patil-2026-07-30-acic",
-      "date": "2026-07-30",
-      "name": "Aditya Patil",
-      "day": "Thursday",
-      "space": "ACIC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
       "id": "summer-deepinderjit-singh-2026-07-30-acic",
       "date": "2026-07-30",
       "name": "Deepinderjit Singh",
@@ -5930,16 +5113,6 @@
       "name": "Palash",
       "day": "Friday",
       "space": "850PBC",
-      "start": "08:00",
-      "end": "17:00",
-      "notes": "Summer student coverage"
-    },
-    {
-      "id": "summer-aditya-patil-2026-07-31-acic",
-      "date": "2026-07-31",
-      "name": "Aditya Patil",
-      "day": "Friday",
-      "space": "ACIC",
       "start": "08:00",
       "end": "17:00",
       "notes": "Summer student coverage"

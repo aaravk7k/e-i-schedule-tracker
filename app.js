@@ -10,7 +10,8 @@ const staffViews = [
   ["schedules", "Coverage"],
   ["events", "Bookings"],
   ["people", "People"],
-  ["spaces", "Spaces"]
+  ["spaces", "Spaces"],
+  ["access", "Access"]
 ];
 
 const studentViews = [
@@ -130,6 +131,7 @@ function render() {
   if (app.data.role === "staff" && app.view === "tasks") region.innerHTML = renderTaskManager();
   if (app.data.role === "staff" && app.view === "events") region.innerHTML = renderEvents();
   if (app.data.role === "staff" && app.view === "people") region.innerHTML = renderPeople();
+  if (app.data.role === "staff" && app.view === "access") region.innerHTML = renderAccess();
   if (app.view === "my-tasks") region.innerHTML = renderMyTasks();
   if (app.view === "requests") region.innerHTML = renderRequests();
   if (app.view === "profile") region.innerHTML = renderProfile();
@@ -257,6 +259,39 @@ function renderPeople() {
       <div class="panel">
         <h3>Students</h3>
         <div class="task-list">${app.data.workers.map(workerCard).join("")}</div>
+      </div>
+    </section>
+  `;
+}
+
+function renderAccess() {
+  const users = app.data.users || [];
+  return `
+    <section class="split-grid">
+      <div class="panel">
+        <h3>Create Test Login</h3>
+        <form id="userForm" class="form-grid">
+          <label class="span-2">Name<input name="name" placeholder="Staff name"></label>
+          <label class="span-2">Email<input name="email" type="email" required placeholder="person@asu.edu"></label>
+          <label>Role
+            <select name="role">
+              <option value="staff">Staff</option>
+              <option value="student">Student worker</option>
+            </select>
+          </label>
+          <label class="span-2">Student profile${workerSelectWithBlank("")}</label>
+          <label class="span-2">Temporary password<input name="password" type="text" required minlength="8" placeholder="At least 8 characters"></label>
+          <div class="span-6 action-row"><button class="primary-button" type="submit">Save Login</button></div>
+        </form>
+      </div>
+      <div class="panel">
+        <h3>Current Logins</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Access</th><th>Student Profile</th></tr></thead>
+            <tbody>${users.map(userRow).join("")}</tbody>
+          </table>
+        </div>
       </div>
     </section>
   `;
@@ -634,6 +669,7 @@ function bindEvents() {
   bindForm("smartEventForm", createSmartEvent);
   bindForm("staffScheduleForm", createStaffSchedule);
   bindForm("workerForm", createWorker);
+  bindForm("userForm", createUser);
   bindForm("skillForm", saveSkills);
   bindForm("scheduleForm", saveSchedule);
 }
@@ -798,6 +834,22 @@ async function createWorker(form) {
     }
   });
   showToast("Student added. A student login was created.");
+  render();
+}
+
+async function createUser(form) {
+  const data = new FormData(form);
+  app.data = await api("/api/users", {
+    method: "POST",
+    body: {
+      name: data.get("name"),
+      email: data.get("email"),
+      role: data.get("role"),
+      workerId: data.get("workerId"),
+      password: data.get("password")
+    }
+  });
+  showToast("Login saved.");
   render();
 }
 
@@ -1163,6 +1215,25 @@ function daySelect(selected = "") {
 
 function workerSelect(selectedId) {
   return `<select name="workerId">${app.data.workers.map((worker) => `<option value="${worker.id}" ${worker.id === selectedId ? "selected" : ""}>${escapeHtml(worker.name)}</option>`).join("")}</select>`;
+}
+
+function workerSelectWithBlank(selectedId) {
+  return `<select name="workerId">
+    <option value="">Staff login</option>
+    ${app.data.workers.map((worker) => `<option value="${worker.id}" ${worker.id === selectedId ? "selected" : ""}>${escapeHtml(worker.name)}</option>`).join("")}
+  </select>`;
+}
+
+function userRow(user) {
+  const worker = app.data.workers.find((item) => item.id === user.workerId);
+  return `
+    <tr>
+      <td><strong>${escapeHtml(user.name)}</strong></td>
+      <td>${escapeHtml(user.email)}</td>
+      <td>${user.role === "staff" ? statusPill("accepted").replace("Accepted", "Staff") : statusPill("scheduled").replace("Scheduled", "Student")}</td>
+      <td>${worker ? escapeHtml(worker.name) : "-"}</td>
+    </tr>
+  `;
 }
 
 function skillCheckboxes(selected, name) {

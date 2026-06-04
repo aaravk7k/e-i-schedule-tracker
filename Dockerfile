@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY package.json ./
 COPY server.js app.js index.html styles.css README.md ./
+COPY seed-data ./seed-data
 
 ENV NODE_ENV=production
 ENV PORT=8787

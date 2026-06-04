@@ -24,7 +24,7 @@ const AIRTABLE_STATE_CHUNK_SIZE = Number(process.env.AIRTABLE_STATE_CHUNK_SIZE |
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const SOURCE_WEEK_START = "2026-05-25";
 const FALLBACK_FOCUS_DATE = "2026-05-27";
-const CURRENT_SEED_VERSION = "pbis-summer-2026-access-logins";
+const CURRENT_SEED_VERSION = "pbis-summer-2026-june-bookings-0604";
 const WEEKLY_HOUR_LIMIT = Number(process.env.STUDENT_WEEKLY_HOUR_LIMIT || 40);
 
 const SKILL_OPTIONS = [
@@ -1432,7 +1432,7 @@ function scoreWorkerForScheduleNeed(worker, need, appDb) {
 function getCoverageGaps() {
   const gaps = [];
   db.spaces
-    .filter((space) => space.name !== "WorldLabs Remote")
+    .filter((space) => space.name !== "WorldLabs Remote" && space.coverageRequired !== false)
     .forEach((space) => {
       DAYS.forEach((day, dayIndex) => {
         const hours = space.hours[day];

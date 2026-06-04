@@ -149,6 +149,37 @@
       "closedDates": [
         "2026-05-25"
       ]
+    },
+    {
+      "id": "fusion-on-first",
+      "name": "Fusion on First",
+      "campus": "Downtown Phoenix",
+      "coverageRequired": false,
+      "hours": {
+        "Monday": [
+          "08:00",
+          "17:00"
+        ],
+        "Tuesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Wednesday": [
+          "08:00",
+          "17:00"
+        ],
+        "Thursday": [
+          "08:00",
+          "17:00"
+        ],
+        "Friday": [
+          "08:00",
+          "17:00"
+        ]
+      },
+      "closedDates": [
+        "2026-05-25"
+      ]
     }
   ],
   "workers": [
@@ -5270,13 +5301,23 @@
       "status": "scheduled"
     },
     {
+      "id": "booking-c1893-2026-06-01-the-studios-2",
+      "title": "Mesa Arts Center/community group",
+      "date": "2026-06-01",
+      "space": "The Studios",
+      "start": "11:00",
+      "end": "14:00",
+      "notes": "C1893 | Confirmed | Conference Room | Mesa Arts Center | Contact: Kimberly Carson | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
       "id": "booking-u8601-2026-06-01-mesa-2",
       "title": "Edson E+I/City of Mesa Quarterly Update Meeting",
       "date": "2026-06-01",
       "space": "The Studios",
       "start": "15:00",
       "end": "16:00",
-      "notes": "U8601 | Confirmed | Conference Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings (2).xlsx",
+      "notes": "U8601 | Confirmed | Conference Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5286,7 +5327,7 @@
       "space": "850PBC",
       "start": "16:30",
       "end": "19:30",
-      "notes": "Q9092 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "notes": "Q9092 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5296,7 +5337,27 @@
       "space": "1951@SkySong",
       "start": "09:00",
       "end": "12:00",
-      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-l5413-2026-06-03-fusion-on-first-6",
+      "title": "ASU MUEP Strategy Meeting",
+      "date": "2026-06-03",
+      "space": "Fusion on First",
+      "start": "09:00",
+      "end": "16:30",
+      "notes": "L5413 | Confirmed | Conference Room (Suite 125A) | ASU School of Geographical Sciences & Urban Planning | Contact: Matthew Gomez | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-n2187-2026-06-03-1951-skysong-7",
+      "title": "Blackstone Launchpad - Assure Trust NOW, LLC",
+      "date": "2026-06-03",
+      "space": "1951@SkySong",
+      "start": "09:30",
+      "end": "16:30",
+      "notes": "N2187 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5306,7 +5367,7 @@
       "space": "850PBC",
       "start": "10:00",
       "end": "14:00",
-      "notes": "K0731 | FUA Pending | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Connie Gillespie | Source: Bookings (2).xlsx",
+      "notes": "K0731 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Connie Gillespie | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5316,7 +5377,7 @@
       "space": "The Studios",
       "start": "10:00",
       "end": "12:00",
-      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5326,7 +5387,7 @@
       "space": "1951@SkySong",
       "start": "11:00",
       "end": "14:00",
-      "notes": "L9914 | Under Review | Event Space (Suite 150) | ASU Enterprise Technology | Contact: Victoria Blusiewicz | Source: Bookings (2).xlsx",
+      "notes": "L9914 | Confirmed | Event Space (Suite 150) | ASU Enterprise Technology | Contact: Victoria Blusiewicz | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5336,7 +5397,7 @@
       "space": "The Studios",
       "start": "12:00",
       "end": "13:00",
-      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5346,7 +5407,27 @@
       "space": "850PBC",
       "start": "14:00",
       "end": "17:00",
-      "notes": "P5389 | FUA Pending | Conference Room (Suite 130H) | Center for Entrepreneurial Innovation (CEI) | Contact: Connie Gillespie | Source: Bookings (2).xlsx",
+      "notes": "P5389 | Confirmed | Conference Room (Suite 130H) | Center for Entrepreneurial Innovation (CEI) | Contact: Connie Gillespie | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-u4132-2026-06-04-1951-skysong-13",
+      "title": "Venture Start Summer Sprint",
+      "date": "2026-06-04",
+      "space": "1951@SkySong",
+      "start": "09:00",
+      "end": "11:00",
+      "notes": "U4132 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Paula Alvarado | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-v5761-2026-06-04-1951-skysong-14",
+      "title": "Camps at West",
+      "date": "2026-06-04",
+      "space": "1951@SkySong",
+      "start": "11:00",
+      "end": "12:30",
+      "notes": "V5761 | Confirmed | Event Space (Suite 150) | ASU New College of Interdisciplinary Arts and Sciences | Contact: Carolyn Starr | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5356,7 +5437,7 @@
       "space": "850PBC",
       "start": "15:00",
       "end": "20:00",
-      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5366,7 +5447,7 @@
       "space": "850PBC",
       "start": "12:30",
       "end": "16:00",
-      "notes": "W9436 | Confirmed | Event Space (Suite 130) | ASU Edson College of Nursing and Health Innovation | Contact: Addey Rascon | Source: Bookings (2).xlsx",
+      "notes": "W9436 | Confirmed | Event Space (Suite 130) | ASU Edson College of Nursing and Health Innovation | Contact: Addey Rascon | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5376,7 +5457,7 @@
       "space": "850PBC",
       "start": "16:30",
       "end": "19:30",
-      "notes": "W2264 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "notes": "W2264 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5386,7 +5467,7 @@
       "space": "1951@SkySong",
       "start": "09:00",
       "end": "12:00",
-      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5396,7 +5477,7 @@
       "space": "The Studios",
       "start": "10:00",
       "end": "12:00",
-      "notes": "J7579 | Confirmed | Community Room | Chart House Solutions LLC | Contact: Patrick McNeil | Source: Bookings (2).xlsx",
+      "notes": "J7579 | Confirmed | Community Room | Chart House Solutions LLC | Contact: Patrick McNeil | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5406,7 +5487,7 @@
       "space": "1951@SkySong",
       "start": "09:00",
       "end": "12:00",
-      "notes": "T4734 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings (2).xlsx",
+      "notes": "T4734 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Lynn Romero | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5416,7 +5497,7 @@
       "space": "The Studios",
       "start": "10:00",
       "end": "12:00",
-      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5426,7 +5507,7 @@
       "space": "1951@SkySong",
       "start": "11:00",
       "end": "13:00",
-      "notes": "S3114 | Confirmed | Conference Room (Suite 151B) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings (2).xlsx",
+      "notes": "S3114 | Confirmed | Conference Room (Suite 151B) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5436,7 +5517,27 @@
       "space": "The Studios",
       "start": "12:00",
       "end": "13:00",
-      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-g9132-2026-06-10-1951-skysong-24",
+      "title": "Data and T&S",
+      "date": "2026-06-10",
+      "space": "1951@SkySong",
+      "start": "13:00",
+      "end": "17:00",
+      "notes": "G9132 | Confirmed | Event Space (Suite 150) | ASU Enterprise Partners | Contact: Marie Kiszczak | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-b6876-2026-06-11-1951-skysong-25",
+      "title": "T&S Team Lunch",
+      "date": "2026-06-11",
+      "space": "1951@SkySong",
+      "start": "11:30",
+      "end": "13:00",
+      "notes": "B6876 | Confirmed | Event Space (Suite 150) | ASU Enterprise Partners | Contact: Marie Kiszczak | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5446,7 +5547,7 @@
       "space": "850PBC",
       "start": "15:00",
       "end": "20:00",
-      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5456,7 +5557,17 @@
       "space": "850PBC",
       "start": "07:30",
       "end": "12:00",
-      "notes": "S5061 | FUA Pending | Event Space (Suite 130) | ASU College of Health Solutions | Contact: LeShe Hunter | Source: Bookings (2).xlsx",
+      "notes": "S5061 | Confirmed | Event Space (Suite 130) | ASU College of Health Solutions | Contact: LeShe Hunter | Source: Bookings (3).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-w0774-2026-06-13-1951-skysong-28",
+      "title": "Game On! AI Pathways Orientation",
+      "date": "2026-06-13",
+      "space": "1951@SkySong",
+      "start": "10:30",
+      "end": "14:30",
+      "notes": "W0774 | Requested | Event Space (Suite 150) | Strong TIES | Contact: Loretta Cheeks | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5466,7 +5577,7 @@
       "space": "850PBC",
       "start": "12:30",
       "end": "16:00",
-      "notes": "W9436 | Confirmed | Event Space (Suite 130) | ASU Edson College of Nursing and Health Innovation | Contact: Addey Rascon | Source: Bookings (2).xlsx",
+      "notes": "W9436 | Confirmed | Event Space (Suite 130) | ASU Edson College of Nursing and Health Innovation | Contact: Addey Rascon | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5476,7 +5587,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5486,7 +5597,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5496,7 +5607,7 @@
       "space": "850PBC",
       "start": "16:30",
       "end": "19:30",
-      "notes": "Q0657 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "notes": "Q0657 | Confirmed | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5506,7 +5617,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5516,7 +5627,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5526,7 +5637,7 @@
       "space": "The Studios",
       "start": "17:00",
       "end": "19:00",
-      "notes": "V5674 | Confirmed | Community Room | City of Mesa Historic Preservation Office | Contact: Kellie Rorex | Source: Bookings (2).xlsx",
+      "notes": "V5674 | Confirmed | Community Room | City of Mesa Historic Preservation Office | Contact: Matthew Kriegl | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5536,7 +5647,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5546,7 +5657,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5556,7 +5667,7 @@
       "space": "850PBC",
       "start": "09:00",
       "end": "10:30",
-      "notes": "B5593 | Confirmed | Event Space (Suite 130) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Alexa Ruona | Source: Bookings (2).xlsx",
+      "notes": "B5593 | Confirmed | Event Space (Suite 130) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Alexa Ruona | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5566,7 +5677,7 @@
       "space": "The Studios",
       "start": "09:00",
       "end": "10:00",
-      "notes": "Y0799 | Confirmed | Community Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Daksh Raghav Preetha | Source: Bookings (2).xlsx",
+      "notes": "Y0799 | Confirmed | Community Room | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Daksh Raghav Preetha | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5576,18 +5687,8 @@
       "space": "The Studios",
       "start": "10:00",
       "end": "12:00",
-      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (3).xlsx",
       "status": "scheduled"
-    },
-    {
-      "id": "booking-l7889-2026-06-17-850pbc-34",
-      "title": "2026 Demo Day - Main Event Green Room",
-      "date": "2026-06-17",
-      "space": "850PBC",
-      "start": "12:00",
-      "end": "21:00",
-      "notes": "L7889 | Confirmed | Conference Room (Suite 130H) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
-      "status": "requesting"
     },
     {
       "id": "booking-k5195-2026-06-17-850pbc-35",
@@ -5596,7 +5697,17 @@
       "space": "850PBC",
       "start": "12:00",
       "end": "21:00",
-      "notes": "K5195 | Confirmed Sharing | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (2).xlsx",
+      "notes": "K5195 | Confirmed Sharing | Event Space (Suite 130) | Local First Arizona | Contact: Gina Gral | Source: Bookings (3).xlsx",
+      "status": "requesting"
+    },
+    {
+      "id": "booking-l7889-2026-06-17-850pbc-34",
+      "title": "2026 Demo Day - Main Event Green Room",
+      "date": "2026-06-17",
+      "space": "850PBC",
+      "start": "12:00",
+      "end": "21:00",
+      "notes": "L7889 | Confirmed | Conference Room (Suite 130H) | Local First Arizona | Contact: Gina Gral | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5606,7 +5717,7 @@
       "space": "The Studios",
       "start": "12:00",
       "end": "13:00",
-      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5616,7 +5727,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "15:00",
-      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5626,7 +5737,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5636,17 +5747,7 @@
       "space": "850PBC",
       "start": "15:00",
       "end": "20:00",
-      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
-      "status": "requesting"
-    },
-    {
-      "id": "booking-n8196-2026-06-18-1951-skysong-39",
-      "title": "AZ AI Meetup",
-      "date": "2026-06-18",
-      "space": "1951@SkySong",
-      "start": "17:30",
-      "end": "19:30",
-      "notes": "N8196 | Under Review | Event Space (Suite 150) | Arizona AI & Emerging Tech | Contact: Anjali Nennelli | Source: Bookings (2).xlsx",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5656,7 +5757,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5666,7 +5767,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "19:00",
-      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (2).xlsx",
+      "notes": "V7837 | Confirmed | Conference Room (Suite 151B) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Matthew Kohlbeck | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5676,7 +5777,7 @@
       "space": "The Studios",
       "start": "17:00",
       "end": "19:00",
-      "notes": "A3019 | Confirmed | Community Room | Third Element Creative Engineering | Contact: Jacob Bush | Source: Bookings (2).xlsx",
+      "notes": "A3019 | Confirmed | Community Room | Third Element Creative Engineering | Contact: Jacob Bush | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5686,8 +5787,18 @@
       "space": "The Studios",
       "start": "09:00",
       "end": "15:00",
-      "notes": "W1057 | Confirmed | Community Room | Valley Leadership | Contact: Natalka Zeleny | Source: Bookings (2).xlsx",
+      "notes": "W1057 | Confirmed | Community Room | Valley Leadership | Contact: Natalka Zeleny | Source: Bookings (3).xlsx",
       "status": "requesting"
+    },
+    {
+      "id": "booking-g9083-2026-06-22-850pbc-51",
+      "title": "CORE+ Strategic Planning",
+      "date": "2026-06-22",
+      "space": "850PBC",
+      "start": "08:00",
+      "end": "14:20",
+      "notes": "G9083 | Confirmed | Event Space (Suite 130) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Dania Alcala-Calvillo | Source: Bookings (3).xlsx",
+      "status": "scheduled"
     },
     {
       "id": "booking-d8096-2026-06-22-mesa-44",
@@ -5696,7 +5807,7 @@
       "space": "The Studios",
       "start": "09:00",
       "end": "15:00",
-      "notes": "D8096 | Confirmed | Community Room | City of Mesa | Contact: Stephen Ganstrom | Source: Bookings (2).xlsx",
+      "notes": "D8096 | Confirmed | Community Room | City of Mesa | Contact: Stephen Ganstrom | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5706,7 +5817,7 @@
       "space": "The Studios",
       "start": "15:30",
       "end": "17:00",
-      "notes": "S7184 | Confirmed | Conference Room | City of Mesa : Together in Service | Contact: Delynn Bodine | Source: Bookings (2).xlsx",
+      "notes": "S7184 | Confirmed | Conference Room | City of Mesa : Together in Service | Contact: Delynn Bodine | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5716,7 +5827,7 @@
       "space": "1951@SkySong",
       "start": "09:00",
       "end": "12:00",
-      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5726,7 +5837,7 @@
       "space": "The Studios",
       "start": "10:00",
       "end": "12:00",
-      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (2).xlsx",
+      "notes": "U2151 | Confirmed | Conference Room | Proof Bread LLC | Contact: Charlotte Walk | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5736,7 +5847,7 @@
       "space": "1951@SkySong",
       "start": "11:00",
       "end": "13:00",
-      "notes": "S3114 | Confirmed | Conference Room (Suite 151B) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings (2).xlsx",
+      "notes": "S3114 | Confirmed | Conference Room (Suite 151B) | The Young Reporters - Truth for Youth | Contact: Alan Ripa | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5746,7 +5857,7 @@
       "space": "The Studios",
       "start": "12:00",
       "end": "13:00",
-      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (2).xlsx",
+      "notes": "X4308 | Confirmed | Community Room | Mesa Rotary | Contact: Mark Young | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5756,7 +5867,7 @@
       "space": "1951@SkySong",
       "start": "17:30",
       "end": "19:30",
-      "notes": "J0963 | Confirmed | Event Space (Suite 150) | Arizona AI & Emerging Tech | Contact: Anjali Nennelli | Source: Bookings (2).xlsx",
+      "notes": "J0963 | Confirmed | Event Space (Suite 150) | Arizona AI & Emerging Tech | Contact: Anjali Nennelli | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5766,7 +5877,7 @@
       "space": "1951@SkySong",
       "start": "07:00",
       "end": "17:00",
-      "notes": "E2095 | Under Review | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Kim Reynolds | Source: Bookings (2).xlsx",
+      "notes": "E2095 | Confirmed | Event Space (Suite 150) | ASU J. Orin Edson Entrepreneurship + Innovation Institute | Contact: Kim Reynolds | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5776,7 +5887,7 @@
       "space": "850PBC",
       "start": "15:00",
       "end": "20:00",
-      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (2).xlsx",
+      "notes": "F8591 | Confirmed | Event Space (Suite 130) | Center for Entrepreneurial Innovation (CEI) | Contact: Sarah Waschler | Source: Bookings (3).xlsx",
       "status": "requesting"
     },
     {
@@ -5786,7 +5897,17 @@
       "space": "850PBC",
       "start": "08:00",
       "end": "17:00",
-      "notes": "K0890 | FUA Pending | Event Space (Suite 130) | ASU College of Health Solutions | Contact: Gary Gorman | Source: Bookings (2).xlsx",
+      "notes": "K0890 | FUA Pending | Event Space (Suite 130) | ASU College of Health Solutions | Contact: Gary Gorman | Source: Bookings (3).xlsx",
+      "status": "scheduled"
+    },
+    {
+      "id": "booking-s4184-2026-06-26-1951-skysong-62",
+      "title": "Whiteboard Meeting",
+      "date": "2026-06-26",
+      "space": "1951@SkySong",
+      "start": "08:30",
+      "end": "10:30",
+      "notes": "S4184 | Confirmed | Conference Room (Suite 151B) | Ablaze Media | Contact: Mark Stafford | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {
@@ -5796,7 +5917,7 @@
       "space": "1951@SkySong",
       "start": "09:00",
       "end": "12:00",
-      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (2).xlsx",
+      "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {

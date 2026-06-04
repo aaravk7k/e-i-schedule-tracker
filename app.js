@@ -1,12 +1,17 @@
 const app = {
   data: null,
-  view: "schedules",
+  view: "space-calendar",
   selectedWorkerId: "",
+  spaceCalendar: {
+    space: "",
+    workerId: ""
+  },
   editingSchedule: null,
   toastTimer: null
 };
 
 const staffViews = [
+  ["space-calendar", "Space Calendar"],
   ["schedules", "Coverage"],
   ["events", "Bookings"],
   ["people", "People"],
@@ -15,6 +20,7 @@ const staffViews = [
 ];
 
 const studentViews = [
+  ["space-calendar", "My Space Calendar"],
   ["requests", "Requests"],
   ["profile", "My Schedule"],
   ["schedules", "Coverage"]
@@ -132,6 +138,7 @@ function render() {
   if (app.data.role === "staff" && app.view === "events") region.innerHTML = renderEvents();
   if (app.data.role === "staff" && app.view === "people") region.innerHTML = renderPeople();
   if (app.data.role === "staff" && app.view === "access") region.innerHTML = renderAccess();
+  if (app.view === "space-calendar") region.innerHTML = renderSpaceCalendar();
   if (app.view === "my-tasks") region.innerHTML = renderMyTasks();
   if (app.view === "requests") region.innerHTML = renderRequests();
   if (app.view === "profile") region.innerHTML = renderProfile();
@@ -152,7 +159,7 @@ function availableViews() {
 }
 
 function defaultViewForRole() {
-  return app.data?.role === "student" ? "requests" : "schedules";
+  return "space-calendar";
 }
 
 function renderStaffDashboard() {
@@ -383,6 +390,221 @@ function weeklyHourPanel(worker) {
       </div>
       <div class="hour-bar"><span style="width:${percent}%"></span></div>
       <p class="task-meta">Student workers should stay within the configured weekly limit.</p>
+    </div>
+  `;
+}
+
+function renderSpaceCalendar() {
+  const staff = app.data.role === "staff";
+  const workerFilter = staff ? app.spaceCalendar.workerId : app.data.currentUser.workerId;
+  const visibleSpaces = calendarVisibleSpaces(app.spaceCalendar.space, workerFilter);
+  const visibleSpaceSet = new Set(visibleSpaces);
+  const focusEvents = eventsInFocusWeek(app.data.events || []).filter((event) => visibleSpaceSet.has(event.space));
+  const visibleRequests = requestsInFocusWeek(app.data.coverageRequests || []).filter((request) => {
+    const event = eventById(request.eventId);
+    if (!event || !visibleSpaceSet.has(event.space)) return false;
+    return staff || request.workerId === app.data.currentUser.workerId;
+  });
+  const visibleGaps = (app.data.coverageGaps || []).filter((gap) => visibleSpaceSet.has(gap.space));
+  const visibleShiftCount = DAYS.reduce((sum, day, index) => {
+    const date = addDays(app.data.focusWeekStart, index);
+    return sum + calendarShiftItems(day, date, visibleSpaceSet, workerFilter).length;
+  }, 0);
+
+  return `
+    <section class="band">
+      <div class="band-header">
+        <div>
+          <p class="eyebrow">${staff ? "Staff Planning" : "Student View"}</p>
+          <h3>${staff ? "Space Calendar" : "My Space Calendar"}</h3>
+        </div>
+        <div class="badge-row">${visibleSpaces.map(spaceChip).join("") || `<span class="badge">No space selected</span>`}</div>
+      </div>
+      <div class="kpi-grid">
+        ${kpiCard(visibleSpaces.length, staff ? "Spaces shown" : "My spaces")}
+        ${kpiCard(visibleShiftCount, staff ? "Schedule blocks" : "My shifts")}
+        ${kpiCard(focusEvents.length, "Events this week")}
+        ${kpiCard(focusEvents.filter((event) => event.afterHours).length, "After-hours events")}
+        ${staff ? kpiCard(visibleGaps.length, "Coverage gaps") : kpiCard(visibleRequests.filter((request) => request.status === "pending").length, "Requests for me")}
+      </div>
+    </section>
+
+    <section class="panel">
+      ${staff ? calendarStaffFilters() : calendarStudentSummary(visibleSpaces)}
+    </section>
+
+    <section class="panel flush">
+      <div class="table-wrap">
+        <div class="space-calendar-grid">
+          ${DAYS.map((day, index) => calendarDayCard(day, addDays(app.data.focusWeekStart, index), visibleSpaceSet, workerFilter)).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function calendarStaffFilters() {
+  return `
+    <div class="calendar-toolbar">
+      <label class="stacked-field">Space
+        <select data-calendar-filter="space">
+          <option value="">All spaces</option>
+          ${app.data.spaces.map((space) => `<option value="${escapeHtml(space.name)}" ${app.spaceCalendar.space === space.name ? "selected" : ""}>${escapeHtml(space.name)}</option>`).join("")}
+        </select>
+      </label>
+      <label class="stacked-field">Student
+        <select data-calendar-filter="workerId">
+          <option value="">All students</option>
+          ${app.data.workers.map((worker) => `<option value="${worker.id}" ${app.spaceCalendar.workerId === worker.id ? "selected" : ""}>${escapeHtml(worker.name)}</option>`).join("")}
+        </select>
+      </label>
+      <div class="calendar-note">
+        <strong>What this shows</strong>
+        <span>Student schedules, staff coverage, bookings, after-hours needs, and coverage requests for the selected week.</span>
+      </div>
+    </div>
+  `;
+}
+
+function calendarStudentSummary(visibleSpaces) {
+  return `
+    <div class="calendar-toolbar student-calendar-note">
+      <div class="calendar-note">
+        <strong>What this shows</strong>
+        <span>Your shifts and the event activity happening in your assigned space${visibleSpaces.length === 1 ? "" : "s"} for this week.</span>
+      </div>
+      <button class="secondary-button" type="button" data-action="open-profile">Edit My Schedule</button>
+    </div>
+  `;
+}
+
+function calendarDayCard(day, date, visibleSpaceSet, workerFilter) {
+  const shifts = calendarShiftItems(day, date, visibleSpaceSet, workerFilter);
+  const events = eventsInFocusWeek(app.data.events || []).filter((event) => event.date === date && visibleSpaceSet.has(event.space));
+  const gapCount = app.data.role === "staff" ? (app.data.coverageGaps || []).filter((gap) => gap.date === date && visibleSpaceSet.has(gap.space)).length : 0;
+  return `
+    <article class="calendar-day">
+      <header class="calendar-day-head">
+        <div>
+          <strong>${escapeHtml(day)}</strong>
+          <span>${formatShortDate(date)}</span>
+        </div>
+        ${gapCount ? `<span class="badge warning-badge">${gapCount} gap${gapCount === 1 ? "" : "s"}</span>` : ""}
+      </header>
+      <div class="calendar-section">
+        <h4>Schedule</h4>
+        ${shifts.length ? shifts.map(calendarShiftCard).join("") : `<p class="task-meta">No scheduled coverage.</p>`}
+      </div>
+      <div class="calendar-section">
+        <h4>Events</h4>
+        ${events.length ? events.map(calendarEventCard).join("") : `<p class="task-meta">No events in these spaces.</p>`}
+      </div>
+    </article>
+  `;
+}
+
+function calendarVisibleSpaces(spaceFilter, workerFilter) {
+  if (app.data.role === "staff" && spaceFilter) return [spaceFilter];
+  const worker = workerFilter ? workerById(workerFilter) : null;
+  if (worker) {
+    const spaces = new Set(worker.primarySpaces || []);
+    availabilityInFocusWeek(worker).forEach(({ slot }) => spaces.add(slot.space));
+    return [...spaces].filter(Boolean);
+  }
+  if (app.data.role === "student") {
+    const student = currentWorker();
+    if (!student) return [];
+    const spaces = new Set(student.primarySpaces || []);
+    availabilityInFocusWeek(student).forEach(({ slot }) => spaces.add(slot.space));
+    return [...spaces].filter(Boolean);
+  }
+  return app.data.spaces.map((space) => space.name).filter((space) => space !== "General");
+}
+
+function calendarShiftItems(day, date, visibleSpaceSet, workerFilter) {
+  const staffView = app.data.role === "staff";
+  const workers = staffView
+    ? (workerFilter ? [workerById(workerFilter)].filter(Boolean) : app.data.workers)
+    : [currentWorker()].filter(Boolean);
+  const studentShifts = workers.flatMap((worker) =>
+    (worker.availability || [])
+      .filter((slot) => visibleSpaceSet.has(slot.space) && scheduleItemMatchesDate(slot, day, date))
+      .map((slot) => ({
+        type: staffView ? "student" : "my",
+        name: worker.name,
+        space: slot.space,
+        start: slot.start,
+        end: slot.end
+      }))
+  );
+  const staffShifts = staffView
+    ? (app.data.staffSchedules || [])
+      .filter((slot) => visibleSpaceSet.has(slot.space) && scheduleItemMatchesDate(slot, day, date))
+      .map((slot) => ({
+        type: "staff",
+        name: slot.name,
+        space: slot.space,
+        start: slot.start,
+        end: slot.end
+      }))
+    : [];
+  return [...studentShifts, ...staffShifts]
+    .sort((a, b) => minutes(a.start) - minutes(b.start) || a.space.localeCompare(b.space) || a.name.localeCompare(b.name));
+}
+
+function calendarShiftCard(shift) {
+  const label = shift.type === "staff" ? "Staff" : shift.type === "my" ? "My shift" : "Student";
+  return `
+    <article class="calendar-item shift-item" style="border-left-color:${app.data.spaceColors[shift.space] || app.data.spaceColors.General}">
+      <strong>${escapeHtml(shift.name)}</strong>
+      <span>${spaceChip(shift.space)} ${formatTime(shift.start)}-${formatTime(shift.end)}</span>
+      <em>${escapeHtml(label)}</em>
+    </article>
+  `;
+}
+
+function calendarEventCard(event) {
+  const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
+  const studentRequest = requests.find((request) => request.workerId === app.data.currentUser.workerId);
+  const assigned = workerById(event.assignedTo)?.name;
+  const coverageText = app.data.role === "student"
+    ? studentEventSummary(event, studentRequest)
+    : assigned
+      ? `Assigned to ${assigned}`
+      : requests.length
+        ? `Request sent to ${requests.map((request) => workerById(request.workerId)?.name || "student").join(", ")}`
+        : event.afterHours
+          ? "Needs supervisor review"
+          : "Inside business hours";
+  return `
+    <article class="calendar-item event-item" style="border-left-color:${app.data.spaceColors[event.space] || app.data.spaceColors.General}">
+      <div class="calendar-item-head">
+        <strong>${escapeHtml(event.title)}</strong>
+        ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
+      </div>
+      <span>${spaceChip(event.space)} ${formatTime(event.start)}-${formatTime(event.end)}</span>
+      <em>${escapeHtml(coverageText)}</em>
+      ${studentRequest ? calendarStudentRequestActions(studentRequest, event) : ""}
+    </article>
+  `;
+}
+
+function studentEventSummary(event, request) {
+  if (request) return `Coverage request: ${studentRequestHint(request.status)}`;
+  if (event.afterHours) return "After-hours event in your space.";
+  return "Event happening during business hours.";
+}
+
+function calendarStudentRequestActions(request, event) {
+  const worker = currentWorker();
+  const projected = worker ? projectedHoursForRequest(worker, event, request) : null;
+  const overLimit = Boolean(projected && request.status === "accepted" && projected.projected > projected.limit);
+  return `
+    <div class="calendar-actions">
+      ${request.status === "pending" ? requestButton(request, "accept", "Accept", "primary-button") + requestButton(request, "deny", "Deny", "danger-button") : ""}
+      ${request.status === "accepted" && !overLimit ? requestButton(request, "add-to-schedule", "Add to My Schedule", "secondary-button") : ""}
+      ${request.status === "accepted" && overLimit ? `<button class="secondary-button" type="button" data-action="open-profile">Edit My Schedule</button>` : ""}
+      ${projected ? `<span class="task-meta ${projected.projected > projected.limit ? "limit-warning" : ""}">${escapeHtml(hourSummaryText(projected, request.status))}</span>` : ""}
     </div>
   `;
 }
@@ -680,6 +902,13 @@ function bindEvents() {
     button.addEventListener("click", () => handleAction(button.dataset.action, button));
   });
 
+  document.querySelectorAll("[data-calendar-filter]").forEach((select) => {
+    select.addEventListener("change", () => {
+      app.spaceCalendar[select.dataset.calendarFilter] = select.value;
+      render();
+    });
+  });
+
   bindForm("taskForm", createTask);
   bindForm("eventForm", createEvents);
   bindForm("smartEventForm", createSmartEvent);
@@ -900,9 +1129,16 @@ async function saveSchedule(form) {
 }
 
 async function setFocusDate(event) {
-  if (!app.data || app.data.role !== "staff") return;
+  if (!app.data) return;
+  const focusDate = event.target.value;
+  if (app.data.role !== "staff") {
+    app.data.focusDate = focusDate;
+    app.data.focusWeekStart = weekStartMonday(focusDate);
+    render();
+    return;
+  }
   try {
-    app.data = await api("/api/focus-date", { method: "POST", body: { focusDate: event.target.value } });
+    app.data = await api("/api/focus-date", { method: "POST", body: { focusDate } });
     render();
   } catch (error) {
     showToast(error.message);
@@ -1305,6 +1541,14 @@ function formatShortDate(dateString) {
 function addDays(dateString, amount) {
   const date = new Date(`${dateString}T12:00:00`);
   date.setDate(date.getDate() + amount);
+  return date.toISOString().slice(0, 10);
+}
+
+function weekStartMonday(dateString) {
+  const date = new Date(`${dateString}T12:00:00`);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
   return date.toISOString().slice(0, 10);
 }
 

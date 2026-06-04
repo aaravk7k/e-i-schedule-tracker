@@ -752,6 +752,127 @@ tr:last-child td {
   margin-top: 0;
 }
 
+.calendar-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(180px, 0.7fr) minmax(280px, 1.6fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.student-calendar-note {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.calendar-note {
+  display: grid;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.calendar-note strong {
+  color: var(--ink);
+}
+
+.space-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(220px, 1fr));
+  min-width: 1180px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.calendar-day {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 420px;
+  padding: 12px;
+  border-right: 1px solid var(--line);
+}
+
+.calendar-day:last-child {
+  border-right: 0;
+}
+
+.calendar-day-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 54px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.calendar-day-head div,
+.calendar-section,
+.calendar-item,
+.calendar-actions {
+  display: grid;
+  gap: 7px;
+}
+
+.calendar-day-head strong {
+  font-size: 0.92rem;
+}
+
+.calendar-day-head span,
+.calendar-item em {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.calendar-section h4 {
+  margin: 0;
+  color: #3b4452;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.calendar-item {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--asu-maroon);
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.event-item {
+  background: #fffdf7;
+}
+
+.calendar-item-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.calendar-item strong {
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+
+.calendar-item > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: #344054;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.calendar-actions {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
 .empty-state {
   padding: 24px;
   border: 1px dashed var(--line);
@@ -899,7 +1020,9 @@ tr:last-child td {
 
   .split-grid,
   .three-grid,
-  .kpi-grid {
+  .kpi-grid,
+  .calendar-toolbar,
+  .student-calendar-note {
     grid-template-columns: 1fr;
   }
 

@@ -776,29 +776,16 @@ function exportSpaceCalendarPdf() {
 }
 
 function spaceCalendarPrintHtml(context) {
-  const daySections = DAYS.map((day, index) => {
-    const date = addDays(context.weekStart, index);
-    const { shifts, events } = spaceCalendarDayData(context, day, date);
-    return `
-      <section class="print-day">
-        <h2>${escapeHtml(day)} <span>${escapeHtml(formatShortDate(date))}</span></h2>
-        <h3>Schedule</h3>
-        ${shifts.length ? shifts.map((shift) => `
-          <div class="print-row">
-            <strong>${escapeHtml(shift.name)}</strong>
-            <span>${escapeHtml(shift.space)} | ${formatTime(shift.start)}-${formatTime(shift.end)} | ${calendarShiftRoleLabel(shift.type)}</span>
-          </div>
-        `).join("") : `<p>No scheduled coverage.</p>`}
-        <h3>Events</h3>
-        ${events.length ? events.map((event) => `
-          <div class="print-row event">
-            <strong>${escapeHtml(event.title)}</strong>
-            <span>${escapeHtml(event.space)} | ${formatTime(event.start)}-${formatTime(event.end)} | ${event.afterHours ? "After hours" : "Business hours"} | ${escapeHtml(calendarEventCoverageText(event))}</span>
-          </div>
-        `).join("") : `<p>No events in these spaces.</p>`}
-      </section>
-    `;
-  }).join("");
+  const dayHeadings = DAYS.map((day, index) => `
+    <div class="snapshot-head">
+      <strong>${escapeHtml(day.slice(0, 3))}</strong>
+      <span>${escapeHtml(formatShortDate(addDays(context.weekStart, index)))}</span>
+    </div>
+  `).join("");
+  const rows = context.visibleSpaces.map((space) => `
+    <div class="snapshot-space">${spaceChip(space)}</div>
+    ${DAYS.map((day, index) => spaceCalendarSnapshotCell(context, space, day, addDays(context.weekStart, index))).join("")}
+  `).join("");
 
   return `<!doctype html>
     <html>
@@ -806,32 +793,90 @@ function spaceCalendarPrintHtml(context) {
         <meta charset="utf-8">
         <title>${escapeHtml(context.title)} Export</title>
         <style>
-          body { color: #191919; font-family: Arial, sans-serif; margin: 24px; }
-          header { border-bottom: 3px solid #8c1d40; margin-bottom: 18px; padding-bottom: 12px; }
-          h1 { font-size: 24px; margin: 0; }
-          .meta { color: #667085; margin-top: 6px; }
-          .print-grid { display: grid; gap: 14px; }
-          .print-day { border: 1px solid #d8dee8; border-radius: 8px; break-inside: avoid; padding: 12px; }
-          .print-day h2 { font-size: 18px; margin: 0 0 10px; }
-          .print-day h2 span { color: #667085; font-size: 14px; }
-          .print-day h3 { color: #344054; font-size: 11px; letter-spacing: 0.08em; margin: 12px 0 6px; text-transform: uppercase; }
-          .print-row { background: #fbfcfe; border-left: 4px solid #8c1d40; margin: 6px 0; padding: 7px 9px; }
-          .print-row.event { border-left-color: #ffc627; }
-          .print-row strong, .print-row span { display: block; }
-          .print-row span, p { color: #667085; font-size: 12px; }
-          @page { margin: 0.45in; }
+          * { box-sizing: border-box; }
+          body { color: #191919; font-family: Arial, sans-serif; margin: 0; }
+          header { align-items: flex-end; border-bottom: 3px solid #8c1d40; display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; }
+          h1 { font-size: 19px; margin: 0; }
+          .meta { color: #667085; font-size: 10px; margin-top: 3px; }
+          .legend { color: #344054; font-size: 9px; text-align: right; }
+          .snapshot-grid { display: grid; grid-template-columns: 88px repeat(7, minmax(0, 1fr)); width: 100%; }
+          .snapshot-corner,
+          .snapshot-head,
+          .snapshot-space,
+          .snapshot-cell { border: 1px solid #d8dee8; margin: -1px 0 0 -1px; }
+          .snapshot-corner,
+          .snapshot-head { background: #f4f6f9; min-height: 32px; padding: 5px; }
+          .snapshot-head strong,
+          .snapshot-head span { display: block; }
+          .snapshot-head strong { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+          .snapshot-head span { color: #667085; font-size: 9px; margin-top: 2px; }
+          .snapshot-space { align-items: flex-start; background: #fbfcfe; display: flex; min-height: 82px; padding: 5px; }
+          .snapshot-cell { min-height: 82px; padding: 4px; }
+          .space-chip { align-items: center; background: #fff; border: 1px solid currentColor; border-radius: 999px; display: inline-flex; font-size: 8px; font-weight: 800; line-height: 1; padding: 3px 5px; white-space: nowrap; }
+          .cell-empty { color: #98a2b3; font-size: 8px; }
+          .cell-item { border-left: 3px solid #8c1d40; margin-bottom: 3px; padding-left: 4px; }
+          .cell-item.event { border-left-color: #ffc627; }
+          .cell-item strong { display: block; font-size: 8.5px; line-height: 1.15; }
+          .cell-item span { color: #344054; display: block; font-size: 8px; line-height: 1.2; }
+          .cell-item em { color: #667085; display: block; font-size: 7.5px; font-style: normal; line-height: 1.15; }
+          .cell-more { color: #667085; font-size: 7.5px; font-weight: 700; }
+          @page { size: letter landscape; margin: 0.25in; }
+          @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
         </style>
       </head>
       <body>
         <header>
-          <h1>${escapeHtml(context.title)}</h1>
-          <div class="meta">Week of ${escapeHtml(formatShortDate(context.weekStart))} - ${escapeHtml(formatShortDate(context.weekEnd))}</div>
-          <div class="meta">Spaces: ${escapeHtml(context.visibleSpaces.join(", ") || "No spaces")}</div>
-          <div class="meta">Student filter: ${escapeHtml(context.workerName || (context.staff ? "All students" : app.data.currentUser.name))}</div>
+          <div>
+            <h1>${escapeHtml(context.title)}</h1>
+            <div class="meta">Week of ${escapeHtml(formatShortDate(context.weekStart))} - ${escapeHtml(formatShortDate(context.weekEnd))}</div>
+            <div class="meta">Spaces: ${escapeHtml(context.visibleSpaces.join(", ") || "No spaces")}</div>
+          </div>
+          <div class="legend">Student filter: ${escapeHtml(context.workerName || (context.staff ? "All students" : app.data.currentUser.name))}</div>
         </header>
-        <main class="print-grid">${daySections}</main>
+        <main class="snapshot-grid">
+          <div class="snapshot-corner"></div>
+          ${dayHeadings}
+          ${rows || `<div class="snapshot-space">No spaces</div>`}
+        </main>
       </body>
     </html>`;
+}
+
+function spaceCalendarSnapshotCell(context, space, day, date) {
+  const { shifts, events } = spaceCalendarDayData(context, day, date);
+  const items = [
+    ...shifts
+      .filter((shift) => shift.space === space)
+      .map((shift) => ({
+        type: "shift",
+        title: shift.name,
+        meta: `${formatTime(shift.start)}-${formatTime(shift.end)}`,
+        detail: calendarShiftRoleLabel(shift.type)
+      })),
+    ...events
+      .filter((event) => event.space === space)
+      .map((event) => ({
+        type: "event",
+        title: event.title,
+        meta: `${formatTime(event.start)}-${formatTime(event.end)}${event.afterHours ? " | After hours" : ""}`,
+        detail: calendarEventCoverageText(event)
+      }))
+  ];
+  const visibleItems = items.slice(0, 4);
+  return `
+    <div class="snapshot-cell">
+      ${visibleItems.length ? visibleItems.map((item) => `
+        <div class="cell-item ${item.type === "event" ? "event" : ""}">
+          <strong>${escapeHtml(item.title)}</strong>
+          <span>${escapeHtml(item.meta)}</span>
+          <em>${escapeHtml(item.detail)}</em>
+        </div>
+      `).join("") : `<span class="cell-empty">No coverage</span>`}
+      ${items.length > visibleItems.length ? `<div class="cell-more">+${items.length - visibleItems.length} more</div>` : ""}
+    </div>
+  `;
 }
 
 function spaceCalendarFilename(context) {

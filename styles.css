@@ -463,12 +463,14 @@ tr:last-child td {
 }
 
 .status-pill.done,
-.status-pill.scheduled {
+.status-pill.scheduled,
+.status-pill.covered {
   background: #e8f5e9;
   color: #1b5e20;
 }
 
 .status-pill.denied,
+.status-pill.rejected,
 .status-pill.unassigned,
 .status-pill.needs-review {
   background: #fff0ee;
@@ -476,7 +478,8 @@ tr:last-child td {
 }
 
 .status-pill.draft,
-.status-pill.closed {
+.status-pill.closed,
+.status-pill.dismissed {
   background: #f0edff;
   color: #4f2fb0;
 }

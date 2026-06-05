@@ -637,6 +637,7 @@ function calendarEventCard(event) {
       </div>
       <span>${spaceChip(event.space)} ${formatTime(event.start)}-${formatTime(event.end)}</span>
       <em>${escapeHtml(coverageText)}</em>
+      ${staffEventCoverageActions(event)}
       ${studentRequest ? calendarStudentRequestActions(studentRequest, event) : ""}
     </article>
   `;
@@ -646,16 +647,31 @@ function calendarEventCoverageText(event) {
   const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
   const studentRequest = requests.find((request) => request.workerId === app.data.currentUser.workerId);
   const assigned = workerById(event.assignedTo)?.name;
+  if (event.status === "covered") return "Coverage cleared by staff.";
+  if (event.status === "rejected") return "Coverage request dismissed by staff.";
   if (app.data.role === "student") return studentEventSummary(event, studentRequest);
   if (assigned) return `Assigned to ${assigned}`;
-  if (requests.length) return `Request sent to ${requests.map((request) => workerById(request.workerId)?.name || "student").join(", ")}`;
+  const activeRequests = requests.filter((request) => !["closed", "denied", "dismissed", "covered"].includes(request.status));
+  if (activeRequests.length) return `Request sent to ${activeRequests.map((request) => workerById(request.workerId)?.name || "student").join(", ")}`;
   return event.afterHours ? "Needs supervisor review" : "Inside business hours";
 }
 
 function studentEventSummary(event, request) {
+  if (event.status === "covered") return "Coverage cleared by staff.";
+  if (event.status === "rejected") return "Coverage request dismissed by staff.";
   if (request) return `Coverage request: ${studentRequestHint(request.status)}`;
   if (event.afterHours) return "After-hours event in your space.";
   return "Event happening during business hours.";
+}
+
+function staffEventCoverageActions(event) {
+  if (app.data.role !== "staff" || !event.afterHours || afterHoursCoverageResolved(event)) return "";
+  return `
+    <div class="calendar-actions">
+      <button class="secondary-button" type="button" data-action="event-coverage-action" data-event-id="${event.id}" data-event-action="covered">Clear as Covered</button>
+      <button class="danger-button" type="button" data-action="event-coverage-action" data-event-id="${event.id}" data-event-action="reject">Reject</button>
+    </div>
+  `;
 }
 
 function calendarStudentRequestActions(request, event) {
@@ -1028,7 +1044,7 @@ function renderSchedules() {
   const focusRequests = requestsInFocusWeek(app.data.coverageRequests || []);
   const pendingRequests = focusRequests.filter((request) => request.status === "pending").length;
   const focusEvents = eventsInFocusWeek(app.data.events || []);
-  const afterHoursNeeds = focusEvents.filter((event) => event.afterHours && event.status !== "scheduled").length;
+  const afterHoursNeeds = focusEvents.filter((event) => event.afterHours && !afterHoursCoverageResolved(event)).length;
   return `
     <section class="band">
       <div class="band-header">
@@ -1078,7 +1094,7 @@ function renderSchedules() {
 function renderEvents() {
   const focusEvents = eventsInFocusWeek(app.data.events || []);
   const afterHours = focusEvents.filter((event) => event.afterHours);
-  const handled = focusEvents.filter((event) => !event.afterHours || event.status === "scheduled").length;
+  const handled = focusEvents.filter((event) => !event.afterHours || afterHoursCoverageResolved(event)).length;
   const focusRequests = requestsInFocusWeek(app.data.coverageRequests || []);
   return `
     <section class="band">
@@ -1201,7 +1217,7 @@ function renderAttentionList() {
 
 function requestSortValue(request) {
   const event = eventById(request.eventId);
-  const statusRank = { pending: 0, accepted: 1, scheduled: 2, denied: 3, closed: 4 };
+  const statusRank = { pending: 0, accepted: 1, scheduled: 2, denied: 3, dismissed: 4, covered: 5, closed: 6 };
   return (statusRank[request.status] ?? 9) * 100000000 + new Date(`${event?.date || "2099-12-31"}T12:00:00`).getTime();
 }
 
@@ -1241,10 +1257,8 @@ function coverageRequestCard(request) {
 }
 
 function eventCard(event) {
-  const assigned = workerById(event.assignedTo)?.name || (event.afterHours ? "Waiting for student response" : "Inside business hours");
-  const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
   const coverageText = event.afterHours
-    ? `Coverage: ${assigned}. Requests sent: ${requests.length}.`
+    ? calendarEventCoverageText(event)
     : "Inside business hours. No extra student request needed.";
   return `
     <article class="task-card">
@@ -1260,6 +1274,7 @@ function eventCard(event) {
       </div>
       <p class="task-meta">${escapeHtml(event.notes || "No notes added.")}</p>
       <p class="task-meta">${escapeHtml(coverageText)}</p>
+      ${staffEventCoverageActions(event)}
     </article>
   `;
 }
@@ -1410,6 +1425,14 @@ async function handleAction(action, button) {
       const requestAction = button.dataset.requestAction;
       app.data = await api(`/api/coverage-requests/${encodeURIComponent(requestId)}/action`, { method: "POST", body: { action: requestAction } });
       showToast(requestAction === "add-to-schedule" ? "Added to your schedule. Supervisor alerted." : "Coverage request updated.");
+      render();
+      return;
+    }
+    if (action === "event-coverage-action") {
+      const eventId = button.dataset.eventId;
+      const eventAction = button.dataset.eventAction;
+      app.data = await api(`/api/events/${encodeURIComponent(eventId)}/coverage-action`, { method: "POST", body: { action: eventAction } });
+      showToast(eventAction === "covered" ? "Event cleared as covered." : "Coverage request dismissed.");
       render();
       return;
     }
@@ -1809,7 +1832,9 @@ function studentRequestHint(status) {
     accepted: "Accepted. Add it to your schedule when ready.",
     scheduled: "This is now on your schedule.",
     denied: "You denied this request.",
-    closed: "Another student accepted this one."
+    closed: "Another student accepted this one.",
+    covered: "Staff cleared this event as covered.",
+    dismissed: "Staff dismissed this coverage request."
   }[status] || status;
 }
 
@@ -1852,6 +1877,10 @@ function hasExactSchedule(worker, event) {
 function dayFromDate(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
   return DAYS[date.getDay() === 0 ? 6 : date.getDay() - 1] || "";
+}
+
+function afterHoursCoverageResolved(event) {
+  return ["scheduled", "covered", "rejected"].includes(event.status);
 }
 
 function hoursBetween(start, end) {
@@ -1929,7 +1958,7 @@ function skillLabel(skill) {
 }
 
 function statusPill(status) {
-  const label = { pending: "Pending", accepted: "Accepted", scheduled: "Scheduled", requesting: "Requesting", closed: "Closed", "needs-review": "Needs Review", done: "Complete", denied: "Denied", unassigned: "Needs Assignment", draft: "Draft" }[status] || status;
+  const label = { pending: "Pending", accepted: "Accepted", scheduled: "Scheduled", covered: "Covered", rejected: "Rejected", dismissed: "Dismissed", requesting: "Requesting", closed: "Closed", "needs-review": "Needs Review", done: "Complete", denied: "Denied", unassigned: "Needs Assignment", draft: "Draft" }[status] || status;
   return `<span class="status-pill ${status}">${label}</span>`;
 }
 

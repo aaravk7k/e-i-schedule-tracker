@@ -440,6 +440,26 @@ async function handleApi(req, res) {
     return;
   }
 
+  const eventCoverageMatch = url.pathname.match(/^\/api\/events\/([^/]+)\/coverage-action$/);
+  if (req.method === "POST" && eventCoverageMatch) {
+    requireStaff(user);
+    const event = db.events.find((item) => item.id === decodeURIComponent(eventCoverageMatch[1]));
+    if (!event) {
+      sendJson(res, 404, { error: "Event not found" });
+      return;
+    }
+    const body = await readJson(req);
+    const action = cleanText(body.action);
+    if (!["covered", "reject"].includes(action)) {
+      sendJson(res, 400, { error: "Action not allowed" });
+      return;
+    }
+    handleStaffEventCoverageAction(event, action, user);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/reset") {
     requireStaff(user);
     db = createInitialDb();
@@ -548,6 +568,46 @@ function handleCoverageRequestAction(request, action, user) {
     event.assignedTo = worker.id;
     addAlert("info", "Event added to schedule", `${worker.name} added ${event.title} to their schedule. Supervisors can now see it on the weekly board.`);
     addActivity(`${worker.name} added "${event.title}" to their schedule.`);
+  }
+}
+
+function handleStaffEventCoverageAction(event, action, user) {
+  if (!event.afterHours) {
+    const error = new Error("Only after-hours events can be cleared for coverage");
+    error.status = 400;
+    throw error;
+  }
+
+  const now = new Date().toISOString();
+  const relatedRequests = db.coverageRequests.filter((request) => request.eventId === event.id);
+
+  if (action === "covered") {
+    event.status = "covered";
+    event.assignedTo = "";
+    event.resolvedAt = now;
+    event.resolvedBy = user.name;
+    relatedRequests.forEach((request) => {
+      request.status = "covered";
+      request.respondedAt = now;
+      request.reason = "Staff marked coverage not needed.";
+    });
+    addAlert("info", "Coverage cleared", `${user.name} marked ${event.title} at ${event.space} as covered / not needing student coverage.`);
+    addActivity(`${user.name} cleared after-hours coverage for "${event.title}" as covered.`);
+    return;
+  }
+
+  if (action === "reject") {
+    event.status = "rejected";
+    event.assignedTo = "";
+    event.resolvedAt = now;
+    event.resolvedBy = user.name;
+    relatedRequests.forEach((request) => {
+      request.status = "dismissed";
+      request.respondedAt = now;
+      request.reason = "Staff dismissed this coverage request.";
+    });
+    addAlert("info", "Coverage request dismissed", `${user.name} dismissed ${event.title} at ${event.space}.`);
+    addActivity(`${user.name} dismissed the after-hours coverage request for "${event.title}".`);
   }
 }
 
@@ -1331,8 +1391,12 @@ function createCoverageRequestsForEvent(event, appDb, options = {}) {
 
 function ensureCoverageRequestsForFocusWeek(appDb) {
   appDb.events
-    .filter((event) => event.afterHours && event.status !== "scheduled" && isDateInFocusWeek(event.date, appDb.focusWeekStart))
+    .filter((event) => event.afterHours && !afterHoursCoverageResolved(event) && isDateInFocusWeek(event.date, appDb.focusWeekStart))
     .forEach((event) => createCoverageRequestsForEvent(event, appDb, { silent: true }));
+}
+
+function afterHoursCoverageResolved(event) {
+  return ["scheduled", "covered", "rejected"].includes(event.status);
 }
 
 function recommendWorkersForEvent(event, appDb) {

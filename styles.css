@@ -754,13 +754,20 @@ tr:last-child td {
 
 .calendar-toolbar {
   display: grid;
-  grid-template-columns: minmax(180px, 0.7fr) minmax(180px, 0.7fr) minmax(280px, 1.6fr);
+  grid-template-columns: minmax(160px, 0.65fr) minmax(160px, 0.65fr) minmax(260px, 1.25fr) auto;
   gap: 14px;
   align-items: end;
 }
 
 .student-calendar-note {
   grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.calendar-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 .calendar-note {
@@ -1024,6 +1031,10 @@ tr:last-child td {
   .calendar-toolbar,
   .student-calendar-note {
     grid-template-columns: 1fr;
+  }
+
+  .calendar-export-actions {
+    justify-content: flex-start;
   }
 
   .form-grid {

@@ -394,11 +394,31 @@ function weeklyHourPanel(worker) {
   `;
 }
 
-function renderSpaceCalendar() {
+function currentSpaceCalendarContext() {
   const staff = app.data.role === "staff";
   const workerFilter = staff ? app.spaceCalendar.workerId : app.data.currentUser.workerId;
-  const visibleSpaces = calendarVisibleSpaces(app.spaceCalendar.space, workerFilter);
-  const visibleSpaceSet = new Set(visibleSpaces);
+  const spaceFilter = staff ? app.spaceCalendar.space : "";
+  const visibleSpaces = calendarVisibleSpaces(spaceFilter, workerFilter);
+  const workerName = workerFilter ? workerById(workerFilter)?.name || "" : "";
+  return {
+    staff,
+    workerFilter,
+    workerName,
+    spaceFilter,
+    visibleSpaces,
+    visibleSpaceSet: new Set(visibleSpaces),
+    weekStart: app.data.focusWeekStart,
+    weekEnd: addDays(app.data.focusWeekStart, 6),
+    title: staff ? "Space Calendar" : "My Space Calendar"
+  };
+}
+
+function renderSpaceCalendar() {
+  const context = currentSpaceCalendarContext();
+  const staff = context.staff;
+  const workerFilter = context.workerFilter;
+  const visibleSpaces = context.visibleSpaces;
+  const visibleSpaceSet = context.visibleSpaceSet;
   const focusEvents = eventsInFocusWeek(app.data.events || []).filter((event) => visibleSpaceSet.has(event.space));
   const visibleRequests = requestsInFocusWeek(app.data.coverageRequests || []).filter((request) => {
     const event = eventById(request.eventId);
@@ -462,6 +482,7 @@ function calendarStaffFilters() {
         <strong>What this shows</strong>
         <span>Student schedules, staff coverage, bookings, after-hours needs, and coverage requests for the selected week.</span>
       </div>
+      ${calendarExportActions(false)}
     </div>
   `;
 }
@@ -473,7 +494,17 @@ function calendarStudentSummary(visibleSpaces) {
         <strong>What this shows</strong>
         <span>Your shifts and the event activity happening in your assigned space${visibleSpaces.length === 1 ? "" : "s"} for this week.</span>
       </div>
-      <button class="secondary-button" type="button" data-action="open-profile">Edit My Schedule</button>
+      ${calendarExportActions(true)}
+    </div>
+  `;
+}
+
+function calendarExportActions(includeScheduleEdit) {
+  return `
+    <div class="calendar-export-actions">
+      ${includeScheduleEdit ? `<button class="secondary-button" type="button" data-action="open-profile">Edit My Schedule</button>` : ""}
+      <button class="ghost-button" type="button" data-action="export-space-calendar-pdf">Export PDF</button>
+      <button class="ghost-button" type="button" data-action="export-space-calendar-xlsx">Export Excel</button>
     </div>
   `;
 }
@@ -566,16 +597,7 @@ function calendarShiftCard(shift) {
 function calendarEventCard(event) {
   const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
   const studentRequest = requests.find((request) => request.workerId === app.data.currentUser.workerId);
-  const assigned = workerById(event.assignedTo)?.name;
-  const coverageText = app.data.role === "student"
-    ? studentEventSummary(event, studentRequest)
-    : assigned
-      ? `Assigned to ${assigned}`
-      : requests.length
-        ? `Request sent to ${requests.map((request) => workerById(request.workerId)?.name || "student").join(", ")}`
-        : event.afterHours
-          ? "Needs supervisor review"
-          : "Inside business hours";
+  const coverageText = calendarEventCoverageText(event);
   return `
     <article class="calendar-item event-item" style="border-left-color:${app.data.spaceColors[event.space] || app.data.spaceColors.General}">
       <div class="calendar-item-head">
@@ -587,6 +609,16 @@ function calendarEventCard(event) {
       ${studentRequest ? calendarStudentRequestActions(studentRequest, event) : ""}
     </article>
   `;
+}
+
+function calendarEventCoverageText(event) {
+  const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
+  const studentRequest = requests.find((request) => request.workerId === app.data.currentUser.workerId);
+  const assigned = workerById(event.assignedTo)?.name;
+  if (app.data.role === "student") return studentEventSummary(event, studentRequest);
+  if (assigned) return `Assigned to ${assigned}`;
+  if (requests.length) return `Request sent to ${requests.map((request) => workerById(request.workerId)?.name || "student").join(", ")}`;
+  return event.afterHours ? "Needs supervisor review" : "Inside business hours";
 }
 
 function studentEventSummary(event, request) {
@@ -607,6 +639,356 @@ function calendarStudentRequestActions(request, event) {
       ${projected ? `<span class="task-meta ${projected.projected > projected.limit ? "limit-warning" : ""}">${escapeHtml(hourSummaryText(projected, request.status))}</span>` : ""}
     </div>
   `;
+}
+
+function spaceCalendarDayData(context, day, date) {
+  return {
+    shifts: calendarShiftItems(day, date, context.visibleSpaceSet, context.workerFilter),
+    events: eventsInFocusWeek(app.data.events || []).filter((event) => event.date === date && context.visibleSpaceSet.has(event.space))
+  };
+}
+
+function calendarShiftRoleLabel(type) {
+  if (type === "staff") return "Staff";
+  if (type === "my") return "My shift";
+  return "Student";
+}
+
+function spaceCalendarExportRows(context) {
+  return DAYS.flatMap((day, index) => {
+    const date = addDays(context.weekStart, index);
+    const { shifts, events } = spaceCalendarDayData(context, day, date);
+    const shiftRows = shifts.map((shift) => [
+      date,
+      day,
+      "Schedule",
+      shift.space,
+      shift.name,
+      calendarShiftRoleLabel(shift.type),
+      formatTime(shift.start),
+      formatTime(shift.end),
+      "",
+      ""
+    ]);
+    const eventRows = events.map((event) => [
+      event.date,
+      day,
+      "Event",
+      event.space,
+      event.title,
+      "",
+      formatTime(event.start),
+      formatTime(event.end),
+      event.afterHours ? "After hours" : "Business hours",
+      calendarEventCoverageText(event)
+    ]);
+    return [...shiftRows, ...eventRows];
+  });
+}
+
+function exportSpaceCalendarXlsx() {
+  const context = currentSpaceCalendarContext();
+  const rows = [
+    ["Edson E+I Space Calendar"],
+    ["View", context.title],
+    ["Week", `${formatShortDate(context.weekStart)} - ${formatShortDate(context.weekEnd)}`],
+    ["Spaces", context.visibleSpaces.join(", ") || "No spaces"],
+    ["Student filter", context.workerName || (context.staff ? "All students" : app.data.currentUser.name)],
+    [],
+    ["Date", "Day", "Type", "Space", "Person / Event", "Role", "Start", "End", "Status", "Notes"],
+    ...spaceCalendarExportRows(context)
+  ];
+  const bytes = buildXlsx([{ name: "Space Calendar", rows }]);
+  downloadBlob(
+    new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
+    `${spaceCalendarFilename(context)}.xlsx`
+  );
+  showToast("Excel export downloaded.");
+}
+
+function exportSpaceCalendarPdf() {
+  const context = currentSpaceCalendarContext();
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    showToast("Allow pop-ups to export the PDF.");
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(spaceCalendarPrintHtml(context));
+  printWindow.document.close();
+  const printCalendar = () => {
+    printWindow.focus();
+    printWindow.print();
+  };
+  if (printWindow.document.readyState === "complete") {
+    setTimeout(printCalendar, 150);
+  } else {
+    printWindow.addEventListener("load", () => setTimeout(printCalendar, 150), { once: true });
+  }
+  showToast("PDF export opened. Choose Save as PDF.");
+}
+
+function spaceCalendarPrintHtml(context) {
+  const daySections = DAYS.map((day, index) => {
+    const date = addDays(context.weekStart, index);
+    const { shifts, events } = spaceCalendarDayData(context, day, date);
+    return `
+      <section class="print-day">
+        <h2>${escapeHtml(day)} <span>${escapeHtml(formatShortDate(date))}</span></h2>
+        <h3>Schedule</h3>
+        ${shifts.length ? shifts.map((shift) => `
+          <div class="print-row">
+            <strong>${escapeHtml(shift.name)}</strong>
+            <span>${escapeHtml(shift.space)} | ${formatTime(shift.start)}-${formatTime(shift.end)} | ${calendarShiftRoleLabel(shift.type)}</span>
+          </div>
+        `).join("") : `<p>No scheduled coverage.</p>`}
+        <h3>Events</h3>
+        ${events.length ? events.map((event) => `
+          <div class="print-row event">
+            <strong>${escapeHtml(event.title)}</strong>
+            <span>${escapeHtml(event.space)} | ${formatTime(event.start)}-${formatTime(event.end)} | ${event.afterHours ? "After hours" : "Business hours"} | ${escapeHtml(calendarEventCoverageText(event))}</span>
+          </div>
+        `).join("") : `<p>No events in these spaces.</p>`}
+      </section>
+    `;
+  }).join("");
+
+  return `<!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${escapeHtml(context.title)} Export</title>
+        <style>
+          body { color: #191919; font-family: Arial, sans-serif; margin: 24px; }
+          header { border-bottom: 3px solid #8c1d40; margin-bottom: 18px; padding-bottom: 12px; }
+          h1 { font-size: 24px; margin: 0; }
+          .meta { color: #667085; margin-top: 6px; }
+          .print-grid { display: grid; gap: 14px; }
+          .print-day { border: 1px solid #d8dee8; border-radius: 8px; break-inside: avoid; padding: 12px; }
+          .print-day h2 { font-size: 18px; margin: 0 0 10px; }
+          .print-day h2 span { color: #667085; font-size: 14px; }
+          .print-day h3 { color: #344054; font-size: 11px; letter-spacing: 0.08em; margin: 12px 0 6px; text-transform: uppercase; }
+          .print-row { background: #fbfcfe; border-left: 4px solid #8c1d40; margin: 6px 0; padding: 7px 9px; }
+          .print-row.event { border-left-color: #ffc627; }
+          .print-row strong, .print-row span { display: block; }
+          .print-row span, p { color: #667085; font-size: 12px; }
+          @page { margin: 0.45in; }
+        </style>
+      </head>
+      <body>
+        <header>
+          <h1>${escapeHtml(context.title)}</h1>
+          <div class="meta">Week of ${escapeHtml(formatShortDate(context.weekStart))} - ${escapeHtml(formatShortDate(context.weekEnd))}</div>
+          <div class="meta">Spaces: ${escapeHtml(context.visibleSpaces.join(", ") || "No spaces")}</div>
+          <div class="meta">Student filter: ${escapeHtml(context.workerName || (context.staff ? "All students" : app.data.currentUser.name))}</div>
+        </header>
+        <main class="print-grid">${daySections}</main>
+      </body>
+    </html>`;
+}
+
+function spaceCalendarFilename(context) {
+  const filter = context.workerName || context.spaceFilter || (context.staff ? "all" : app.data.currentUser.name);
+  return `edson-ei-space-calendar-${context.weekStart}-${slugify(filter)}`;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function slugify(value) {
+  return String(value || "calendar")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "calendar";
+}
+
+function buildXlsx(sheets) {
+  const files = [
+    { name: "[Content_Types].xml", data: contentTypesXml(sheets) },
+    { name: "_rels/.rels", data: rootRelsXml() },
+    { name: "xl/workbook.xml", data: workbookXml(sheets) },
+    { name: "xl/_rels/workbook.xml.rels", data: workbookRelsXml(sheets) },
+    ...sheets.map((sheet, index) => ({
+      name: `xl/worksheets/sheet${index + 1}.xml`,
+      data: worksheetXml(sheet.rows)
+    }))
+  ];
+  return zipFiles(files);
+}
+
+function contentTypesXml(sheets) {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+      <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+      <Default Extension="xml" ContentType="application/xml"/>
+      <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+      ${sheets.map((_, index) => `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}
+    </Types>`;
+}
+
+function rootRelsXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+      <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+    </Relationships>`;
+}
+
+function workbookXml(sheets) {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+      <sheets>
+        ${sheets.map((sheet, index) => `<sheet name="${xmlEscape(xlsxSheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`).join("")}
+      </sheets>
+    </workbook>`;
+}
+
+function workbookRelsXml(sheets) {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+      ${sheets.map((_, index) => `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`).join("")}
+    </Relationships>`;
+}
+
+function worksheetXml(rows) {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+      <sheetData>
+        ${rows.map((row, rowIndex) => `
+          <row r="${rowIndex + 1}">
+            ${(row || []).map((cell, columnIndex) => `<c r="${columnName(columnIndex + 1)}${rowIndex + 1}" t="inlineStr"><is><t>${xmlEscape(cell)}</t></is></c>`).join("")}
+          </row>
+        `).join("")}
+      </sheetData>
+    </worksheet>`;
+}
+
+function xlsxSheetName(name) {
+  return String(name || "Sheet").replace(/[\\/?*[\]:]/g, " ").slice(0, 31) || "Sheet";
+}
+
+function columnName(index) {
+  let name = "";
+  let current = index;
+  while (current > 0) {
+    const remainder = (current - 1) % 26;
+    name = String.fromCharCode(65 + remainder) + name;
+    current = Math.floor((current - 1) / 26);
+  }
+  return name;
+}
+
+function zipFiles(files) {
+  const encoder = new TextEncoder();
+  const prepared = files.map((file) => ({
+    nameBytes: encoder.encode(file.name),
+    dataBytes: encoder.encode(file.data)
+  }));
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+
+  prepared.forEach((file) => {
+    const crc = crc32(file.dataBytes);
+    const localHeader = new Uint8Array(30 + file.nameBytes.length);
+    const local = new DataView(localHeader.buffer);
+    local.setUint32(0, 0x04034b50, true);
+    local.setUint16(4, 20, true);
+    local.setUint16(6, 0, true);
+    local.setUint16(8, 0, true);
+    local.setUint16(10, 0, true);
+    local.setUint16(12, 0, true);
+    local.setUint32(14, crc, true);
+    local.setUint32(18, file.dataBytes.length, true);
+    local.setUint32(22, file.dataBytes.length, true);
+    local.setUint16(26, file.nameBytes.length, true);
+    localHeader.set(file.nameBytes, 30);
+    localParts.push(localHeader, file.dataBytes);
+
+    const centralHeader = new Uint8Array(46 + file.nameBytes.length);
+    const central = new DataView(centralHeader.buffer);
+    central.setUint32(0, 0x02014b50, true);
+    central.setUint16(4, 20, true);
+    central.setUint16(6, 20, true);
+    central.setUint16(8, 0, true);
+    central.setUint16(10, 0, true);
+    central.setUint16(12, 0, true);
+    central.setUint16(14, 0, true);
+    central.setUint32(16, crc, true);
+    central.setUint32(20, file.dataBytes.length, true);
+    central.setUint32(24, file.dataBytes.length, true);
+    central.setUint16(28, file.nameBytes.length, true);
+    central.setUint16(30, 0, true);
+    central.setUint16(32, 0, true);
+    central.setUint16(34, 0, true);
+    central.setUint16(36, 0, true);
+    central.setUint32(38, 0, true);
+    central.setUint32(42, offset, true);
+    centralHeader.set(file.nameBytes, 46);
+    centralParts.push(centralHeader);
+
+    offset += localHeader.length + file.dataBytes.length;
+  });
+
+  const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const end = new Uint8Array(22);
+  const endView = new DataView(end.buffer);
+  endView.setUint32(0, 0x06054b50, true);
+  endView.setUint16(8, files.length, true);
+  endView.setUint16(10, files.length, true);
+  endView.setUint32(12, centralSize, true);
+  endView.setUint32(16, offset, true);
+
+  return concatBytes([...localParts, ...centralParts, end]);
+}
+
+function concatBytes(parts) {
+  const total = parts.reduce((sum, part) => sum + part.length, 0);
+  const output = new Uint8Array(total);
+  let offset = 0;
+  parts.forEach((part) => {
+    output.set(part, offset);
+    offset += part.length;
+  });
+  return output;
+}
+
+let crcTableCache;
+
+function crc32(bytes) {
+  const table = crcTableCache || (crcTableCache = createCrcTable());
+  let crc = -1;
+  bytes.forEach((byte) => {
+    crc = (crc >>> 8) ^ table[(crc ^ byte) & 0xff];
+  });
+  return (crc ^ -1) >>> 0;
+}
+
+function createCrcTable() {
+  return Array.from({ length: 256 }, (_, index) => {
+    let current = index;
+    for (let bit = 0; bit < 8; bit += 1) {
+      current = current & 1 ? 0xedb88320 ^ (current >>> 1) : current >>> 1;
+    }
+    return current >>> 0;
+  });
+}
+
+function xmlEscape(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
 }
 
 function renderSchedules() {
@@ -959,6 +1341,14 @@ async function handleAction(action, button) {
     if (action === "open-profile") {
       app.view = "profile";
       render();
+      return;
+    }
+    if (action === "export-space-calendar-pdf") {
+      exportSpaceCalendarPdf();
+      return;
+    }
+    if (action === "export-space-calendar-xlsx") {
+      exportSpaceCalendarXlsx();
       return;
     }
     if (action === "clear-schedule-edit") {

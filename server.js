@@ -562,7 +562,7 @@ function viewForUser(user) {
     focusWeekStart: db.focusWeekStart,
     spaces: db.spaces,
     events: db.events.map(publicEvent),
-    staffSchedules: db.staffSchedules,
+    staffSchedules: cleanStaffSchedules(db.staffSchedules),
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
     storage: storageStatusForClient(),
@@ -704,6 +704,7 @@ function createInitialDb() {
     airtable: {},
     users: []
   };
+  initial.staffSchedules = cleanStaffSchedules(initial.staffSchedules);
 
   initial.users.push(createSeedUser({
     id: "staff-admin",
@@ -774,7 +775,7 @@ function migrateDb(appDb) {
   appDb.alerts ||= [];
   appDb.airtable ||= {};
   appDb.spaces ||= structuredClone(seedData.spaces);
-  appDb.staffSchedules ||= structuredClone(seedData.staffSchedules);
+  appDb.staffSchedules = cleanStaffSchedules(appDb.staffSchedules || structuredClone(seedData.staffSchedules));
   appDb.events ||= seedData.events.map(createScheduleEvent);
   appDb.coverageRequests ||= [];
   appDb.users ||= [];
@@ -1451,6 +1452,7 @@ function getCoverageGaps() {
             }))
         );
         const staffBlocks = (db.staffSchedules || [])
+          .filter(staffScheduleVisible)
           .filter((slotItem) => scheduleItemMatchesDate(slotItem, day, date) && slotItem.space === space.name)
           .map((slotItem) => ({
             start: minutes(slotItem.start),
@@ -2013,6 +2015,42 @@ function formatTimeFromMinutes(total) {
 function formatShortDate(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function cleanStaffSchedules(schedules = []) {
+  const seen = new Set();
+  return (schedules || [])
+    .filter(staffScheduleVisible)
+    .filter((schedule) => {
+      const key = [
+        normalizeScheduleText(schedule.name),
+        normalizeScheduleText(schedule.space),
+        schedule.date || "",
+        schedule.day || "",
+        schedule.start || "",
+        schedule.end || ""
+      ].join("|");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function staffScheduleVisible(schedule = {}) {
+  return !removedStaffScheduleName(schedule.name) && !copiedStudentCoverageSchedule(schedule);
+}
+
+function removedStaffScheduleName(name) {
+  return ["lynn", "lynn romero"].includes(normalizeScheduleText(name));
+}
+
+function copiedStudentCoverageSchedule(schedule = {}) {
+  const note = normalizeScheduleText(schedule.notes);
+  return ["space coverage", "summer student coverage", "operations aide coverage"].includes(note) || String(schedule.id || "").startsWith("coverage-");
+}
+
+function normalizeScheduleText(value) {
+  return cleanText(value).toLowerCase().replace(/\s+/g, " ");
 }
 
 function cleanText(value) {

@@ -570,6 +570,7 @@ function calendarShiftItems(day, date, visibleSpaceSet, workerFilter) {
   );
   const staffShifts = staffView
     ? (app.data.staffSchedules || [])
+      .filter(calendarStaffScheduleVisible)
       .filter((slot) => visibleSpaceSet.has(slot.space) && scheduleItemMatchesDate(slot, day, date))
       .map((slot) => ({
         type: "staff",
@@ -579,8 +580,38 @@ function calendarShiftItems(day, date, visibleSpaceSet, workerFilter) {
         end: slot.end
       }))
     : [];
-  return [...studentShifts, ...staffShifts]
+  return dedupeCalendarShifts([...studentShifts, ...staffShifts])
     .sort((a, b) => minutes(a.start) - minutes(b.start) || a.space.localeCompare(b.space) || a.name.localeCompare(b.name));
+}
+
+function calendarStaffScheduleVisible(slot) {
+  return !removedStaffScheduleName(slot.name) && !copiedStudentCoverageSchedule(slot);
+}
+
+function removedStaffScheduleName(name) {
+  return ["lynn", "lynn romero"].includes(normalizeScheduleName(name));
+}
+
+function copiedStudentCoverageSchedule(slot) {
+  const note = String(slot.notes || "").trim().toLowerCase();
+  return ["space coverage", "summer student coverage", "operations aide coverage"].includes(note) || String(slot.id || "").startsWith("coverage-");
+}
+
+function dedupeCalendarShifts(shifts) {
+  const merged = new Map();
+  shifts.forEach((shift) => {
+    const key = [
+      normalizeScheduleName(shift.name),
+      normalizeScheduleSpace(shift.space),
+      shift.start,
+      shift.end
+    ].join("|");
+    const existing = merged.get(key);
+    if (!existing || existing.type === "staff") {
+      merged.set(key, shift);
+    }
+  });
+  return [...merged.values()];
 }
 
 function calendarShiftCard(shift) {
@@ -1251,6 +1282,7 @@ function coverageGapCard(gap) {
 
 function staffScheduleTable() {
   const schedules = (app.data.staffSchedules || [])
+    .filter(calendarStaffScheduleVisible)
     .filter(scheduleItemInFocusWeek)
     .sort((a, b) => (a.date || "").localeCompare(b.date || "") || DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || minutes(a.start) - minutes(b.start) || a.space.localeCompare(b.space));
   if (!schedules.length) return emptyState("No staff schedules added yet.");
@@ -1944,6 +1976,14 @@ function weekStartMonday(dateString) {
 
 function titleCase(value) {
   return String(value || "").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function normalizeScheduleName(value) {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function normalizeScheduleSpace(value) {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function escapeHtml(value) {

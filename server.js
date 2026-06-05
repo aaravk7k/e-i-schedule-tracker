@@ -55,10 +55,11 @@ const SPACE_COLORS = {
   "ACIC": "#177e89",
   "SkySong": "#005c5c",
   "The Studios": "#2f7d32",
-  "Fusion on First": "#7a3e9d",
   "WorldLabs Remote": "#344054",
   "General": "#667085"
 };
+
+const REMOVED_SPACES = new Set(["fusion on first"]);
 
 const SPACE_OWNER_WORKER_IDS = {
   "1951@SkySong": "amanda",
@@ -753,10 +754,10 @@ function createInitialDb() {
     seedVersion: CURRENT_SEED_VERSION,
     focusDate: FALLBACK_FOCUS_DATE,
     focusWeekStart: SOURCE_WEEK_START,
-    spaces: structuredClone(seedData.spaces),
+    spaces: cleanSpaces(structuredClone(seedData.spaces)),
     workers: structuredClone(seedData.workers),
     staffSchedules: structuredClone(seedData.staffSchedules),
-    events: seedData.events.map(createScheduleEvent),
+    events: cleanEvents(seedData.events.map(createScheduleEvent)),
     coverageRequests: [],
     tasks: [],
     activity: [],
@@ -834,7 +835,7 @@ function migrateDb(appDb) {
   appDb.activity ||= [];
   appDb.alerts ||= [];
   appDb.airtable ||= {};
-  appDb.spaces ||= structuredClone(seedData.spaces);
+  appDb.spaces = cleanSpaces(appDb.spaces || structuredClone(seedData.spaces));
   appDb.staffSchedules = cleanStaffSchedules(appDb.staffSchedules || structuredClone(seedData.staffSchedules));
   appDb.events ||= seedData.events.map(createScheduleEvent);
   appDb.coverageRequests ||= [];
@@ -851,7 +852,7 @@ function migrateDb(appDb) {
     task.priority ||= "Normal";
     task.status ||= "draft";
   });
-  appDb.events = appDb.events.map((event) => normalizeScheduleEvent(event));
+  appDb.events = cleanEvents(appDb.events.map((event) => normalizeScheduleEvent(event)));
   appDb.coverageRequests.forEach((request) => {
     request.status ||= "pending";
     request.createdAt ||= new Date().toISOString();
@@ -859,6 +860,7 @@ function migrateDb(appDb) {
     request.reason ||= "";
     request.score ||= 0;
   });
+  appDb.coverageRequests = cleanCoverageRequests(appDb.coverageRequests, appDb.events);
   if (!appDb.coverageRequests.length) {
     ensureCoverageRequestsForFocusWeek(appDb);
   }
@@ -2079,6 +2081,23 @@ function formatTimeFromMinutes(total) {
 function formatShortDate(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function cleanSpaces(spaces = []) {
+  return (spaces || []).filter((space) => !removedSpaceName(space.name));
+}
+
+function cleanEvents(events = []) {
+  return (events || []).filter((event) => !removedSpaceName(event.space));
+}
+
+function cleanCoverageRequests(requests = [], events = []) {
+  const eventIds = new Set((events || []).map((event) => event.id));
+  return (requests || []).filter((request) => eventIds.has(request.eventId));
+}
+
+function removedSpaceName(name) {
+  return REMOVED_SPACES.has(cleanText(name).toLowerCase());
 }
 
 function cleanStaffSchedules(schedules = []) {

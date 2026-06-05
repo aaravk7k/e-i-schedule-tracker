@@ -149,37 +149,6 @@
       "closedDates": [
         "2026-05-25"
       ]
-    },
-    {
-      "id": "fusion-on-first",
-      "name": "Fusion on First",
-      "campus": "Downtown Phoenix",
-      "coverageRequired": false,
-      "hours": {
-        "Monday": [
-          "08:00",
-          "17:00"
-        ],
-        "Tuesday": [
-          "08:00",
-          "17:00"
-        ],
-        "Wednesday": [
-          "08:00",
-          "17:00"
-        ],
-        "Thursday": [
-          "08:00",
-          "17:00"
-        ],
-        "Friday": [
-          "08:00",
-          "17:00"
-        ]
-      },
-      "closedDates": [
-        "2026-05-25"
-      ]
     }
   ],
   "workers": [
@@ -2668,16 +2637,6 @@
       "start": "09:00",
       "end": "12:00",
       "notes": "Y7811 | Confirmed | Event Space (Suite 150) | Webtoq | Contact: Andrea Junge | Source: Bookings (3).xlsx",
-      "status": "scheduled"
-    },
-    {
-      "id": "booking-l5413-2026-06-03-fusion-on-first-6",
-      "title": "ASU MUEP Strategy Meeting",
-      "date": "2026-06-03",
-      "space": "Fusion on First",
-      "start": "09:00",
-      "end": "16:30",
-      "notes": "L5413 | Confirmed | Conference Room (Suite 125A) | ASU School of Geographical Sciences & Urban Planning | Contact: Matthew Gomez | Source: Bookings (3).xlsx",
       "status": "scheduled"
     },
     {

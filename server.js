@@ -980,7 +980,6 @@ async function saveSerializedDbToAirtableState(serialized) {
   const existing = (await listAirtableRecords(AIRTABLE_TABLES.state))
     .filter((record) => record.fields?.Key === AIRTABLE_STATE_KEY)
     .sort((a, b) => Number(a.fields?.["Chunk Index"] || 0) - Number(b.fields?.["Chunk Index"] || 0));
-  const now = new Date().toISOString();
   const creates = [];
   const updates = [];
 
@@ -988,8 +987,7 @@ async function saveSerializedDbToAirtableState(serialized) {
     const fields = {
       Key: AIRTABLE_STATE_KEY,
       "Chunk Index": index,
-      Payload: payload,
-      "Updated At": now
+      Payload: payload
     };
     if (existing[index]) updates.push({ id: existing[index].id, fields });
     else creates.push({ fields });

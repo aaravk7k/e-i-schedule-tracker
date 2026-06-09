@@ -20,6 +20,19 @@ const AIRTABLE_TABLES = {
 const AIRTABLE_BACKEND_ENABLED = ["1", "true", "yes", "airtable"].includes(String(process.env.AIRTABLE_BACKEND || process.env.STORAGE_BACKEND || "").toLowerCase());
 const AIRTABLE_STATE_KEY = process.env.AIRTABLE_STATE_KEY || "schedule-manager-state";
 const AIRTABLE_STATE_CHUNK_SIZE = Number(process.env.AIRTABLE_STATE_CHUNK_SIZE || 45000);
+const MAZEVO_BASE_URL = String(process.env.MAZEVO_BASE_URL || "").replace(/\/+$/, "");
+const MAZEVO_API_KEY = process.env.MAZEVO_API_KEY || "";
+const MAZEVO_EVENTS_ENDPOINT = process.env.MAZEVO_EVENTS_ENDPOINT || "Events/GetEventsWithResourceDetails";
+const MAZEVO_EVENTS_METHOD = String(process.env.MAZEVO_EVENTS_METHOD || "POST").toUpperCase();
+const MAZEVO_AUTH_HEADER = process.env.MAZEVO_AUTH_HEADER || "Authorization";
+const MAZEVO_AUTH_PREFIX = Object.prototype.hasOwnProperty.call(process.env, "MAZEVO_AUTH_PREFIX") ? process.env.MAZEVO_AUTH_PREFIX : "Bearer";
+const MAZEVO_API_KEY_QUERY_PARAM = process.env.MAZEVO_API_KEY_QUERY_PARAM || "";
+const MAZEVO_LOOKAHEAD_DAYS = Number(process.env.MAZEVO_LOOKAHEAD_DAYS || 60);
+const MAZEVO_CONFIRMED_STATUSES = String(process.env.MAZEVO_CONFIRMED_STATUSES || "confirmed")
+  .split(",")
+  .map((status) => status.trim().toLowerCase())
+  .filter(Boolean);
+const MAZEVO_SYNC_SECRET = process.env.MAZEVO_SYNC_SECRET || "";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const SOURCE_WEEK_START = "2026-05-25";
@@ -113,6 +126,18 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/mazevo/sync" && !user) {
+    if (!mazevoSyncSecretAllowed(req)) {
+      sendJson(res, 401, { error: "Mazevo sync secret is missing or invalid" });
+      return;
+    }
+    const body = await readJson(req);
+    const summary = await syncMazevoEvents(body);
+    saveDb();
+    sendJson(res, 200, { ok: true, summary });
+    return;
+  }
+
   if (!user) {
     sendJson(res, 401, { error: "Not signed in" });
     return;
@@ -157,6 +182,21 @@ async function handleApi(req, res) {
   if (req.method === "GET" && url.pathname === "/api/airtable/status") {
     requireStaff(user);
     sendJson(res, 200, airtableStatus());
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/mazevo/status") {
+    requireStaff(user);
+    sendJson(res, 200, mazevoStatus());
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/mazevo/sync") {
+    requireStaff(user);
+    const body = await readJson(req);
+    const summary = await syncMazevoEvents(body);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
     return;
   }
 
@@ -627,6 +667,9 @@ function viewForUser(user) {
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
     storage: storageStatusForClient(),
+    integrations: {
+      mazevo: mazevoStatusForClient()
+    },
     workers: db.workers.map((worker) => publicWorker(worker, user.role === "staff")),
     coverageGaps,
     coverageSuggestions
@@ -692,7 +735,11 @@ function publicEvent(event) {
     afterHours: Boolean(event.afterHours),
     status: event.status || "requesting",
     assignedTo: event.assignedTo || "",
-    createdAt: event.createdAt || ""
+    createdAt: event.createdAt || "",
+    source: event.source || "",
+    externalId: event.externalId || "",
+    mazevoStatus: event.mazevoStatus || "",
+    importedAt: event.importedAt || ""
   };
 }
 
@@ -763,6 +810,7 @@ function createInitialDb() {
     activity: [],
     alerts: [],
     airtable: {},
+    integrations: { mazevo: {} },
     users: []
   };
   initial.staffSchedules = cleanStaffSchedules(initial.staffSchedules);
@@ -835,6 +883,8 @@ function migrateDb(appDb) {
   appDb.activity ||= [];
   appDb.alerts ||= [];
   appDb.airtable ||= {};
+  appDb.integrations ||= {};
+  appDb.integrations.mazevo ||= {};
   appDb.spaces = cleanSpaces(appDb.spaces || structuredClone(seedData.spaces));
   appDb.staffSchedules = cleanStaffSchedules(appDb.staffSchedules || structuredClone(seedData.staffSchedules));
   appDb.events ||= seedData.events.map(createScheduleEvent);
@@ -919,6 +969,332 @@ function storageStatusForClient() {
     lastStateSaveAt: status.lastStateSaveAt,
     lastStateSaveError: status.lastStateSaveError
   };
+}
+
+function mazevoConfigured() {
+  return Boolean(MAZEVO_BASE_URL && MAZEVO_API_KEY);
+}
+
+function mazevoStatus() {
+  return {
+    configured: mazevoConfigured(),
+    baseUrl: MAZEVO_BASE_URL ? maskValue(MAZEVO_BASE_URL) : "",
+    endpoint: MAZEVO_EVENTS_ENDPOINT,
+    method: MAZEVO_EVENTS_METHOD,
+    authHeader: MAZEVO_AUTH_HEADER,
+    confirmedStatuses: MAZEVO_CONFIRMED_STATUSES,
+    lookaheadDays: MAZEVO_LOOKAHEAD_DAYS,
+    missing: [
+      MAZEVO_BASE_URL ? "" : "MAZEVO_BASE_URL",
+      MAZEVO_API_KEY ? "" : "MAZEVO_API_KEY"
+    ].filter(Boolean),
+    lastSyncAt: db.integrations?.mazevo?.lastSyncAt || "",
+    lastSyncSummary: db.integrations?.mazevo?.lastSyncSummary || null,
+    lastSyncError: db.integrations?.mazevo?.lastSyncError || ""
+  };
+}
+
+function mazevoStatusForClient() {
+  const status = mazevoStatus();
+  return {
+    configured: status.configured,
+    endpoint: status.endpoint,
+    method: status.method,
+    lastSyncAt: status.lastSyncAt,
+    lastSyncSummary: status.lastSyncSummary,
+    lastSyncError: status.lastSyncError,
+    missing: status.missing
+  };
+}
+
+function mazevoSyncSecretAllowed(req) {
+  if (!MAZEVO_SYNC_SECRET) return false;
+  const headerSecret = cleanText(req.headers["x-sync-secret"]);
+  const auth = cleanText(req.headers.authorization);
+  const bearerSecret = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
+  return secureCompare(headerSecret, MAZEVO_SYNC_SECRET) || secureCompare(bearerSecret, MAZEVO_SYNC_SECRET);
+}
+
+function secureCompare(left, right) {
+  if (!left || !right) return false;
+  const leftBuffer = Buffer.from(String(left));
+  const rightBuffer = Buffer.from(String(right));
+  if (leftBuffer.length !== rightBuffer.length) return false;
+  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+async function syncMazevoEvents(options = {}) {
+  if (!mazevoConfigured()) {
+    const error = new Error("Mazevo is not configured. Set MAZEVO_BASE_URL and MAZEVO_API_KEY in Render.");
+    error.status = 400;
+    throw error;
+  }
+
+  const from = normalizeDateValue(options.from || options.startDate) || new Date().toISOString().slice(0, 10);
+  const to = normalizeDateValue(options.to || options.endDate) || addDays(from, MAZEVO_LOOKAHEAD_DAYS);
+  const summary = {
+    from,
+    to,
+    fetched: 0,
+    imported: 0,
+    updated: 0,
+    skippedUnconfirmed: 0,
+    skippedInvalid: 0,
+    requestsCreated: 0,
+    endpoint: MAZEVO_EVENTS_ENDPOINT,
+    syncedAt: new Date().toISOString()
+  };
+
+  try {
+    const payload = await fetchMazevoEvents({ from, to });
+    const records = extractMazevoEventRecords(payload);
+    summary.fetched = records.length;
+
+    records.forEach((record) => {
+      const mapped = mapMazevoRecordToEvent(record);
+      if (mapped.skip === "unconfirmed") {
+        summary.skippedUnconfirmed += 1;
+        return;
+      }
+      if (!mapped.event) {
+        summary.skippedInvalid += 1;
+        return;
+      }
+      const result = upsertMazevoEvent(mapped.event);
+      summary[result.action] += 1;
+      summary.requestsCreated += result.requestsCreated;
+    });
+
+    db.integrations ||= {};
+    db.integrations.mazevo = {
+      lastSyncAt: summary.syncedAt,
+      lastSyncSummary: summary,
+      lastSyncError: ""
+    };
+    addAlert("info", "Mazevo synced", `Imported ${summary.imported} and updated ${summary.updated} confirmed Mazevo event${summary.imported + summary.updated === 1 ? "" : "s"}.`);
+    addActivity(`Synced Mazevo events: ${summary.imported} imported, ${summary.updated} updated.`);
+    return summary;
+  } catch (error) {
+    db.integrations ||= {};
+    db.integrations.mazevo ||= {};
+    db.integrations.mazevo.lastSyncError = error.message;
+    try {
+      saveDb();
+    } catch (saveError) {
+      console.warn(`Mazevo sync error could not be saved: ${saveError.message}`);
+    }
+    throw error;
+  }
+}
+
+async function fetchMazevoEvents({ from, to }) {
+  const method = ["GET", "POST"].includes(MAZEVO_EVENTS_METHOD) ? MAZEVO_EVENTS_METHOD : "POST";
+  const url = mazevoRequestUrl(from, to, method);
+  const headers = {
+    Accept: "application/json",
+    "Content-Type": "application/json"
+  };
+  if (!MAZEVO_API_KEY_QUERY_PARAM) {
+    headers[MAZEVO_AUTH_HEADER] = MAZEVO_AUTH_PREFIX ? `${MAZEVO_AUTH_PREFIX} ${MAZEVO_API_KEY}` : MAZEVO_API_KEY;
+  }
+  const body = method === "GET" ? undefined : JSON.stringify({
+    startDate: from,
+    endDate: to,
+    StartDate: from,
+    EndDate: to
+  });
+
+  const response = await fetch(url, { method, headers, body });
+  const text = await response.text();
+  let payload = {};
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch (error) {
+    const parseError = new Error(`Mazevo returned non-JSON data (${response.status}). Check MAZEVO_BASE_URL and MAZEVO_EVENTS_ENDPOINT.`);
+    parseError.status = 502;
+    throw parseError;
+  }
+  if (!response.ok) {
+    const message = payload.error?.message || payload.message || payload.Message || `Mazevo request failed (${response.status})`;
+    const error = new Error(message);
+    error.status = 502;
+    throw error;
+  }
+  return payload;
+}
+
+function mazevoRequestUrl(from, to, method) {
+  const endpoint = /^https?:\/\//i.test(MAZEVO_EVENTS_ENDPOINT)
+    ? MAZEVO_EVENTS_ENDPOINT
+    : `${MAZEVO_BASE_URL}/${MAZEVO_EVENTS_ENDPOINT.replace(/^\/+/, "")}`;
+  const url = new URL(endpoint);
+  if (method === "GET") {
+    url.searchParams.set("startDate", from);
+    url.searchParams.set("endDate", to);
+    url.searchParams.set("StartDate", from);
+    url.searchParams.set("EndDate", to);
+  }
+  if (MAZEVO_API_KEY_QUERY_PARAM) url.searchParams.set(MAZEVO_API_KEY_QUERY_PARAM, MAZEVO_API_KEY);
+  return url;
+}
+
+function extractMazevoEventRecords(payload) {
+  if (Array.isArray(payload)) return payload.filter((item) => item && typeof item === "object");
+  const knownKeys = ["events", "Events", "bookings", "Bookings", "reservations", "Reservations", "data", "Data", "results", "Results", "value", "Value"];
+  for (const key of knownKeys) {
+    if (Array.isArray(payload?.[key])) return payload[key].filter((item) => item && typeof item === "object");
+  }
+  const arrays = [];
+  collectObjectArrays(payload, arrays);
+  return arrays.sort((a, b) => b.length - a.length)[0] || [];
+}
+
+function collectObjectArrays(value, arrays) {
+  if (Array.isArray(value)) {
+    const objects = value.filter((item) => item && typeof item === "object" && !Array.isArray(item));
+    if (objects.length) arrays.push(objects);
+    value.forEach((item) => collectObjectArrays(item, arrays));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  Object.values(value).forEach((item) => collectObjectArrays(item, arrays));
+}
+
+function mapMazevoRecordToEvent(record) {
+  const mazevoStatus = cleanText(mazevoField(record, ["Status", "StatusName", "Status Description", "EventStatus", "EventStatusName", "ReservationStatus", "BookingStatus"]));
+  if (!mazevoStatusAllowed(mazevoStatus)) return { skip: "unconfirmed" };
+
+  const externalId = cleanText(mazevoField(record, ["EventId", "EventID", "ID", "Id", "ReservationId", "ReservationID", "BookingId", "BookingID", "EventNumber"]));
+  const title = cleanText(mazevoField(record, ["EventName", "Event Name", "EventTitle", "Title", "Name", "Description", "Subject"]));
+  const startDateTime = mazevoField(record, ["StartDateTime", "Start Date Time", "EventStart", "Start", "StartTime"]);
+  const endDateTime = mazevoField(record, ["EndDateTime", "End Date Time", "EventEnd", "End", "EndTime"]);
+  const dateValue = mazevoField(record, ["EventDate", "Event Date", "Date", "StartDate", "Start Date", "MeetingDate"]);
+  const startValue = mazevoField(record, ["StartTime", "Start Time", "BeginTime", "Begin Time"]);
+  const endValue = mazevoField(record, ["EndTime", "End Time", "FinishTime", "Finish Time"]);
+  const rawSpace = cleanText(mazevoField(record, ["RoomName", "Room Name", "Room", "Space", "Location", "LocationName", "BuildingName", "Building", "ResourceName", "Resource Description", "ResourceDescription"]));
+
+  const date = mazevoDate(dateValue || startDateTime);
+  const start = mazevoTime(startValue || startDateTime, "");
+  const end = mazevoTime(endValue || endDateTime, "");
+  const space = mapMazevoSpace(rawSpace);
+
+  if (!date || !start || !end || minutes(end) <= minutes(start)) return {};
+
+  const idSource = externalId || `${title}-${date}-${start}-${end}-${space}`;
+  return {
+    event: {
+      id: `mazevo-${crypto.createHash("sha1").update(idSource).digest("hex").slice(0, 14)}`,
+      externalId: idSource,
+      title: title || "Mazevo Event",
+      date,
+      space,
+      start,
+      end,
+      notes: `Synced from Mazevo${mazevoStatus ? ` (${mazevoStatus})` : ""}${rawSpace && rawSpace !== space ? `; original room: ${rawSpace}` : ""}.`,
+      status: "requesting",
+      source: "mazevo",
+      mazevoStatus,
+      importedAt: new Date().toISOString()
+    }
+  };
+}
+
+function mazevoStatusAllowed(status) {
+  if (MAZEVO_CONFIRMED_STATUSES.includes("*")) return true;
+  if (!status) return false;
+  const clean = status.toLowerCase();
+  return MAZEVO_CONFIRMED_STATUSES.some((allowed) => clean === allowed || clean.includes(allowed));
+}
+
+function mazevoField(record, names) {
+  const targets = new Set(names.map(normalizedMazevoKey));
+  return findMazevoField(record, targets);
+}
+
+function findMazevoField(value, targets) {
+  if (!value || typeof value !== "object") return "";
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const nested = findMazevoField(item, targets);
+      if (nested) return nested;
+    }
+    return "";
+  }
+  for (const [key, fieldValue] of Object.entries(value)) {
+    if (targets.has(normalizedMazevoKey(key)) && fieldValue !== null && fieldValue !== undefined && fieldValue !== "") return fieldValue;
+  }
+  for (const fieldValue of Object.values(value)) {
+    const nested = findMazevoField(fieldValue, targets);
+    if (nested) return nested;
+  }
+  return "";
+}
+
+function normalizedMazevoKey(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function mazevoDate(value) {
+  const clean = cleanText(value);
+  if (!clean) return "";
+  const isoDate = clean.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoDate) return isoDate[1];
+  return normalizeDateValue(clean);
+}
+
+function mazevoTime(value, fallback) {
+  const clean = cleanText(value);
+  if (!clean) return fallback;
+  const isoTime = clean.match(/[T\s](\d{1,2}:\d{2})(?::\d{2})?/);
+  if (isoTime) return normalizeTimeValue(isoTime[1], fallback);
+  return normalizeTimeValue(clean, fallback);
+}
+
+function mapMazevoSpace(value) {
+  const clean = cleanText(value);
+  const map = mazevoSpaceMap();
+  const mapped = map[clean.toLowerCase()];
+  return normalizeSpaceName(mapped || clean || "General");
+}
+
+function mazevoSpaceMap() {
+  const raw = process.env.MAZEVO_SPACE_MAP || "";
+  if (!raw.trim()) return {};
+  try {
+    return Object.fromEntries(Object.entries(JSON.parse(raw)).map(([key, value]) => [key.toLowerCase(), value]));
+  } catch (error) {
+    return Object.fromEntries(raw
+      .split(";")
+      .map((pair) => pair.split("=").map((part) => cleanText(part)))
+      .filter(([from, to]) => from && to)
+      .map(([from, to]) => [from.toLowerCase(), to]));
+  }
+}
+
+function upsertMazevoEvent(input) {
+  const event = createScheduleEvent(input);
+  const existing = db.events.find((item) => item.source === "mazevo" && item.externalId === event.externalId) || db.events.find((item) => item.id === event.id);
+  const beforeRequestCount = db.coverageRequests.length;
+
+  if (!existing) {
+    if (!event.afterHours) event.status = "scheduled";
+    db.events.push(event);
+    if (event.afterHours) createCoverageRequestsForEvent(event, db, { silent: true });
+    return { action: "imported", requestsCreated: db.coverageRequests.length - beforeRequestCount };
+  }
+
+  const preserveCoverage = existing.afterHours && ["accepted", "scheduled", "covered", "rejected"].includes(existing.status);
+  const preservedStatus = preserveCoverage ? existing.status : (event.afterHours ? "requesting" : "scheduled");
+  const preservedAssignedTo = preserveCoverage ? existing.assignedTo : "";
+  Object.assign(existing, event, {
+    id: existing.id,
+    createdAt: existing.createdAt || event.createdAt,
+    status: preservedStatus,
+    assignedTo: preservedAssignedTo
+  });
+  existing.afterHours = isAfterHoursEvent(existing);
+  if (existing.afterHours && !afterHoursCoverageResolved(existing)) createCoverageRequestsForEvent(existing, db, { silent: true });
+  return { action: "updated", requestsCreated: db.coverageRequests.length - beforeRequestCount };
 }
 
 async function pushDbToAirtable() {
@@ -1159,7 +1535,11 @@ function createScheduleEvent(input) {
     notes: cleanText(input.notes),
     status: input.status || "requesting",
     assignedTo: input.assignedTo || "",
-    createdAt: input.createdAt || new Date().toISOString()
+    createdAt: input.createdAt || new Date().toISOString(),
+    source: cleanText(input.source),
+    externalId: cleanText(input.externalId),
+    mazevoStatus: cleanText(input.mazevoStatus),
+    importedAt: input.importedAt || ""
   });
   if (minutes(event.end) <= minutes(event.start)) {
     const error = new Error("Invalid event time");
@@ -1180,7 +1560,11 @@ function normalizeScheduleEvent(event) {
     notes: cleanText(event.notes),
     status: cleanText(event.status) || "requesting",
     assignedTo: cleanText(event.assignedTo),
-    createdAt: event.createdAt || new Date().toISOString()
+    createdAt: event.createdAt || new Date().toISOString(),
+    source: cleanText(event.source),
+    externalId: cleanText(event.externalId),
+    mazevoStatus: cleanText(event.mazevoStatus),
+    importedAt: event.importedAt || ""
   };
   normalized.afterHours = isAfterHoursEvent(normalized);
   return normalized;

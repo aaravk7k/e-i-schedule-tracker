@@ -271,6 +271,28 @@ button:disabled {
   align-items: center;
 }
 
+.integration-note {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--asu-maroon);
+  border-radius: 8px;
+  background: #fbfcff;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.integration-note strong {
+  color: var(--ink);
+}
+
+.integration-note.warning-note {
+  border-left-color: #bd8b00;
+  background: #fffaf0;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(150px, 1fr));

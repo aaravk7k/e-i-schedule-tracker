@@ -1148,6 +1148,9 @@ function renderEvents() {
           <p class="eyebrow">Imported Bookings</p>
           <h3>${formatShortDate(app.data.focusWeekStart)}-${formatShortDate(addDays(app.data.focusWeekStart, 6))}</h3>
         </div>
+        <div class="action-row">
+          <button class="secondary-button" type="button" data-action="sync-mazevo">Sync Mazevo</button>
+        </div>
       </div>
       <div class="kpi-grid">
         ${kpiCard(focusEvents.length, "Bookings this week")}
@@ -1159,6 +1162,7 @@ function renderEvents() {
     <section class="split-grid">
       <div class="panel">
         <h3>Add Booking</h3>
+        ${mazevoSyncPanel()}
         ${smartEventForm()}
       </div>
       <div class="panel">
@@ -1214,6 +1218,26 @@ function renderSpaces() {
         </table>
       </div>
     </section>
+  `;
+}
+
+function mazevoSyncPanel() {
+  const mazevo = app.data.integrations?.mazevo || {};
+  const summary = mazevo.lastSyncSummary;
+  const configured = mazevo.configured;
+  const statusText = configured
+    ? `Ready${mazevo.lastSyncAt ? `; last sync ${formatDateTime(mazevo.lastSyncAt)}` : "; not synced yet"}.`
+    : `Not configured${mazevo.missing?.length ? `: ${mazevo.missing.join(", ")}` : ""}.`;
+  const summaryText = summary
+    ? `${summary.imported || 0} imported, ${summary.updated || 0} updated, ${summary.skippedUnconfirmed || 0} skipped as not confirmed.`
+    : "Confirmed Mazevo events will appear here after sync.";
+  return `
+    <div class="integration-note ${configured ? "" : "warning-note"}">
+      <strong>Mazevo sync</strong>
+      <span>${escapeHtml(statusText)}</span>
+      <span>${escapeHtml(summaryText)}</span>
+      ${mazevo.lastSyncError ? `<span class="limit-warning">${escapeHtml(mazevo.lastSyncError)}</span>` : ""}
+    </div>
   `;
 }
 
@@ -1315,6 +1339,7 @@ function eventCard(event) {
         ${spaceChip(event.space)}
         <span class="badge">${formatShortDate(event.date)}</span>
         <span class="badge">${formatTime(event.start)}-${formatTime(event.end)}</span>
+        ${event.source === "mazevo" ? `<span class="badge">Mazevo</span>` : ""}
         ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
       </div>
       <p class="task-meta">${escapeHtml(event.notes || "No notes added.")}</p>
@@ -1427,6 +1452,18 @@ async function handleAction(action, button) {
     if (action === "generate-worldlabs") {
       app.data = await api("/api/generate-worldlabs", { method: "POST", body: { focusDate: app.data.focusDate } });
       showToast("WorldLabs tasks generated.");
+      render();
+      return;
+    }
+    if (action === "sync-mazevo") {
+      app.data = await api("/api/mazevo/sync", {
+        method: "POST",
+        body: {
+          from: app.data.focusWeekStart,
+          to: addDays(app.data.focusWeekStart, 60)
+        }
+      });
+      showToast("Mazevo confirmed events synced.");
       render();
       return;
     }
@@ -2032,6 +2069,12 @@ function formatTime(time) {
 function formatShortDate(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value || "";
+  return date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 function addDays(dateString, amount) {

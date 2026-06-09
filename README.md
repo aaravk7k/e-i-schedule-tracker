@@ -53,6 +53,13 @@ AIRTABLE_BACKEND=true
 AIRTABLE_PAT=pat_your_token_here
 AIRTABLE_BASE_ID=app_your_sandbox_base_id
 AIRTABLE_TABLE_STATE=Schedule Manager State
+MAZEVO_BASE_URL=https://your-mazevo-api-root.example
+MAZEVO_API_KEY=your-mazevo-api-key
+MAZEVO_EVENTS_ENDPOINT=Events/GetEventsWithResourceDetails
+MAZEVO_EVENTS_METHOD=POST
+MAZEVO_AUTH_HEADER=Authorization
+MAZEVO_AUTH_PREFIX=Bearer
+MAZEVO_SYNC_SECRET=make-a-private-random-secret
 ```
 
 For Render, Railway, Fly.io, or similar:
@@ -75,6 +82,25 @@ Create a sandbox Airtable base first with one table named `Schedule Manager Stat
 Do not point this at the department's real project-management base until the pilot flow is approved.
 
 For the Airtable token, grant access only to the sandbox base and use `data.records:read` plus `data.records:write`.
+
+## Mazevo Event Sync
+
+The app can pull confirmed Mazevo events into the `Bookings` page. Staff can click `Sync Mazevo`, and a scheduler can later call:
+
+```text
+POST /api/mazevo/sync
+X-Sync-Secret: your MAZEVO_SYNC_SECRET
+```
+
+Use the Mazevo API root as `MAZEVO_BASE_URL`, then set `MAZEVO_EVENTS_ENDPOINT` to the selected event call, usually `Events/GetEventsWithResourceDetails` or `Events/GetEvents`. If Mazevo tells you the key belongs in a different header, change `MAZEVO_AUTH_HEADER`; if the header value should be only the key, set `MAZEVO_AUTH_PREFIX` to a blank value.
+
+Optional mapping for Mazevo room names:
+
+```text
+MAZEVO_SPACE_MAP=Venture Cafe Phoenix=850PBC;1951=1951@SkySong
+```
+
+Only records whose status includes `confirmed` are imported by default. Change `MAZEVO_CONFIRMED_STATUSES` if Mazevo uses another status label.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for Docker and production rollout notes.
 

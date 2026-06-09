@@ -55,7 +55,7 @@ AIRTABLE_BASE_ID=app_your_sandbox_base_id
 AIRTABLE_TABLE_STATE=Schedule Manager State
 MAZEVO_BASE_URL=https://your-mazevo-api-root.example
 MAZEVO_API_KEY=your-mazevo-api-key
-MAZEVO_EVENTS_ENDPOINT=PublicEvent/geteventswithresourcedetails
+MAZEVO_EVENTS_ENDPOINT=PublicEvent/getevents
 MAZEVO_EVENTS_METHOD=POST
 MAZEVO_AUTH_HEADER=X-API-Key
 MAZEVO_AUTH_PREFIX=
@@ -92,7 +92,7 @@ POST /api/mazevo/sync
 X-Sync-Secret: your MAZEVO_SYNC_SECRET
 ```
 
-Use the Mazevo API root as `MAZEVO_BASE_URL`, then set `MAZEVO_EVENTS_ENDPOINT` to the selected event call. For Mazevo's public Postman docs, use `PublicEvent/geteventswithresourcedetails` or `PublicEvent/getevents`. Mazevo public API keys are sent with the `X-API-Key` header, so leave `MAZEVO_AUTH_PREFIX` blank.
+Use the Mazevo API root as `MAZEVO_BASE_URL`, then set `MAZEVO_EVENTS_ENDPOINT` to `PublicEvent/getevents`. Mazevo's `Get Events With Resource Details` call is for known `bookingIds`, so the date-range schedule sync should use the regular `Get Events` call. Mazevo public API keys are sent with the `X-API-Key` header, so leave `MAZEVO_AUTH_PREFIX` blank.
 
 Optional mapping for Mazevo room names:
 

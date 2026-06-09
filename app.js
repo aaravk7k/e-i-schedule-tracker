@@ -1145,11 +1145,11 @@ function renderEvents() {
     <section class="band">
       <div class="band-header">
         <div>
-          <p class="eyebrow">Imported Bookings</p>
+          <p class="eyebrow">Mazevo Bookings</p>
           <h3>${formatShortDate(app.data.focusWeekStart)}-${formatShortDate(addDays(app.data.focusWeekStart, 6))}</h3>
         </div>
         <div class="action-row">
-          <button class="secondary-button" type="button" data-action="sync-mazevo">Sync Mazevo</button>
+          <button class="secondary-button" type="button" data-action="sync-mazevo">Sync From Mazevo</button>
         </div>
       </div>
       <div class="kpi-grid">
@@ -1161,9 +1161,8 @@ function renderEvents() {
     </section>
     <section class="split-grid">
       <div class="panel">
-        <h3>Add Booking</h3>
+        <h3>Mazevo Source</h3>
         ${mazevoSyncPanel()}
-        ${smartEventForm()}
       </div>
       <div class="panel">
         <h3>Student Requests</h3>
@@ -1229,8 +1228,8 @@ function mazevoSyncPanel() {
     ? `Ready${mazevo.lastSyncAt ? `; last sync ${formatDateTime(mazevo.lastSyncAt)}` : "; not synced yet"}.`
     : `Not configured${mazevo.missing?.length ? `: ${mazevo.missing.join(", ")}` : ""}.`;
   const summaryText = summary
-    ? `${summary.imported || 0} imported, ${summary.updated || 0} updated, ${summary.duplicatesRemoved || 0} duplicates removed, ${summary.skippedUnconfirmed || 0} skipped as not confirmed.`
-    : "Confirmed Mazevo events will appear here after sync.";
+    ? `${summary.imported || 0} imported, ${summary.updated || 0} updated, ${(summary.legacyBookingsRemoved || 0) + (summary.duplicatesRemoved || 0)} old spreadsheet bookings cleared, ${summary.skippedUnconfirmed || 0} skipped as not confirmed.`
+    : "Confirmed Mazevo events will appear here after sync. Old spreadsheet booking imports are hidden.";
   return `
     <div class="integration-note ${configured ? "" : "warning-note"}">
       <strong>Mazevo sync</strong>

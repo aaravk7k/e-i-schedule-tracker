@@ -656,13 +656,18 @@ function viewForUser(user) {
   const coverageGaps = getCoverageGaps();
   const coverageSuggestions = getCoverageSuggestions(coverageGaps);
   const currentUser = publicUser(user);
+  const visibleEvents = db.events.filter((event) => !isLegacyBookingImport(event));
+  const visibleCoverageRequests = db.coverageRequests.filter((request) => {
+    const event = db.events.find((item) => item.id === request.eventId);
+    return event && !isLegacyBookingImport(event);
+  });
   const base = {
     currentUser,
     role: user.role,
     focusDate: db.focusDate,
     focusWeekStart: db.focusWeekStart,
     spaces: db.spaces,
-    events: db.events.map(publicEvent),
+    events: visibleEvents.map(publicEvent),
     staffSchedules: cleanStaffSchedules(db.staffSchedules),
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
@@ -679,14 +684,14 @@ function viewForUser(user) {
     return {
       ...base,
       tasks: db.tasks,
-      coverageRequests: db.coverageRequests.map(publicCoverageRequest),
+      coverageRequests: visibleCoverageRequests.map(publicCoverageRequest),
       alerts: buildAlerts(coverageGaps),
       activity: db.activity,
       users: db.users.map(publicUser)
     };
   }
 
-  const studentRequests = db.coverageRequests.filter((request) => request.workerId === user.workerId && coverageRequestInFocusWeek(request, db));
+  const studentRequests = visibleCoverageRequests.filter((request) => request.workerId === user.workerId && coverageRequestInFocusWeek(request, db));
   return {
     ...base,
     tasks: db.tasks.filter((task) => task.assignedTo === user.workerId),
@@ -761,7 +766,7 @@ function publicCoverageRequest(request) {
 function buildAlerts(gaps) {
   const gapAlerts = gaps.slice(0, 10).map(gapToAlert);
   const eventAlerts = db.events
-    .filter((event) => event.afterHours && isDateInFocusWeek(event.date) && ["needs-review", "requesting", "accepted"].includes(event.status))
+    .filter((event) => !isLegacyBookingImport(event) && event.afterHours && isDateInFocusWeek(event.date) && ["needs-review", "requesting", "accepted"].includes(event.status))
     .slice(0, 8)
     .map(eventToAlert);
   return [...eventAlerts, ...gapAlerts, ...(db.alerts || []).slice(0, 8)];
@@ -795,7 +800,7 @@ function requestToAlert(request) {
 
 function coverageRequestInFocusWeek(request, appDb = db) {
   const event = appDb.events.find((item) => item.id === request.eventId);
-  return Boolean(event && isDateInFocusWeek(event.date, appDb.focusWeekStart));
+  return Boolean(event && !isLegacyBookingImport(event) && isDateInFocusWeek(event.date, appDb.focusWeekStart));
 }
 
 function createInitialDb() {
@@ -1044,6 +1049,7 @@ async function syncMazevoEvents(options = {}) {
     skippedInvalid: 0,
     requestsCreated: 0,
     duplicatesRemoved: 0,
+    legacyBookingsRemoved: 0,
     endpoint: MAZEVO_EVENTS_ENDPOINT,
     syncedAt: new Date().toISOString()
   };
@@ -1068,6 +1074,7 @@ async function syncMazevoEvents(options = {}) {
       summary.requestsCreated += result.requestsCreated;
       summary.duplicatesRemoved += result.duplicatesRemoved || 0;
     });
+    summary.legacyBookingsRemoved = removeLegacyBookingImports(db, { from, to });
 
     db.integrations ||= {};
     db.integrations.mazevo = {
@@ -1076,7 +1083,7 @@ async function syncMazevoEvents(options = {}) {
       lastSyncError: ""
     };
     addAlert("info", "Mazevo synced", `Imported ${summary.imported} and updated ${summary.updated} confirmed Mazevo event${summary.imported + summary.updated === 1 ? "" : "s"}.`);
-    addActivity(`Synced Mazevo events: ${summary.imported} imported, ${summary.updated} updated.`);
+    addActivity(`Synced Mazevo events: ${summary.imported} imported, ${summary.updated} updated, ${summary.legacyBookingsRemoved + summary.duplicatesRemoved} old booking import${summary.legacyBookingsRemoved + summary.duplicatesRemoved === 1 ? "" : "s"} cleared.`);
     return summary;
   } catch (error) {
     db.integrations ||= {};
@@ -1344,6 +1351,32 @@ function removeLegacyDuplicatesForMazevoEvent(mazevoEvent, appDb) {
   appDb.events = appDb.events.filter((event) => !duplicateIds.has(event.id));
   appDb.coverageRequests = appDb.coverageRequests.filter((request) => !duplicateIds.has(request.eventId));
   return duplicates.length;
+}
+
+function removeLegacyBookingImports(appDb, options = {}) {
+  const from = normalizeDateValue(options.from);
+  const to = normalizeDateValue(options.to);
+  const legacyIds = new Set(appDb.events
+    .filter((event) => isLegacyBookingImport(event))
+    .filter((event) => {
+      if (!from && !to) return true;
+      if (from && event.date < from) return false;
+      if (to && event.date > to) return false;
+      return true;
+    })
+    .map((event) => event.id));
+  if (!legacyIds.size) return 0;
+
+  appDb.events = appDb.events.filter((event) => !legacyIds.has(event.id));
+  appDb.coverageRequests = appDb.coverageRequests.filter((request) => !legacyIds.has(request.eventId));
+  return legacyIds.size;
+}
+
+function isLegacyBookingImport(event) {
+  if (!event || event.source === "mazevo") return false;
+  const haystack = `${event.source || ""} ${event.notes || ""} ${event.externalId || ""}`.toLowerCase();
+  return /source:\s*bookings(?:\s*\(\d+\))?\.xlsx/.test(haystack)
+    || /\bbookings(?:\s*\(\d+\))?\.xlsx\b/.test(haystack);
 }
 
 function isLegacyDuplicateOfMazevoEvent(event, mazevoEvent) {

@@ -22,10 +22,10 @@ const AIRTABLE_STATE_KEY = process.env.AIRTABLE_STATE_KEY || "schedule-manager-s
 const AIRTABLE_STATE_CHUNK_SIZE = Number(process.env.AIRTABLE_STATE_CHUNK_SIZE || 45000);
 const MAZEVO_BASE_URL = String(process.env.MAZEVO_BASE_URL || "").replace(/\/+$/, "");
 const MAZEVO_API_KEY = process.env.MAZEVO_API_KEY || "";
-const MAZEVO_EVENTS_ENDPOINT = process.env.MAZEVO_EVENTS_ENDPOINT || "Events/GetEventsWithResourceDetails";
+const MAZEVO_EVENTS_ENDPOINT = process.env.MAZEVO_EVENTS_ENDPOINT || "PublicEvent/geteventswithresourcedetails";
 const MAZEVO_EVENTS_METHOD = String(process.env.MAZEVO_EVENTS_METHOD || "POST").toUpperCase();
-const MAZEVO_AUTH_HEADER = process.env.MAZEVO_AUTH_HEADER || "Authorization";
-const MAZEVO_AUTH_PREFIX = Object.prototype.hasOwnProperty.call(process.env, "MAZEVO_AUTH_PREFIX") ? process.env.MAZEVO_AUTH_PREFIX : "Bearer";
+const MAZEVO_AUTH_HEADER = process.env.MAZEVO_AUTH_HEADER || "X-API-Key";
+const MAZEVO_AUTH_PREFIX = Object.prototype.hasOwnProperty.call(process.env, "MAZEVO_AUTH_PREFIX") ? process.env.MAZEVO_AUTH_PREFIX : "";
 const MAZEVO_API_KEY_QUERY_PARAM = process.env.MAZEVO_API_KEY_QUERY_PARAM || "";
 const MAZEVO_LOOKAHEAD_DAYS = Number(process.env.MAZEVO_LOOKAHEAD_DAYS || 60);
 const MAZEVO_CONFIRMED_STATUSES = String(process.env.MAZEVO_CONFIRMED_STATUSES || "confirmed")
@@ -1098,10 +1098,25 @@ async function fetchMazevoEvents({ from, to }) {
     headers[MAZEVO_AUTH_HEADER] = MAZEVO_AUTH_PREFIX ? `${MAZEVO_AUTH_PREFIX} ${MAZEVO_API_KEY}` : MAZEVO_API_KEY;
   }
   const body = method === "GET" ? undefined : JSON.stringify({
+    start: `${from}T00:00:00-07:00`,
+    end: `${to}T23:59:59-07:00`,
     startDate: from,
     endDate: to,
     StartDate: from,
-    EndDate: to
+    EndDate: to,
+    buildingIds: [],
+    roomIds: [],
+    eventTypeIds: [],
+    statusIds: [],
+    resourceIds: [],
+    bookingIds: [],
+    contactId: 0,
+    organizationId: 0,
+    explodeComboRooms: false,
+    includeRelatedRooms: false,
+    minDateChanged: null,
+    includeEventCoordinators: false,
+    includeCalendarDetails: false
   });
 
   const response = await fetch(url, { method, headers, body });
@@ -1129,6 +1144,8 @@ function mazevoRequestUrl(from, to, method) {
     : `${MAZEVO_BASE_URL}/${MAZEVO_EVENTS_ENDPOINT.replace(/^\/+/, "")}`;
   const url = new URL(endpoint);
   if (method === "GET") {
+    url.searchParams.set("start", `${from}T00:00:00-07:00`);
+    url.searchParams.set("end", `${to}T23:59:59-07:00`);
     url.searchParams.set("startDate", from);
     url.searchParams.set("endDate", to);
     url.searchParams.set("StartDate", from);
@@ -1166,12 +1183,12 @@ function mapMazevoRecordToEvent(record) {
 
   const externalId = cleanText(mazevoField(record, ["EventId", "EventID", "ID", "Id", "ReservationId", "ReservationID", "BookingId", "BookingID", "EventNumber"]));
   const title = cleanText(mazevoField(record, ["EventName", "Event Name", "EventTitle", "Title", "Name", "Description", "Subject"]));
-  const startDateTime = mazevoField(record, ["StartDateTime", "Start Date Time", "EventStart", "Start", "StartTime"]);
-  const endDateTime = mazevoField(record, ["EndDateTime", "End Date Time", "EventEnd", "End", "EndTime"]);
+  const startDateTime = mazevoField(record, ["dateTimeStart", "StartDateTime", "Start Date Time", "EventStart", "Start", "StartTime"]);
+  const endDateTime = mazevoField(record, ["dateTimeEnd", "EndDateTime", "End Date Time", "EventEnd", "End", "EndTime"]);
   const dateValue = mazevoField(record, ["EventDate", "Event Date", "Date", "StartDate", "Start Date", "MeetingDate"]);
   const startValue = mazevoField(record, ["StartTime", "Start Time", "BeginTime", "Begin Time"]);
   const endValue = mazevoField(record, ["EndTime", "End Time", "FinishTime", "Finish Time"]);
-  const rawSpace = cleanText(mazevoField(record, ["RoomName", "Room Name", "Room", "Space", "Location", "LocationName", "BuildingName", "Building", "ResourceName", "Resource Description", "ResourceDescription"]));
+  const rawSpace = cleanText(mazevoField(record, ["roomDescription", "RoomName", "Room Name", "Room", "Space", "Location", "LocationName", "buildingDescription", "BuildingName", "Building", "ResourceName", "Resource Description", "ResourceDescription"]));
 
   const date = mazevoDate(dateValue || startDateTime);
   const start = mazevoTime(startValue || startDateTime, "");

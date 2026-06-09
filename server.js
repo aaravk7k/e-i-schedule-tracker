@@ -739,6 +739,8 @@ function publicEvent(event) {
     source: event.source || "",
     externalId: event.externalId || "",
     mazevoStatus: event.mazevoStatus || "",
+    mazevoEventNumber: event.mazevoEventNumber || "",
+    mazevoBookingId: event.mazevoBookingId || "",
     importedAt: event.importedAt || ""
   };
 }
@@ -1041,6 +1043,7 @@ async function syncMazevoEvents(options = {}) {
     skippedUnconfirmed: 0,
     skippedInvalid: 0,
     requestsCreated: 0,
+    duplicatesRemoved: 0,
     endpoint: MAZEVO_EVENTS_ENDPOINT,
     syncedAt: new Date().toISOString()
   };
@@ -1063,6 +1066,7 @@ async function syncMazevoEvents(options = {}) {
       const result = upsertMazevoEvent(mapped.event);
       summary[result.action] += 1;
       summary.requestsCreated += result.requestsCreated;
+      summary.duplicatesRemoved += result.duplicatesRemoved || 0;
     });
 
     db.integrations ||= {};
@@ -1181,6 +1185,8 @@ function mapMazevoRecordToEvent(record) {
   const mazevoStatus = cleanText(mazevoField(record, ["Status", "StatusName", "Status Description", "EventStatus", "EventStatusName", "ReservationStatus", "BookingStatus"]));
   if (!mazevoStatusAllowed(mazevoStatus)) return { skip: "unconfirmed" };
 
+  const mazevoEventNumber = cleanText(mazevoField(record, ["eventNumber", "EventNumber"]));
+  const mazevoBookingId = cleanText(mazevoField(record, ["bookingId", "BookingId", "BookingID"]));
   const externalId = cleanText(mazevoField(record, ["EventId", "EventID", "ID", "Id", "ReservationId", "ReservationID", "BookingId", "BookingID", "EventNumber"]));
   const title = cleanText(mazevoField(record, ["EventName", "Event Name", "EventTitle", "Title", "Name", "Description", "Subject"]));
   const startDateTime = mazevoField(record, ["dateTimeStart", "StartDateTime", "Start Date Time", "EventStart", "Start", "StartTime"]);
@@ -1213,6 +1219,8 @@ function mapMazevoRecordToEvent(record) {
       status: "requesting",
       source: "mazevo",
       mazevoStatus,
+      mazevoEventNumber,
+      mazevoBookingId,
       importedAt: new Date().toISOString()
     }
   };
@@ -1306,8 +1314,9 @@ function upsertMazevoEvent(input) {
   if (!existing) {
     if (!event.afterHours) event.status = "scheduled";
     db.events.push(event);
+    const duplicatesRemoved = removeLegacyDuplicatesForMazevoEvent(event, db);
     const created = event.afterHours ? createCoverageRequestsForEvent(event, db, { silent: true }) : [];
-    return { action: "imported", requestsCreated: created.length };
+    return { action: "imported", requestsCreated: created.length, duplicatesRemoved };
   }
 
   const preserveCoverage = existing.afterHours && ["accepted", "scheduled", "covered", "rejected"].includes(existing.status);
@@ -1321,8 +1330,67 @@ function upsertMazevoEvent(input) {
   });
   existing.afterHours = isAfterHoursEvent(existing);
   if (!preserveCoverage) removeOpenCoverageRequestsForEvent(existing.id);
+  const duplicatesRemoved = removeLegacyDuplicatesForMazevoEvent(existing, db);
   const created = existing.afterHours && !afterHoursCoverageResolved(existing) ? createCoverageRequestsForEvent(existing, db, { silent: true }) : [];
-  return { action: "updated", requestsCreated: created.length };
+  return { action: "updated", requestsCreated: created.length, duplicatesRemoved };
+}
+
+function removeLegacyDuplicatesForMazevoEvent(mazevoEvent, appDb) {
+  const duplicates = appDb.events.filter((event) => isLegacyDuplicateOfMazevoEvent(event, mazevoEvent));
+  if (!duplicates.length) return 0;
+
+  const duplicateIds = new Set(duplicates.map((event) => event.id));
+  duplicates.forEach((duplicate) => transferResolvedCoverageIfNeeded(duplicate, mazevoEvent, appDb));
+  appDb.events = appDb.events.filter((event) => !duplicateIds.has(event.id));
+  appDb.coverageRequests = appDb.coverageRequests.filter((request) => !duplicateIds.has(request.eventId));
+  return duplicates.length;
+}
+
+function isLegacyDuplicateOfMazevoEvent(event, mazevoEvent) {
+  if (!event || !mazevoEvent || event.id === mazevoEvent.id || event.source === "mazevo") return false;
+  if (event.date !== mazevoEvent.date || event.start !== mazevoEvent.start || event.end !== mazevoEvent.end || event.space !== mazevoEvent.space) return false;
+  const eventNumber = cleanText(mazevoEvent.mazevoEventNumber);
+  if (eventNumber && (`${event.externalId || ""} ${event.notes || ""}`.toLowerCase()).includes(eventNumber.toLowerCase())) return true;
+  return titlesLikelySame(event.title, mazevoEvent.title);
+}
+
+function transferResolvedCoverageIfNeeded(legacyEvent, mazevoEvent, appDb) {
+  if (!["accepted", "scheduled", "covered", "rejected"].includes(legacyEvent.status || "")) return;
+  if (!afterHoursCoverageResolved(mazevoEvent)) {
+    mazevoEvent.status = legacyEvent.status;
+    mazevoEvent.assignedTo = legacyEvent.assignedTo || mazevoEvent.assignedTo || "";
+    mazevoEvent.resolvedAt = legacyEvent.resolvedAt || mazevoEvent.resolvedAt || "";
+    mazevoEvent.resolvedBy = legacyEvent.resolvedBy || mazevoEvent.resolvedBy || "";
+  }
+  appDb.coverageRequests
+    .filter((request) => request.eventId === legacyEvent.id && ["accepted", "scheduled", "covered"].includes(request.status))
+    .forEach((request) => {
+      const exists = appDb.coverageRequests.some((item) => item.eventId === mazevoEvent.id && item.workerId === request.workerId);
+      if (!exists) request.eventId = mazevoEvent.id;
+    });
+}
+
+function titlesLikelySame(left, right) {
+  const leftTitle = comparableTitle(left);
+  const rightTitle = comparableTitle(right);
+  if (!leftTitle || !rightTitle) return false;
+  if (leftTitle === rightTitle) return true;
+  if (leftTitle.length > 14 && rightTitle.includes(leftTitle)) return true;
+  if (rightTitle.length > 14 && leftTitle.includes(rightTitle)) return true;
+  const leftTokens = new Set(leftTitle.split(" ").filter((token) => token.length > 2));
+  const rightTokens = new Set(rightTitle.split(" ").filter((token) => token.length > 2));
+  if (!leftTokens.size || !rightTokens.size) return false;
+  const shared = [...leftTokens].filter((token) => rightTokens.has(token)).length;
+  return shared / Math.min(leftTokens.size, rightTokens.size) >= 0.75;
+}
+
+function comparableTitle(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function removeOpenCoverageRequestsForEvent(eventId) {
@@ -1572,6 +1640,8 @@ function createScheduleEvent(input) {
     source: cleanText(input.source),
     externalId: cleanText(input.externalId),
     mazevoStatus: cleanText(input.mazevoStatus),
+    mazevoEventNumber: cleanText(input.mazevoEventNumber),
+    mazevoBookingId: cleanText(input.mazevoBookingId),
     importedAt: input.importedAt || ""
   });
   if (minutes(event.end) <= minutes(event.start)) {
@@ -1597,6 +1667,8 @@ function normalizeScheduleEvent(event) {
     source: cleanText(event.source),
     externalId: cleanText(event.externalId),
     mazevoStatus: cleanText(event.mazevoStatus),
+    mazevoEventNumber: cleanText(event.mazevoEventNumber),
+    mazevoBookingId: cleanText(event.mazevoBookingId),
     importedAt: event.importedAt || ""
   };
   normalized.afterHours = isAfterHoursEvent(normalized);

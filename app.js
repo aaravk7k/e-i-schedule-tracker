@@ -1229,7 +1229,7 @@ function mazevoSyncPanel() {
     ? `Ready${mazevo.lastSyncAt ? `; last sync ${formatDateTime(mazevo.lastSyncAt)}` : "; not synced yet"}.`
     : `Not configured${mazevo.missing?.length ? `: ${mazevo.missing.join(", ")}` : ""}.`;
   const summaryText = summary
-    ? `${summary.imported || 0} imported, ${summary.updated || 0} updated, ${summary.skippedUnconfirmed || 0} skipped as not confirmed.`
+    ? `${summary.imported || 0} imported, ${summary.updated || 0} updated, ${summary.duplicatesRemoved || 0} duplicates removed, ${summary.skippedUnconfirmed || 0} skipped as not confirmed.`
     : "Confirmed Mazevo events will appear here after sync.";
   return `
     <div class="integration-note ${configured ? "" : "warning-note"}">

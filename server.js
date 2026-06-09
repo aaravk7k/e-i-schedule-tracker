@@ -1188,12 +1188,14 @@ function mapMazevoRecordToEvent(record) {
   const dateValue = mazevoField(record, ["EventDate", "Event Date", "Date", "StartDate", "Start Date", "MeetingDate"]);
   const startValue = mazevoField(record, ["StartTime", "Start Time", "BeginTime", "Begin Time"]);
   const endValue = mazevoField(record, ["EndTime", "End Time", "FinishTime", "Finish Time"]);
-  const rawSpace = cleanText(mazevoField(record, ["roomDescription", "RoomName", "Room Name", "Room", "Space", "Location", "LocationName", "buildingDescription", "BuildingName", "Building", "ResourceName", "Resource Description", "ResourceDescription"]));
+  const roomDescription = cleanText(mazevoField(record, ["roomDescription", "RoomName", "Room Name", "Room", "Space", "Location", "LocationName", "ResourceName", "Resource Description", "ResourceDescription"]));
+  const buildingDescription = cleanText(mazevoField(record, ["buildingDescription", "BuildingName", "Building"]));
+  const rawSpace = [buildingDescription, roomDescription].filter(Boolean).join(" | ") || roomDescription || buildingDescription;
 
   const date = mazevoDate(dateValue || startDateTime);
   const start = mazevoTime(startValue || startDateTime, "");
   const end = mazevoTime(endValue || endDateTime, "");
-  const space = mapMazevoSpace(rawSpace);
+  const space = mapMazevoSpace({ buildingDescription, roomDescription, rawSpace });
 
   if (!date || !start || !end || minutes(end) <= minutes(start)) return {};
 
@@ -1207,7 +1209,7 @@ function mapMazevoRecordToEvent(record) {
       space,
       start,
       end,
-      notes: `Synced from Mazevo${mazevoStatus ? ` (${mazevoStatus})` : ""}${rawSpace && rawSpace !== space ? `; original room: ${rawSpace}` : ""}.`,
+      notes: `Synced from Mazevo${mazevoStatus ? ` (${mazevoStatus})` : ""}${rawSpace && rawSpace !== space ? `; original space: ${rawSpace}` : ""}.`,
       status: "requesting",
       source: "mazevo",
       mazevoStatus,
@@ -1268,9 +1270,18 @@ function mazevoTime(value, fallback) {
 }
 
 function mapMazevoSpace(value) {
-  const clean = cleanText(value);
+  const clean = typeof value === "object" ? cleanText(value.rawSpace) : cleanText(value);
+  const building = typeof value === "object" ? cleanText(value.buildingDescription) : "";
+  const room = typeof value === "object" ? cleanText(value.roomDescription) : clean;
+  const combined = `${building} ${room} ${clean}`.toLowerCase();
   const map = mazevoSpaceMap();
-  const mapped = map[clean.toLowerCase()];
+  const mapped = map[clean.toLowerCase()] || map[building.toLowerCase()] || map[room.toLowerCase()];
+  if (mapped) return normalizeSpaceName(mapped);
+  if (/\b850\b|850pbc|pbc|suite\s*130|\(130\)/i.test(combined)) return "850PBC";
+  if (/1951|suite\s*150|suite\s*151|\(150\)|\(151/i.test(combined)) return "1951@SkySong";
+  if (/acic|chandler/i.test(combined)) return "ACIC";
+  if (/mesa|studio|studios|mix|media and immersive/i.test(combined)) return "The Studios";
+  if (/skysong|sky song/i.test(combined)) return "SkySong";
   return normalizeSpaceName(mapped || clean || "General");
 }
 
@@ -1291,13 +1302,12 @@ function mazevoSpaceMap() {
 function upsertMazevoEvent(input) {
   const event = createScheduleEvent(input);
   const existing = db.events.find((item) => item.source === "mazevo" && item.externalId === event.externalId) || db.events.find((item) => item.id === event.id);
-  const beforeRequestCount = db.coverageRequests.length;
 
   if (!existing) {
     if (!event.afterHours) event.status = "scheduled";
     db.events.push(event);
-    if (event.afterHours) createCoverageRequestsForEvent(event, db, { silent: true });
-    return { action: "imported", requestsCreated: db.coverageRequests.length - beforeRequestCount };
+    const created = event.afterHours ? createCoverageRequestsForEvent(event, db, { silent: true }) : [];
+    return { action: "imported", requestsCreated: created.length };
   }
 
   const preserveCoverage = existing.afterHours && ["accepted", "scheduled", "covered", "rejected"].includes(existing.status);
@@ -1310,8 +1320,14 @@ function upsertMazevoEvent(input) {
     assignedTo: preservedAssignedTo
   });
   existing.afterHours = isAfterHoursEvent(existing);
-  if (existing.afterHours && !afterHoursCoverageResolved(existing)) createCoverageRequestsForEvent(existing, db, { silent: true });
-  return { action: "updated", requestsCreated: db.coverageRequests.length - beforeRequestCount };
+  if (!preserveCoverage) removeOpenCoverageRequestsForEvent(existing.id);
+  const created = existing.afterHours && !afterHoursCoverageResolved(existing) ? createCoverageRequestsForEvent(existing, db, { silent: true }) : [];
+  return { action: "updated", requestsCreated: created.length };
+}
+
+function removeOpenCoverageRequestsForEvent(eventId) {
+  const openStatuses = new Set(["pending", "denied", "closed"]);
+  db.coverageRequests = db.coverageRequests.filter((request) => request.eventId !== eventId || !openStatuses.has(request.status));
 }
 
 async function pushDbToAirtable() {

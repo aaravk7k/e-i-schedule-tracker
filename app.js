@@ -635,7 +635,7 @@ function calendarEventCard(event) {
         <strong>${escapeHtml(event.title)}</strong>
         ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
       </div>
-      <span>${spaceChip(event.space)} ${formatTime(event.start)}-${formatTime(event.end)}</span>
+      <span>${spaceChip(event.space)} ${eventRoomBadge(event)} ${formatTime(event.start)}-${formatTime(event.end)}</span>
       <em>${escapeHtml(coverageText)}</em>
       ${staffEventCoverageActions(event)}
       ${studentRequest ? calendarStudentRequestActions(studentRequest, event) : ""}
@@ -710,6 +710,7 @@ function spaceCalendarExportRows(context) {
       day,
       "Schedule",
       shift.space,
+      "",
       shift.name,
       calendarShiftRoleLabel(shift.type),
       formatTime(shift.start),
@@ -722,6 +723,7 @@ function spaceCalendarExportRows(context) {
       day,
       "Event",
       event.space,
+      eventRoomExportLabel(event),
       event.title,
       "",
       formatTime(event.start),
@@ -742,7 +744,7 @@ function exportSpaceCalendarXlsx() {
     ["Spaces", context.visibleSpaces.join(", ") || "No spaces"],
     ["Student filter", context.workerName || (context.staff ? "All students" : app.data.currentUser.name)],
     [],
-    ["Date", "Day", "Type", "Space", "Person / Event", "Role", "Start", "End", "Status", "Notes"],
+    ["Date", "Day", "Type", "Space", "Room", "Person / Event", "Role", "Start", "End", "Status", "Notes"],
     ...spaceCalendarExportRows(context)
   ];
   const bytes = buildXlsx([{ name: "Space Calendar", rows }]);
@@ -860,7 +862,7 @@ function spaceCalendarSnapshotCell(context, space, day, date) {
       .map((event) => ({
         type: "event",
         title: event.title,
-        meta: `${formatTime(event.start)}-${formatTime(event.end)}${event.afterHours ? " | After hours" : ""}`,
+        meta: `${eventRoomLabel(event) ? `${eventRoomLabel(event)} | ` : ""}${formatTime(event.start)}-${formatTime(event.end)}${event.afterHours ? " | After hours" : ""}`,
         detail: calendarEventCoverageText(event)
       }))
   ];
@@ -1228,7 +1230,7 @@ function mazevoSyncPanel() {
     ? `Ready${mazevo.lastSyncAt ? `; last sync ${formatDateTime(mazevo.lastSyncAt)}` : "; not synced yet"}.`
     : `Not configured${mazevo.missing?.length ? `: ${mazevo.missing.join(", ")}` : ""}.`;
   const summaryText = summary
-    ? `${summary.imported || 0} imported, ${summary.updated || 0} updated, ${(summary.legacyBookingsRemoved || 0) + (summary.duplicatesRemoved || 0)} old spreadsheet bookings cleared, ${summary.skippedUnconfirmed || 0} skipped as not confirmed.`
+    ? `${summary.imported || 0} imported, ${summary.updated || 0} updated, ${(summary.legacyBookingsRemoved || 0) + (summary.duplicatesRemoved || 0) + (summary.staleMazevoEventsRemoved || 0)} old rows cleared, ${summary.skippedUnconfirmed || 0} skipped as not confirmed.`
     : "Confirmed Mazevo events will appear here after sync. Old spreadsheet booking imports are hidden.";
   return `
     <div class="integration-note ${configured ? "" : "warning-note"}">
@@ -1305,6 +1307,7 @@ function coverageRequestCard(request) {
       </div>
       <div class="badge-row">
         ${spaceChip(event.space)}
+        ${eventRoomBadge(event)}
         <span class="badge">${formatShortDate(event.date)}</span>
         <span class="badge">${formatTime(event.start)}-${formatTime(event.end)}</span>
         ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
@@ -1336,6 +1339,7 @@ function eventCard(event) {
       </div>
       <div class="badge-row">
         ${spaceChip(event.space)}
+        ${eventRoomBadge(event)}
         <span class="badge">${formatShortDate(event.date)}</span>
         <span class="badge">${formatTime(event.start)}-${formatTime(event.end)}</span>
         ${event.source === "mazevo" ? `<span class="badge">Mazevo</span>` : ""}
@@ -2046,6 +2050,21 @@ function statusPill(status) {
 function spaceChip(space) {
   const color = app.data.spaceColors[space] || app.data.spaceColors.General;
   return `<span class="space-chip" style="color:${color}">${escapeHtml(space)}</span>`;
+}
+
+function eventRoomLabel(event) {
+  return String(event?.mazevoRoomDescription || "").trim();
+}
+
+function eventRoomExportLabel(event) {
+  const building = String(event?.mazevoBuildingDescription || "").trim();
+  const room = eventRoomLabel(event);
+  return [building, room].filter(Boolean).join(" / ");
+}
+
+function eventRoomBadge(event) {
+  const room = eventRoomLabel(event);
+  return room ? `<span class="badge">${escapeHtml(room)}</span>` : "";
 }
 
 function showToast(message) {

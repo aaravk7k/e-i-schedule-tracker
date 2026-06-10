@@ -746,6 +746,8 @@ function publicEvent(event) {
     mazevoStatus: event.mazevoStatus || "",
     mazevoEventNumber: event.mazevoEventNumber || "",
     mazevoBookingId: event.mazevoBookingId || "",
+    mazevoRoomDescription: event.mazevoRoomDescription || "",
+    mazevoBuildingDescription: event.mazevoBuildingDescription || "",
     importedAt: event.importedAt || ""
   };
 }
@@ -1050,6 +1052,7 @@ async function syncMazevoEvents(options = {}) {
     requestsCreated: 0,
     duplicatesRemoved: 0,
     legacyBookingsRemoved: 0,
+    staleMazevoEventsRemoved: 0,
     endpoint: MAZEVO_EVENTS_ENDPOINT,
     syncedAt: new Date().toISOString()
   };
@@ -1058,6 +1061,7 @@ async function syncMazevoEvents(options = {}) {
     const payload = await fetchMazevoEvents({ from, to });
     const records = extractMazevoEventRecords(payload);
     summary.fetched = records.length;
+    const syncedEventIds = new Set();
 
     records.forEach((record) => {
       const mapped = mapMazevoRecordToEvent(record);
@@ -1070,10 +1074,12 @@ async function syncMazevoEvents(options = {}) {
         return;
       }
       const result = upsertMazevoEvent(mapped.event);
+      if (result.eventId) syncedEventIds.add(result.eventId);
       summary[result.action] += 1;
       summary.requestsCreated += result.requestsCreated;
       summary.duplicatesRemoved += result.duplicatesRemoved || 0;
     });
+    summary.staleMazevoEventsRemoved = removeStaleMazevoEvents(db, { from, to, keepIds: syncedEventIds });
     summary.legacyBookingsRemoved = removeLegacyBookingImports(db, { from, to });
 
     db.integrations ||= {};
@@ -1083,7 +1089,7 @@ async function syncMazevoEvents(options = {}) {
       lastSyncError: ""
     };
     addAlert("info", "Mazevo synced", `Imported ${summary.imported} and updated ${summary.updated} confirmed Mazevo event${summary.imported + summary.updated === 1 ? "" : "s"}.`);
-    addActivity(`Synced Mazevo events: ${summary.imported} imported, ${summary.updated} updated, ${summary.legacyBookingsRemoved + summary.duplicatesRemoved} old booking import${summary.legacyBookingsRemoved + summary.duplicatesRemoved === 1 ? "" : "s"} cleared.`);
+    addActivity(`Synced Mazevo events: ${summary.imported} imported, ${summary.updated} updated, ${summary.legacyBookingsRemoved + summary.duplicatesRemoved + summary.staleMazevoEventsRemoved} old booking import${summary.legacyBookingsRemoved + summary.duplicatesRemoved + summary.staleMazevoEventsRemoved === 1 ? "" : "s"} cleared.`);
     return summary;
   } catch (error) {
     db.integrations ||= {};
@@ -1123,11 +1129,11 @@ async function fetchMazevoEvents({ from, to }) {
     bookingIds: [],
     contactId: 0,
     organizationId: 0,
-    explodeComboRooms: false,
-    includeRelatedRooms: false,
+    explodeComboRooms: true,
+    includeRelatedRooms: true,
     minDateChanged: null,
     includeEventCoordinators: false,
-    includeCalendarDetails: false
+    includeCalendarDetails: true
   });
 
   const response = await fetch(url, { method, headers, body });
@@ -1194,7 +1200,7 @@ function mapMazevoRecordToEvent(record) {
 
   const mazevoEventNumber = cleanText(mazevoField(record, ["eventNumber", "EventNumber"]));
   const mazevoBookingId = cleanText(mazevoField(record, ["bookingId", "BookingId", "BookingID"]));
-  const externalId = cleanText(mazevoField(record, ["EventId", "EventID", "ID", "Id", "ReservationId", "ReservationID", "BookingId", "BookingID", "EventNumber"]));
+  const baseExternalId = cleanText(mazevoField(record, ["EventId", "EventID", "ID", "Id", "ReservationId", "ReservationID", "BookingId", "BookingID", "EventNumber"]));
   const title = cleanText(mazevoField(record, ["EventName", "Event Name", "EventTitle", "Title", "Name", "Description", "Subject"]));
   const startDateTime = mazevoField(record, ["dateTimeStart", "StartDateTime", "Start Date Time", "EventStart", "Start", "StartTime"]);
   const endDateTime = mazevoField(record, ["dateTimeEnd", "EndDateTime", "End Date Time", "EventEnd", "End", "EndTime"]);
@@ -1212,7 +1218,15 @@ function mapMazevoRecordToEvent(record) {
 
   if (!date || !start || !end || minutes(end) <= minutes(start)) return {};
 
-  const idSource = externalId || `${title}-${date}-${start}-${end}-${space}`;
+  const idSource = [
+    baseExternalId || mazevoEventNumber || mazevoBookingId || title || "mazevo-event",
+    date,
+    start,
+    end,
+    buildingDescription,
+    roomDescription,
+    space
+  ].filter(Boolean).join("|");
   return {
     event: {
       id: `mazevo-${crypto.createHash("sha1").update(idSource).digest("hex").slice(0, 14)}`,
@@ -1228,6 +1242,8 @@ function mapMazevoRecordToEvent(record) {
       mazevoStatus,
       mazevoEventNumber,
       mazevoBookingId,
+      mazevoRoomDescription: roomDescription,
+      mazevoBuildingDescription: buildingDescription,
       importedAt: new Date().toISOString()
     }
   };
@@ -1323,7 +1339,7 @@ function upsertMazevoEvent(input) {
     db.events.push(event);
     const duplicatesRemoved = removeLegacyDuplicatesForMazevoEvent(event, db);
     const created = event.afterHours ? createCoverageRequestsForEvent(event, db, { silent: true }) : [];
-    return { action: "imported", requestsCreated: created.length, duplicatesRemoved };
+    return { action: "imported", eventId: event.id, requestsCreated: created.length, duplicatesRemoved };
   }
 
   const preserveCoverage = existing.afterHours && ["accepted", "scheduled", "covered", "rejected"].includes(existing.status);
@@ -1339,7 +1355,7 @@ function upsertMazevoEvent(input) {
   if (!preserveCoverage) removeOpenCoverageRequestsForEvent(existing.id);
   const duplicatesRemoved = removeLegacyDuplicatesForMazevoEvent(existing, db);
   const created = existing.afterHours && !afterHoursCoverageResolved(existing) ? createCoverageRequestsForEvent(existing, db, { silent: true }) : [];
-  return { action: "updated", requestsCreated: created.length, duplicatesRemoved };
+  return { action: "updated", eventId: existing.id, requestsCreated: created.length, duplicatesRemoved };
 }
 
 function removeLegacyDuplicatesForMazevoEvent(mazevoEvent, appDb) {
@@ -1370,6 +1386,26 @@ function removeLegacyBookingImports(appDb, options = {}) {
   appDb.events = appDb.events.filter((event) => !legacyIds.has(event.id));
   appDb.coverageRequests = appDb.coverageRequests.filter((request) => !legacyIds.has(request.eventId));
   return legacyIds.size;
+}
+
+function removeStaleMazevoEvents(appDb, options = {}) {
+  const from = normalizeDateValue(options.from);
+  const to = normalizeDateValue(options.to);
+  const keepIds = options.keepIds || new Set();
+  const staleIds = new Set(appDb.events
+    .filter((event) => event.source === "mazevo")
+    .filter((event) => {
+      if (keepIds.has(event.id)) return false;
+      if (from && event.date < from) return false;
+      if (to && event.date > to) return false;
+      return true;
+    })
+    .map((event) => event.id));
+  if (!staleIds.size) return 0;
+
+  appDb.events = appDb.events.filter((event) => !staleIds.has(event.id));
+  appDb.coverageRequests = appDb.coverageRequests.filter((request) => !staleIds.has(request.eventId));
+  return staleIds.size;
 }
 
 function isLegacyBookingImport(event) {
@@ -1675,6 +1711,8 @@ function createScheduleEvent(input) {
     mazevoStatus: cleanText(input.mazevoStatus),
     mazevoEventNumber: cleanText(input.mazevoEventNumber),
     mazevoBookingId: cleanText(input.mazevoBookingId),
+    mazevoRoomDescription: cleanText(input.mazevoRoomDescription),
+    mazevoBuildingDescription: cleanText(input.mazevoBuildingDescription),
     importedAt: input.importedAt || ""
   });
   if (minutes(event.end) <= minutes(event.start)) {
@@ -1702,6 +1740,8 @@ function normalizeScheduleEvent(event) {
     mazevoStatus: cleanText(event.mazevoStatus),
     mazevoEventNumber: cleanText(event.mazevoEventNumber),
     mazevoBookingId: cleanText(event.mazevoBookingId),
+    mazevoRoomDescription: cleanText(event.mazevoRoomDescription),
+    mazevoBuildingDescription: cleanText(event.mazevoBuildingDescription),
     importedAt: event.importedAt || ""
   };
   normalized.afterHours = isAfterHoursEvent(normalized);

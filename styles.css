@@ -900,6 +900,63 @@ tr:last-child td {
   font-weight: 750;
 }
 
+.coverage-block-list {
+  display: grid;
+  gap: 6px;
+}
+
+.coverage-block-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.coverage-block-row strong {
+  color: #191919;
+}
+
+.coverage-block-row em {
+  font-style: normal;
+}
+
+.coverage-block-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.coverage-block-form label {
+  display: grid;
+  gap: 4px;
+  color: #3b4452;
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.coverage-block-form input,
+.coverage-block-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: inherit;
+  text-transform: none;
+}
+
+.coverage-block-form button {
+  grid-column: 1 / -1;
+}
+
 .calendar-actions {
   padding-top: 8px;
   border-top: 1px solid var(--line);

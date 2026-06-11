@@ -647,9 +647,11 @@ function calendarEventCoverageText(event) {
   const requests = (app.data.coverageRequests || []).filter((request) => request.eventId === event.id);
   const studentRequest = requests.find((request) => request.workerId === app.data.currentUser.workerId);
   const assigned = workerById(event.assignedTo)?.name;
+  const blockSummary = coverageBlockSummary(event);
   if (event.status === "covered") return "Coverage cleared by staff.";
   if (event.status === "rejected") return "Coverage request dismissed by staff.";
   if (app.data.role === "student") return studentEventSummary(event, studentRequest);
+  if (blockSummary) return blockSummary;
   if (assigned) return `Assigned to ${assigned}`;
   const activeRequests = requests.filter((request) => !["closed", "denied", "dismissed", "covered"].includes(request.status));
   if (activeRequests.length) return `Request sent to ${activeRequests.map((request) => workerById(request.workerId)?.name || "student").join(", ")}`;
@@ -659,7 +661,7 @@ function calendarEventCoverageText(event) {
 function studentEventSummary(event, request) {
   if (event.status === "covered") return "Coverage cleared by staff.";
   if (event.status === "rejected") return "Coverage request dismissed by staff.";
-  if (request) return `Coverage request: ${studentRequestHint(request.status)}`;
+  if (request) return `Coverage request: ${studentRequestHint(request)}`;
   if (event.afterHours) return "After-hours event in your space.";
   return "Event happening during business hours.";
 }
@@ -671,7 +673,63 @@ function staffEventCoverageActions(event) {
       <button class="secondary-button" type="button" data-action="event-coverage-action" data-event-id="${event.id}" data-event-action="covered">Clear as Covered</button>
       <button class="danger-button" type="button" data-action="event-coverage-action" data-event-id="${event.id}" data-event-action="reject">Reject</button>
     </div>
+    ${coverageBlockList(event)}
+    ${coverageBlockForm(event)}
   `;
+}
+
+function coverageBlockSummary(event) {
+  const blocks = event.coverageBlocks || [];
+  if (!blocks.length) return "";
+  const done = blocks.filter((block) => ["covered", "scheduled", "rejected"].includes(block.status)).length;
+  const pending = blocks.length - done;
+  return `${done}/${blocks.length} coverage block${blocks.length === 1 ? "" : "s"} handled${pending ? `, ${pending} still open` : ""}.`;
+}
+
+function coverageBlockList(event) {
+  const blocks = event.coverageBlocks || [];
+  if (!blocks.length) return "";
+  return `
+    <div class="coverage-block-list">
+      ${blocks.map((block) => {
+        const worker = workerById(block.workerId)?.name || block.resolvedBy || "";
+        return `<div class="coverage-block-row">
+          <span>${formatTime(block.start)}-${formatTime(block.end)}</span>
+          <strong>${escapeHtml(blockStatusLabel(block.status))}</strong>
+          ${worker ? `<em>${escapeHtml(worker)}</em>` : ""}
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+function coverageBlockForm(event) {
+  return `
+    <form class="coverage-block-form" data-coverage-block-form data-event-id="${event.id}">
+      <label>Start<input name="start" type="time" value="${event.start}" required></label>
+      <label>End<input name="end" type="time" value="${event.end}" required></label>
+      <label>Action
+        <select name="mode">
+          <option value="request">Request student</option>
+          <option value="covered">Mark covered</option>
+        </select>
+      </label>
+      <label>Student${workerSelectWithBlank("", "Choose student")}</label>
+      <button class="secondary-button" type="submit">Add Block</button>
+    </form>
+  `;
+}
+
+function blockStatusLabel(status) {
+  return {
+    requesting: "Requesting",
+    pending: "Pending",
+    accepted: "Accepted",
+    scheduled: "Scheduled",
+    covered: "Covered",
+    rejected: "Rejected",
+    "needs-review": "Needs review"
+  }[status] || status || "Open";
 }
 
 function calendarStudentRequestActions(request, event) {
@@ -1309,14 +1367,14 @@ function coverageRequestCard(request) {
         ${spaceChip(event.space)}
         ${eventRoomBadge(event)}
         <span class="badge">${formatShortDate(event.date)}</span>
-        <span class="badge">${formatTime(event.start)}-${formatTime(event.end)}</span>
+        <span class="badge">${requestTimeLabel(request, event)}</span>
         ${event.afterHours ? `<span class="badge warning-badge">After hours</span>` : ""}
         ${staff ? `<span class="badge">${escapeHtml(worker?.name || "Unknown student")}</span>` : ""}
       </div>
       <p class="task-meta">${escapeHtml(request.reason || "Matched by space, schedule, and coverage skill.")}</p>
       ${projected ? `<p class="task-meta ${projected.projected > projected.limit ? "limit-warning" : ""}">${escapeHtml(hourSummaryText(projected, request.status))}</p>` : ""}
       <div class="task-footer">
-        <span class="task-meta">${staff ? `Student response: ${request.status}` : studentRequestHint(request.status)}</span>
+        <span class="task-meta">${staff ? `Student response: ${request.status}` : studentRequestHint(request)}</span>
         <div class="action-row">
           ${canAct && request.status === "pending" ? requestButton(request, "accept", "Accept", "primary-button") + requestButton(request, "deny", "Deny", "danger-button") : ""}
           ${canAct && request.status === "accepted" && !overLimit ? requestButton(request, "add-to-schedule", "Add to My Schedule", "secondary-button") : ""}
@@ -1419,6 +1477,16 @@ function bindEvents() {
   bindForm("userForm", createUser);
   bindForm("skillForm", saveSkills);
   bindForm("scheduleForm", saveSchedule);
+  document.querySelectorAll("[data-coverage-block-form]").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      try {
+        await createCoverageBlock(event.currentTarget);
+      } catch (error) {
+        showToast(error.message);
+      }
+    });
+  });
 }
 
 function bindForm(id, handler) {
@@ -1576,6 +1644,22 @@ async function createSmartEvent(form) {
     }
   });
   showToast("Event added. Student requests were created automatically.");
+  render();
+}
+
+async function createCoverageBlock(form) {
+  const data = new FormData(form);
+  const eventId = form.dataset.eventId;
+  app.data = await api(`/api/events/${encodeURIComponent(eventId)}/coverage-blocks`, {
+    method: "POST",
+    body: {
+      start: data.get("start"),
+      end: data.get("end"),
+      mode: data.get("mode"),
+      workerId: data.get("workerId")
+    }
+  });
+  showToast(data.get("mode") === "covered" ? "Coverage block cleared." : "Coverage block request sent.");
   render();
 }
 
@@ -1911,7 +1995,10 @@ function requestsInFocusWeek(requests) {
   });
 }
 
-function studentRequestHint(status) {
+function studentRequestHint(requestOrStatus) {
+  const request = typeof requestOrStatus === "object" ? requestOrStatus : null;
+  const status = request?.status || requestOrStatus;
+  if (status === "closed" && request?.reason) return request.reason;
   return {
     pending: "Can you cover this?",
     accepted: "Accepted. Add it to your schedule when ready.",
@@ -1926,8 +2013,10 @@ function studentRequestHint(status) {
 function projectedHoursForRequest(worker, event, request) {
   const limit = worker.weeklyLimit || 20;
   const current = Number(worker.weeklyHours || 0);
-  const eventBlockHours = hoursBetween(event.start, event.end);
-  const alreadyScheduled = hasExactSchedule(worker, event);
+  const start = request.start || event.start;
+  const end = request.end || event.end;
+  const eventBlockHours = hoursBetween(start, end);
+  const alreadyScheduled = hasExactSchedule(worker, event, request);
   const projected = request.status === "scheduled" || alreadyScheduled ? current : current + eventBlockHours;
   return {
     current,
@@ -1949,14 +2038,20 @@ function hourSummaryText(summary, status) {
   return `This adds ${formatHours(summary.eventHours)} hours. Projected weekly total: ${projectedText}.`;
 }
 
-function hasExactSchedule(worker, event) {
+function hasExactSchedule(worker, event, request = {}) {
   const day = dayFromDate(event.date);
+  const start = request.start || event.start;
+  const end = request.end || event.end;
   return worker.availability.some((slot) =>
     scheduleItemMatchesDate(slot, day, event.date) &&
     slot.space === event.space &&
-    slot.start === event.start &&
-    slot.end === event.end
+    slot.start === start &&
+    slot.end === end
   );
+}
+
+function requestTimeLabel(request, event) {
+  return `${formatTime(request.start || event.start)}-${formatTime(request.end || event.end)}`;
 }
 
 function dayFromDate(dateString) {
@@ -1965,7 +2060,29 @@ function dayFromDate(dateString) {
 }
 
 function afterHoursCoverageResolved(event) {
+  if (event.coverageBlocks?.length) {
+    return coverageBlocksCoverEvent(event) && event.coverageBlocks.every((block) =>
+      ["covered", "scheduled", "rejected"].includes(block.status)
+    );
+  }
   return ["scheduled", "covered", "rejected"].includes(event.status);
+}
+
+function coverageBlocksCoverEvent(event) {
+  const eventStart = minutes(event.start);
+  const eventEnd = minutes(event.end);
+  const blocks = (event.coverageBlocks || [])
+    .map((block) => ({ start: minutes(block.start), end: minutes(block.end) }))
+    .filter((block) => block.end > block.start)
+    .sort((a, b) => a.start - b.start);
+  let cursor = eventStart;
+
+  for (const block of blocks) {
+    if (block.start > cursor) return false;
+    if (block.end > cursor) cursor = block.end;
+    if (cursor >= eventEnd) return true;
+  }
+  return cursor >= eventEnd;
 }
 
 function hoursBetween(start, end) {
@@ -2005,9 +2122,9 @@ function workerSelect(selectedId) {
   return `<select name="workerId">${app.data.workers.map((worker) => `<option value="${worker.id}" ${worker.id === selectedId ? "selected" : ""}>${escapeHtml(worker.name)}</option>`).join("")}</select>`;
 }
 
-function workerSelectWithBlank(selectedId) {
+function workerSelectWithBlank(selectedId, blankLabel = "Staff login") {
   return `<select name="workerId">
-    <option value="">Staff login</option>
+    <option value="">${escapeHtml(blankLabel)}</option>
     ${app.data.workers.map((worker) => `<option value="${worker.id}" ${worker.id === selectedId ? "selected" : ""}>${escapeHtml(worker.name)}</option>`).join("")}
   </select>`;
 }

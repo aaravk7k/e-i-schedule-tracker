@@ -76,11 +76,14 @@ const REMOVED_SPACES = new Set(["fusion on first"]);
 
 const SPACE_OWNER_WORKER_IDS = {
   "1951@SkySong": "amanda",
-  "850PBC": "palash",
+  "850PBC": ["palash", "sakshi"],
   ACIC: "deepinderjit-singh",
   "The Studios": "shreyas",
   SkySong: "aarav-kapoor"
 };
+
+const SAKSHI_WORKER_ID = "sakshi";
+const SAKSHI_START_DATE = "2026-06-15";
 
 const sessions = new Map();
 let db;
@@ -501,6 +504,21 @@ async function handleApi(req, res) {
     return;
   }
 
+  const eventCoverageBlockMatch = url.pathname.match(/^\/api\/events\/([^/]+)\/coverage-blocks$/);
+  if (req.method === "POST" && eventCoverageBlockMatch) {
+    requireStaff(user);
+    const event = db.events.find((item) => item.id === decodeURIComponent(eventCoverageBlockMatch[1]));
+    if (!event) {
+      sendJson(res, 404, { error: "Event not found" });
+      return;
+    }
+    const body = await readJson(req);
+    handleStaffCoverageBlock(event, body, user);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/reset") {
     requireStaff(user);
     db = createInitialDb();
@@ -558,21 +576,30 @@ function handleCoverageRequestAction(request, action, user) {
     event.status = "accepted";
     event.assignedTo = worker.id;
     db.coverageRequests
-      .filter((item) => item.eventId === event.id && item.id !== request.id && item.status === "pending")
+      .filter((item) => sameCoverageScope(item, request) && item.id !== request.id && item.status === "pending")
       .forEach((item) => {
         item.status = "closed";
         item.respondedAt = new Date().toISOString();
+        item.reason = `Accepted by ${worker.name}.`;
       });
-    addAlert("info", "Coverage accepted", `${worker.name} accepted ${event.title} at ${event.space}, ${formatShortDate(event.date)} ${formatTime(event.start)}-${formatTime(event.end)}.`);
-    addActivity(`${worker.name} accepted after-hours coverage for "${event.title}".`);
+    updateCoverageBlockFromRequest(event, request, {
+      status: "accepted",
+      workerId: worker.id,
+      note: `Accepted by ${worker.name}.`
+    });
+    addAlert("info", "Coverage accepted", `${worker.name} accepted ${event.title} at ${event.space}, ${formatShortDate(event.date)} ${formatTime(requestStart(request, event))}-${formatTime(requestEnd(request, event))}.`);
+    addActivity(`${worker.name} accepted after-hours coverage for "${event.title}" (${formatTime(requestStart(request, event))}-${formatTime(requestEnd(request, event))}).`);
     return;
   }
 
   if (action === "deny") {
     request.status = "denied";
     request.respondedAt = new Date().toISOString();
-    const openRequests = db.coverageRequests.filter((item) => item.eventId === event.id && ["pending", "accepted", "scheduled"].includes(item.status));
-    if (!openRequests.length) event.status = "needs-review";
+    const openRequests = db.coverageRequests.filter((item) => sameCoverageScope(item, request) && ["pending", "accepted", "scheduled"].includes(item.status));
+    if (!openRequests.length) {
+      updateCoverageBlockFromRequest(event, request, { status: "needs-review", note: "Student denied this coverage block." });
+      if (!db.coverageRequests.some((item) => item.eventId === event.id && ["pending", "accepted", "scheduled"].includes(item.status))) event.status = "needs-review";
+    }
     addAlert("warning", "Coverage denied", `${worker.name} denied ${event.title}. ${openRequests.length ? "Other requests are still open." : "Supervisor review needed."}`);
     addActivity(`${worker.name} denied coverage for "${event.title}".`);
     return;
@@ -585,19 +612,21 @@ function handleCoverageRequestAction(request, action, user) {
       throw error;
     }
     const day = dayFromDate(event.date);
-  const alreadyScheduled = worker.availability.some((slotItem) =>
-    scheduleItemMatchesDate(slotItem, day, event.date) &&
-    slotItem.space === event.space &&
-    slotItem.start === event.start &&
-    slotItem.end === event.end
+    const start = requestStart(request, event);
+    const end = requestEnd(request, event);
+    const alreadyScheduled = worker.availability.some((slotItem) =>
+      scheduleItemMatchesDate(slotItem, day, event.date) &&
+      slotItem.space === event.space &&
+      slotItem.start === start &&
+      slotItem.end === end
     );
     if (!alreadyScheduled) {
       applyScheduleChange(worker, {
         date: event.date,
         day,
         space: event.space,
-        start: event.start,
-        end: event.end,
+        start,
+        end,
         mode: "add",
         source: "Accepted event coverage",
         by: user.name
@@ -605,11 +634,73 @@ function handleCoverageRequestAction(request, action, user) {
     }
     request.status = "scheduled";
     request.respondedAt = new Date().toISOString();
-    event.status = "scheduled";
+    updateCoverageBlockFromRequest(event, request, {
+      status: "scheduled",
+      workerId: worker.id,
+      note: `Scheduled with ${worker.name}.`
+    });
+    event.status = eventCoverageComplete(event) ? "scheduled" : "requesting";
     event.assignedTo = worker.id;
     addAlert("info", "Event added to schedule", `${worker.name} added ${event.title} to their schedule. Supervisors can now see it on the weekly board.`);
     addActivity(`${worker.name} added "${event.title}" to their schedule.`);
   }
+}
+
+function handleStaffCoverageBlock(event, input, user) {
+  if (!event.afterHours) {
+    const error = new Error("Only after-hours events can be split into coverage blocks");
+    error.status = 400;
+    throw error;
+  }
+
+  const start = normalizeTimeValue(input.start, "");
+  const end = normalizeTimeValue(input.end, "");
+  const mode = cleanText(input.mode) || "request";
+  const workerId = cleanText(input.workerId);
+  if (!start || !end || minutes(end) <= minutes(start) || minutes(start) < minutes(event.start) || minutes(end) > minutes(event.end)) {
+    const error = new Error("Coverage block must fit inside the event time.");
+    error.status = 400;
+    throw error;
+  }
+
+  const worker = mode === "covered" ? null : db.workers.find((item) => item.id === workerId);
+  if (mode !== "covered" && !worker) {
+    const error = new Error("Choose a student worker for this coverage block.");
+    error.status = 400;
+    throw error;
+  }
+
+  event.coverageBlocks ||= [];
+  const block = {
+    id: `block-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+    start,
+    end,
+    status: mode === "covered" ? "covered" : "requesting",
+    workerId: mode === "covered" ? "" : workerId,
+    resolvedBy: mode === "covered" ? user.name : "",
+    resolvedAt: mode === "covered" ? new Date().toISOString() : "",
+    note: mode === "covered" ? "Covered by staff / no student needed." : ""
+  };
+  event.coverageBlocks.push(block);
+
+  if (mode === "covered") {
+    event.status = eventCoverageComplete(event) ? "covered" : "requesting";
+    addAlert("info", "Coverage block cleared", `${user.name} cleared ${event.title}, ${formatTime(start)}-${formatTime(end)}.`);
+    addActivity(`${user.name} cleared ${event.title} coverage ${formatTime(start)}-${formatTime(end)}.`);
+    return;
+  }
+
+  const created = createCoverageRequestsForEvent(event, db, {
+    workerId,
+    coverageBlockId: block.id,
+    start,
+    end,
+    reason: `Staff requested ${formatTime(start)}-${formatTime(end)} coverage.`
+  });
+  event.status = "requesting";
+  addAlert("info", "Coverage block assigned", `${event.title}: asked ${worker.name} to cover ${formatTime(start)}-${formatTime(end)}.`);
+  addActivity(`${user.name} requested ${worker.name} for "${event.title}" ${formatTime(start)}-${formatTime(end)}.`);
+  if (!created.length) block.note = `Already requested ${worker.name}.`;
 }
 
 function handleStaffEventCoverageAction(event, action, user) {
@@ -627,6 +718,13 @@ function handleStaffEventCoverageAction(event, action, user) {
     event.assignedTo = "";
     event.resolvedAt = now;
     event.resolvedBy = user.name;
+    event.coverageBlocks = (event.coverageBlocks || []).map((block) => ({
+      ...block,
+      status: "covered",
+      resolvedBy: user.name,
+      resolvedAt: now,
+      note: "Staff marked coverage not needed."
+    }));
     relatedRequests.forEach((request) => {
       request.status = "covered";
       request.respondedAt = now;
@@ -642,6 +740,13 @@ function handleStaffEventCoverageAction(event, action, user) {
     event.assignedTo = "";
     event.resolvedAt = now;
     event.resolvedBy = user.name;
+    event.coverageBlocks = (event.coverageBlocks || []).map((block) => ({
+      ...block,
+      status: "rejected",
+      resolvedBy: user.name,
+      resolvedAt: now,
+      note: "Staff dismissed this coverage block."
+    }));
     relatedRequests.forEach((request) => {
       request.status = "dismissed";
       request.respondedAt = now;
@@ -650,6 +755,55 @@ function handleStaffEventCoverageAction(event, action, user) {
     addAlert("info", "Coverage request dismissed", `${user.name} dismissed ${event.title} at ${event.space}.`);
     addActivity(`${user.name} dismissed the after-hours coverage request for "${event.title}".`);
   }
+}
+
+function sameCoverageScope(left, right) {
+  return left.eventId === right.eventId &&
+    (left.coverageBlockId || "") === (right.coverageBlockId || "") &&
+    (left.start || "") === (right.start || "") &&
+    (left.end || "") === (right.end || "");
+}
+
+function requestStart(request, event) {
+  return request.start || event.start;
+}
+
+function requestEnd(request, event) {
+  return request.end || event.end;
+}
+
+function updateCoverageBlockFromRequest(event, request, updates) {
+  const blockId = request.coverageBlockId || "";
+  if (!blockId) return;
+  event.coverageBlocks ||= [];
+  const block = event.coverageBlocks.find((item) => item.id === blockId);
+  if (!block) return;
+  Object.assign(block, updates, {
+    resolvedAt: ["covered", "scheduled", "rejected"].includes(updates.status) ? new Date().toISOString() : block.resolvedAt || ""
+  });
+}
+
+function eventCoverageComplete(event) {
+  const blocks = event.coverageBlocks || [];
+  if (!blocks.length) return ["scheduled", "covered", "rejected"].includes(event.status);
+  return coverageBlocksCoverEvent(event) && blocks.every((block) => ["covered", "scheduled", "rejected"].includes(block.status));
+}
+
+function coverageBlocksCoverEvent(event) {
+  const eventStart = minutes(event.start);
+  const eventEnd = minutes(event.end);
+  const blocks = (event.coverageBlocks || [])
+    .map((block) => ({ start: minutes(block.start), end: minutes(block.end) }))
+    .filter((block) => block.end > block.start)
+    .sort((a, b) => a.start - b.start);
+  let cursor = eventStart;
+
+  for (const block of blocks) {
+    if (block.start > cursor) return false;
+    if (block.end > cursor) cursor = block.end;
+    if (cursor >= eventEnd) return true;
+  }
+  return cursor >= eventEnd;
 }
 
 function viewForUser(user) {
@@ -748,7 +902,20 @@ function publicEvent(event) {
     mazevoBookingId: event.mazevoBookingId || "",
     mazevoRoomDescription: event.mazevoRoomDescription || "",
     mazevoBuildingDescription: event.mazevoBuildingDescription || "",
+    coverageBlocks: (event.coverageBlocks || []).map(publicCoverageBlock),
     importedAt: event.importedAt || ""
+  };
+}
+
+function publicCoverageBlock(block) {
+  return {
+    id: block.id,
+    start: block.start,
+    end: block.end,
+    status: block.status || "requesting",
+    workerId: block.workerId || "",
+    resolvedBy: block.resolvedBy || "",
+    note: block.note || ""
   };
 }
 
@@ -756,8 +923,11 @@ function publicCoverageRequest(request) {
   return {
     id: request.id,
     eventId: request.eventId,
+    coverageBlockId: request.coverageBlockId || "",
     workerId: request.workerId,
     status: request.status,
+    start: request.start || "",
+    end: request.end || "",
     score: request.score || 0,
     reason: request.reason || "",
     createdAt: request.createdAt || "",
@@ -843,6 +1013,7 @@ function createInitialDb() {
     }));
   });
 
+  ensureSakshiWorker(initial);
   ensureCoverageRequestsForFocusWeek(initial);
   return initial;
 }
@@ -899,6 +1070,7 @@ function migrateDb(appDb) {
   appDb.events ||= seedData.events.map(createScheduleEvent);
   appDb.coverageRequests ||= [];
   appDb.users ||= [];
+  ensureSakshiWorker(appDb);
   appDb.workers.forEach((worker) => {
     worker.skills = normalizeSkillList(worker.skills || []);
     worker.primarySpaces ||= [];
@@ -914,6 +1086,9 @@ function migrateDb(appDb) {
   appDb.events = cleanEvents(appDb.events.map((event) => normalizeScheduleEvent(event)));
   appDb.coverageRequests.forEach((request) => {
     request.status ||= "pending";
+    request.coverageBlockId ||= "";
+    request.start ||= "";
+    request.end ||= "";
     request.createdAt ||= new Date().toISOString();
     request.respondedAt ||= "";
     request.reason ||= "";
@@ -923,10 +1098,65 @@ function migrateDb(appDb) {
   if (!appDb.coverageRequests.length) {
     ensureCoverageRequestsForFocusWeek(appDb);
   }
+  ensureSharedOwnerCoverageRequests(appDb);
   if (!appDb.users.length) {
     appDb.users = createInitialDb().users;
   }
   return appDb;
+}
+
+function ensureSakshiWorker(appDb) {
+  appDb.workers ||= [];
+  const worker = appDb.workers.find((item) => item.id === SAKSHI_WORKER_ID);
+  const sakshi = worker || {
+    id: SAKSHI_WORKER_ID,
+    name: "Sakshi",
+    role: "Student Worker",
+    initials: "SK",
+    supervisor: "Unassigned",
+    primarySpaces: ["850PBC"],
+    skills: ["coverage", "customer-service", "events"],
+    availability: []
+  };
+
+  sakshi.name = "Sakshi";
+  sakshi.role ||= "Student Worker";
+  sakshi.initials ||= "SK";
+  sakshi.supervisor ||= "Unassigned";
+  sakshi.primarySpaces = ["850PBC"];
+  sakshi.skills = normalizeSkillList([...(sakshi.skills || []), "coverage", "customer-service", "events"]);
+  sakshi.availability = [
+    ...(sakshi.availability || []).filter((slotItem) => slotItem.source !== "Staff-provided Sakshi schedule")
+  ];
+  sakshi.availability.push(...sakshiSummerSchedule(appDb));
+  sakshi.availability.sort(sortScheduleSlots);
+
+  if (!worker) appDb.workers.push(sakshi);
+}
+
+function sakshiSummerSchedule(appDb) {
+  const endDate = latestScheduleDate(appDb) || "2026-07-31";
+  const schedule = [];
+  for (let date = SAKSHI_START_DATE; date <= endDate; date = addDays(date, 1)) {
+    const day = dayFromDate(date);
+    if (!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].includes(day)) continue;
+    schedule.push(slot(
+      day,
+      "850PBC",
+      "07:45",
+      day === "Friday" ? "13:45" : "16:15",
+      "Staff-provided Sakshi schedule",
+      date
+    ));
+  }
+  return schedule;
+}
+
+function latestScheduleDate(appDb) {
+  return (appDb.workers || [])
+    .flatMap((worker) => (worker.availability || []).map((slotItem) => slotItem.date).filter(Boolean))
+    .sort()
+    .at(-1) || "";
 }
 
 function saveDb() {
@@ -1713,6 +1943,7 @@ function createScheduleEvent(input) {
     mazevoBookingId: cleanText(input.mazevoBookingId),
     mazevoRoomDescription: cleanText(input.mazevoRoomDescription),
     mazevoBuildingDescription: cleanText(input.mazevoBuildingDescription),
+    coverageBlocks: Array.isArray(input.coverageBlocks) ? input.coverageBlocks : [],
     importedAt: input.importedAt || ""
   });
   if (minutes(event.end) <= minutes(event.start)) {
@@ -1742,10 +1973,26 @@ function normalizeScheduleEvent(event) {
     mazevoBookingId: cleanText(event.mazevoBookingId),
     mazevoRoomDescription: cleanText(event.mazevoRoomDescription),
     mazevoBuildingDescription: cleanText(event.mazevoBuildingDescription),
+    coverageBlocks: normalizeCoverageBlocks(event.coverageBlocks || []),
     importedAt: event.importedAt || ""
   };
   normalized.afterHours = isAfterHoursEvent(normalized);
   return normalized;
+}
+
+function normalizeCoverageBlocks(blocks = []) {
+  return (blocks || [])
+    .map((block) => ({
+      id: cleanText(block.id) || `block-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+      start: normalizeTimeValue(block.start, ""),
+      end: normalizeTimeValue(block.end, ""),
+      status: cleanText(block.status) || "requesting",
+      workerId: cleanText(block.workerId),
+      resolvedBy: cleanText(block.resolvedBy),
+      resolvedAt: block.resolvedAt || "",
+      note: cleanText(block.note)
+    }))
+    .filter((block) => block.start && block.end && minutes(block.end) > minutes(block.start));
 }
 
 function createStaffSchedule(input) {
@@ -1917,19 +2164,28 @@ function scoreWorkerForTask(worker, task, appDb) {
 }
 
 function createCoverageRequestsForEvent(event, appDb, options = {}) {
-  const candidates = recommendWorkersForEvent(event, appDb).slice(0, 1);
+  const candidates = coverageRequestCandidatesForEvent(event, appDb, options);
   const created = [];
 
   candidates.forEach((candidate) => {
-    const exists = appDb.coverageRequests.some((request) => request.eventId === event.id && request.workerId === candidate.worker.id);
+    const exists = appDb.coverageRequests.some((request) =>
+      request.eventId === event.id &&
+      request.workerId === candidate.worker.id &&
+      (request.coverageBlockId || "") === (options.coverageBlockId || "") &&
+      (request.start || event.start) === (options.start || event.start) &&
+      (request.end || event.end) === (options.end || event.end)
+    );
     if (exists) return;
     appDb.coverageRequests.push({
       id: `request-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
       eventId: event.id,
+      coverageBlockId: options.coverageBlockId || "",
       workerId: candidate.worker.id,
       status: "pending",
+      start: options.start || event.start,
+      end: options.end || event.end,
       score: Math.min(100, Math.round(candidate.score)),
-      reason: candidate.reason,
+      reason: options.reason || candidate.reason,
       createdAt: new Date().toISOString(),
       respondedAt: ""
     });
@@ -1951,32 +2207,101 @@ function createCoverageRequestsForEvent(event, appDb, options = {}) {
   return created;
 }
 
+function coverageRequestCandidatesForEvent(event, appDb, options = {}) {
+  if (options.workerId) {
+    const worker = appDb.workers.find((item) => item.id === options.workerId);
+    return worker ? [scoreWorkerForScheduleNeed(worker, { ...event, start: options.start || event.start, end: options.end || event.end }, appDb)] : [];
+  }
+  const candidates = recommendWorkersForEvent({ ...event, start: options.start || event.start, end: options.end || event.end }, appDb);
+  return spaceOwnerIdsForEvent(event, appDb).length ? candidates : candidates.slice(0, 1);
+}
+
 function ensureCoverageRequestsForFocusWeek(appDb) {
   appDb.events
     .filter((event) => event.afterHours && !afterHoursCoverageResolved(event) && isDateInFocusWeek(event.date, appDb.focusWeekStart))
     .forEach((event) => createCoverageRequestsForEvent(event, appDb, { silent: true }));
 }
 
+function ensureSharedOwnerCoverageRequests(appDb) {
+  appDb.events
+    .filter((event) => event.afterHours && !afterHoursCoverageResolved(event))
+    .forEach((event) => {
+      const ownerIds = spaceOwnerIdsForEvent(event, appDb);
+      if (ownerIds.length < 2) return;
+
+      coverageScopesForEvent(event).forEach((scope) => {
+        const scopedRequests = appDb.coverageRequests.filter((request) => requestMatchesCoverageScope(request, event, scope));
+        const acceptedRequest = scopedRequests.find((request) => ["accepted", "scheduled"].includes(request.status));
+        const acceptedWorker = acceptedRequest ? appDb.workers.find((worker) => worker.id === acceptedRequest.workerId) : null;
+
+        ownerIds.forEach((ownerId) => {
+          if (scopedRequests.some((request) => request.workerId === ownerId)) return;
+          const worker = appDb.workers.find((item) => item.id === ownerId);
+          if (!worker) return;
+          const scored = scoreWorkerForScheduleNeed(worker, { ...event, start: scope.start, end: scope.end }, appDb);
+          appDb.coverageRequests.push({
+            id: `request-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+            eventId: event.id,
+            coverageBlockId: scope.coverageBlockId,
+            workerId: ownerId,
+            status: acceptedRequest ? "closed" : "pending",
+            start: scope.start,
+            end: scope.end,
+            score: Math.min(100, Math.round(scored.score)),
+            reason: acceptedRequest ? `Accepted by ${acceptedWorker?.name || "another student worker"}.` : scored.reason,
+            createdAt: new Date().toISOString(),
+            respondedAt: acceptedRequest?.respondedAt || ""
+          });
+        });
+      });
+    });
+}
+
+function coverageScopesForEvent(event) {
+  const blocks = (event.coverageBlocks || []).filter((block) => !["covered", "scheduled", "rejected"].includes(block.status));
+  if (!event.coverageBlocks?.length) {
+    return [{ coverageBlockId: "", start: event.start, end: event.end }];
+  }
+  return blocks.map((block) => ({
+    coverageBlockId: block.id || "",
+    start: block.start || event.start,
+    end: block.end || event.end
+  }));
+}
+
+function requestMatchesCoverageScope(request, event, scope) {
+  return request.eventId === event.id &&
+    (request.coverageBlockId || "") === (scope.coverageBlockId || "") &&
+    (request.start || event.start) === scope.start &&
+    (request.end || event.end) === scope.end;
+}
+
 function afterHoursCoverageResolved(event) {
+  if (event.coverageBlocks?.length) return eventCoverageComplete(event);
   return ["scheduled", "covered", "rejected"].includes(event.status);
 }
 
 function recommendWorkersForEvent(event, appDb) {
-  const owner = spaceOwnerForEvent(event, appDb);
-  if (owner) return [scoreWorkerForScheduleNeed(owner, event, appDb)];
+  const ownerIds = spaceOwnerIdsForEvent(event, appDb);
+  if (ownerIds.length) {
+    return ownerIds
+      .map((ownerId) => appDb.workers.find((worker) => worker.id === ownerId))
+      .filter(Boolean)
+      .map((worker) => scoreWorkerForScheduleNeed(worker, event, appDb))
+      .sort((a, b) => b.score - a.score || a.worker.name.localeCompare(b.worker.name));
+  }
   return appDb.workers
     .map((worker) => scoreWorkerForScheduleNeed(worker, event, appDb))
     .filter((candidate) => candidate.score >= 20)
     .sort((a, b) => b.score - a.score || a.worker.name.localeCompare(b.worker.name));
 }
 
-function spaceOwnerForEvent(event, appDb) {
-  const ownerId = SPACE_OWNER_WORKER_IDS[event.space];
-  if (ownerId) {
-    const owner = appDb.workers.find((worker) => worker.id === ownerId);
-    if (owner) return owner;
-  }
-  return appDb.workers.find((worker) => worker.primarySpaces.includes(event.space));
+function spaceOwnerIdsForEvent(event, appDb) {
+  const configured = SPACE_OWNER_WORKER_IDS[event.space];
+  const configuredIds = Array.isArray(configured) ? configured : configured ? [configured] : [];
+  const ids = configuredIds.filter((ownerId) => appDb.workers.some((worker) => worker.id === ownerId));
+  if (ids.length) return [...new Set(ids)];
+  return appDb.workers.filter((worker) => worker.primarySpaces.includes(event.space)).map((worker) => worker.id);
 }
 
 function getCoverageSuggestions(gaps) {
@@ -2196,7 +2521,7 @@ function weeklyHoursFor(availability, weekStart = db?.focusWeekStart || SOURCE_W
 
 function paidHoursForScheduleItem(item) {
   const hours = Math.max(0, minutes(item.end) - minutes(item.start)) / 60;
-  return hours >= 8.5 ? hours - 1 : hours;
+  return hours >= 9 ? hours - 1 : hours;
 }
 
 function scheduleItemInWeek(item, weekStart = db?.focusWeekStart || SOURCE_WEEK_START) {

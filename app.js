@@ -484,6 +484,8 @@ function renderSpaceCalendar() {
       </div>
     </section>
 
+    ${staff ? "" : studentHoursSummaryPanel(currentWorker())}
+
     <section class="panel">
       ${staff ? calendarStaffFilters() : calendarStudentSummary(visibleSpaces)}
     </section>

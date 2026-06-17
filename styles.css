@@ -327,6 +327,49 @@ button:disabled {
   font-weight: 750;
 }
 
+.compact-header {
+  margin-bottom: 12px;
+}
+
+.hours-summary-total {
+  color: var(--asu-maroon);
+  font-size: 1rem;
+}
+
+.hours-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.hours-summary-card {
+  display: grid;
+  gap: 4px;
+  min-height: 112px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.hours-summary-card strong {
+  color: var(--ink);
+  font-size: 0.94rem;
+}
+
+.hours-summary-card span,
+.hours-summary-card em {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.hours-summary-card b {
+  color: var(--asu-maroon);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
 .split-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
@@ -1110,6 +1153,7 @@ tr:last-child td {
   .split-grid,
   .three-grid,
   .kpi-grid,
+  .hours-summary-grid,
   .calendar-toolbar,
   .student-calendar-note {
     grid-template-columns: 1fr;

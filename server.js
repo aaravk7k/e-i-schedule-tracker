@@ -614,24 +614,19 @@ function handleCoverageRequestAction(request, action, user) {
     const day = dayFromDate(event.date);
     const start = requestStart(request, event);
     const end = requestEnd(request, event);
-    const alreadyScheduled = worker.availability.some((slotItem) =>
-      scheduleItemMatchesDate(slotItem, day, event.date) &&
-      slotItem.space === event.space &&
-      slotItem.start === start &&
-      slotItem.end === end
-    );
-    if (!alreadyScheduled) {
+    const missingSegments = missingScheduleSegments(worker, day, event.date, start, end);
+    missingSegments.forEach((segment) => {
       applyScheduleChange(worker, {
         date: event.date,
         day,
         space: event.space,
-        start,
-        end,
+        start: segment.start,
+        end: segment.end,
         mode: "add",
         source: "Accepted event coverage",
         by: user.name
       });
-    }
+    });
     request.status = "scheduled";
     request.respondedAt = new Date().toISOString();
     updateCoverageBlockFromRequest(event, request, {
@@ -770,6 +765,28 @@ function requestStart(request, event) {
 
 function requestEnd(request, event) {
   return request.end || event.end;
+}
+
+function missingScheduleSegments(worker, day, date, start, end) {
+  const startMinute = minutes(start);
+  const endMinute = minutes(end);
+  const covered = (worker.availability || [])
+    .filter((slotItem) => scheduleItemMatchesDate(slotItem, day, date))
+    .map((slotItem) => ({
+      start: Math.max(startMinute, minutes(slotItem.start)),
+      end: Math.min(endMinute, minutes(slotItem.end))
+    }))
+    .filter((slotItem) => slotItem.end > slotItem.start)
+    .sort((a, b) => a.start - b.start);
+  const missing = [];
+  let cursor = startMinute;
+
+  covered.forEach((slotItem) => {
+    if (slotItem.start > cursor) missing.push({ start: timeFromMinutes(cursor), end: timeFromMinutes(slotItem.start) });
+    if (slotItem.end > cursor) cursor = slotItem.end;
+  });
+  if (cursor < endMinute) missing.push({ start: timeFromMinutes(cursor), end: timeFromMinutes(endMinute) });
+  return missing;
 }
 
 function updateCoverageBlockFromRequest(event, request, updates) {

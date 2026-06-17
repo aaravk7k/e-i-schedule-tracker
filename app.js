@@ -324,6 +324,7 @@ function renderMyTasks() {
   const tasks = app.data.tasks || [];
   const active = tasks.filter((task) => task.status !== "done");
   const done = tasks.filter((task) => task.status === "done");
+  const worker = currentWorker();
   return `
     <section class="band">
       <div class="band-header">
@@ -339,6 +340,7 @@ function renderMyTasks() {
         ${kpiCard(app.data.coverageGaps.length, "Space alerts")}
       </div>
     </section>
+    ${studentHoursSummaryPanel(worker)}
     <section class="split-grid">
       <div class="panel">
         <h3>My Assigned Tasks</h3>
@@ -347,6 +349,39 @@ function renderMyTasks() {
       <div class="panel">
         <h3>Shared Space Alerts</h3>
         ${app.data.alerts?.length ? `<div class="alert-stack">${app.data.alerts.slice(0, 6).map(alertCard).join("")}</div>` : emptyState("No space alerts right now.")}
+      </div>
+    </section>
+  `;
+}
+
+function studentHoursSummaryPanel(worker) {
+  if (!worker) return "";
+  const rows = DAYS.map((day, index) => {
+    const date = addDays(app.data.focusWeekStart, index);
+    const slots = (worker.availability || []).filter((slot) => scheduleItemMatchesDate(slot, day, date));
+    const hours = slots.reduce((sum, slot) => sum + paidHoursForRange(slot.start, slot.end), 0);
+    return { day, date, slots, hours };
+  });
+  const total = rows.reduce((sum, row) => sum + row.hours, 0);
+  const limit = worker.weeklyLimit || 40;
+  return `
+    <section class="panel">
+      <div class="band-header compact-header">
+        <div>
+          <p class="eyebrow">Workday Check</p>
+          <h3>My Hours This Week</h3>
+        </div>
+        <strong class="hours-summary-total">${formatHours(total)} / ${formatHours(limit)} hours</strong>
+      </div>
+      <div class="hours-summary-grid">
+        ${rows.map((row) => `
+          <article class="hours-summary-card">
+            <strong>${row.day.slice(0, 3)}</strong>
+            <span>${formatShortDate(row.date)}</span>
+            <b>${formatHours(row.hours)}h</b>
+            <em>${row.slots.length ? row.slots.map((slot) => `${formatTime(slot.start)}-${formatTime(slot.end)}`).join(", ") : "Off"}</em>
+          </article>
+        `).join("")}
       </div>
     </section>
   `;
@@ -668,6 +703,7 @@ function studentEventSummary(event, request) {
 
 function staffEventCoverageActions(event) {
   if (app.data.role !== "staff" || !event.afterHours || afterHoursCoverageResolved(event)) return "";
+  if (acceptedCoverageExists(event)) return coverageBlockList(event);
   return `
     <div class="calendar-actions">
       <button class="secondary-button" type="button" data-action="event-coverage-action" data-event-id="${event.id}" data-event-action="covered">Clear as Covered</button>
@@ -678,10 +714,18 @@ function staffEventCoverageActions(event) {
   `;
 }
 
+function acceptedCoverageExists(event) {
+  return event.status === "accepted" ||
+    event.status === "scheduled" ||
+    (app.data.coverageRequests || []).some((request) =>
+      request.eventId === event.id && ["accepted", "scheduled"].includes(request.status)
+    );
+}
+
 function coverageBlockSummary(event) {
   const blocks = event.coverageBlocks || [];
   if (!blocks.length) return "";
-  const done = blocks.filter((block) => ["covered", "scheduled", "rejected"].includes(block.status)).length;
+  const done = blocks.filter((block) => ["accepted", "covered", "scheduled", "rejected"].includes(block.status)).length;
   const pending = blocks.length - done;
   return `${done}/${blocks.length} coverage block${blocks.length === 1 ? "" : "s"} handled${pending ? `, ${pending} still open` : ""}.`;
 }
@@ -2015,8 +2059,9 @@ function projectedHoursForRequest(worker, event, request) {
   const current = Number(worker.weeklyHours || 0);
   const start = request.start || event.start;
   const end = request.end || event.end;
-  const eventBlockHours = hoursBetween(start, end);
-  const alreadyScheduled = hasExactSchedule(worker, event, request);
+  const missingSegments = missingScheduleSegments(worker, event.date, start, end);
+  const eventBlockHours = missingSegments.reduce((sum, segment) => sum + paidHoursForRange(segment.start, segment.end), 0);
+  const alreadyScheduled = eventBlockHours <= 0 || hasExactSchedule(worker, event, request);
   const projected = request.status === "scheduled" || alreadyScheduled ? current : current + eventBlockHours;
   return {
     current,
@@ -2029,7 +2074,7 @@ function projectedHoursForRequest(worker, event, request) {
 
 function hourSummaryText(summary, status) {
   if (summary.alreadyScheduled || status === "scheduled") {
-    return `Already on schedule. Weekly total: ${formatHours(summary.current)}/${formatHours(summary.limit)} hours.`;
+    return `Already covered on your schedule. Weekly total: ${formatHours(summary.current)}/${formatHours(summary.limit)} hours.`;
   }
   const projectedText = `${formatHours(summary.projected)}/${formatHours(summary.limit)} hours`;
   if (summary.projected > summary.limit) {
@@ -2048,6 +2093,29 @@ function hasExactSchedule(worker, event, request = {}) {
     slot.start === start &&
     slot.end === end
   );
+}
+
+function missingScheduleSegments(worker, date, start, end) {
+  const day = dayFromDate(date);
+  const startMinute = minutes(start);
+  const endMinute = minutes(end);
+  const covered = (worker.availability || [])
+    .filter((slot) => scheduleItemMatchesDate(slot, day, date))
+    .map((slot) => ({
+      start: Math.max(startMinute, minutes(slot.start)),
+      end: Math.min(endMinute, minutes(slot.end))
+    }))
+    .filter((slot) => slot.end > slot.start)
+    .sort((a, b) => a.start - b.start);
+  const missing = [];
+  let cursor = startMinute;
+
+  covered.forEach((slot) => {
+    if (slot.start > cursor) missing.push({ start: timeFromMinutes(cursor), end: timeFromMinutes(slot.start) });
+    if (slot.end > cursor) cursor = slot.end;
+  });
+  if (cursor < endMinute) missing.push({ start: timeFromMinutes(cursor), end: timeFromMinutes(endMinute) });
+  return missing;
 }
 
 function requestTimeLabel(request, event) {
@@ -2089,9 +2157,20 @@ function hoursBetween(start, end) {
   return Math.max(0, minutes(end) - minutes(start)) / 60;
 }
 
+function paidHoursForRange(start, end) {
+  const hours = hoursBetween(start, end);
+  return hours >= 9 ? hours - 1 : hours;
+}
+
 function minutes(time) {
   const [hour, minute] = String(time || "00:00").split(":").map(Number);
   return hour * 60 + minute;
+}
+
+function timeFromMinutes(total) {
+  const hour = Math.floor(total / 60);
+  const minute = total % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
 
 function formatHours(value) {

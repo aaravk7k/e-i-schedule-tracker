@@ -84,6 +84,7 @@ const SPACE_OWNER_WORKER_IDS = {
 
 const SAKSHI_WORKER_ID = "sakshi";
 const SAKSHI_START_DATE = "2026-06-15";
+const OBSERVED_CLOSED_DATES = ["2026-07-03"];
 
 const sessions = new Map();
 let db;
@@ -1009,6 +1010,7 @@ function createInitialDb() {
     integrations: { mazevo: {} },
     users: []
   };
+  ensureObservedClosedDates(initial);
   initial.staffSchedules = cleanStaffSchedules(initial.staffSchedules);
 
   initial.users.push(createSeedUser({
@@ -1083,6 +1085,7 @@ function migrateDb(appDb) {
   appDb.integrations ||= {};
   appDb.integrations.mazevo ||= {};
   appDb.spaces = cleanSpaces(appDb.spaces || structuredClone(seedData.spaces));
+  ensureObservedClosedDates(appDb);
   appDb.staffSchedules = cleanStaffSchedules(appDb.staffSchedules || structuredClone(seedData.staffSchedules));
   appDb.events ||= seedData.events.map(createScheduleEvent);
   appDb.coverageRequests ||= [];
@@ -1120,6 +1123,17 @@ function migrateDb(appDb) {
     appDb.users = createInitialDb().users;
   }
   return appDb;
+}
+
+function ensureObservedClosedDates(appDb) {
+  appDb.spaces ||= [];
+  appDb.spaces.forEach((space) => {
+    space.closedDates ||= [];
+    OBSERVED_CLOSED_DATES.forEach((date) => {
+      if (!space.closedDates.includes(date)) space.closedDates.push(date);
+    });
+    space.closedDates.sort();
+  });
 }
 
 function ensureSakshiWorker(appDb) {
@@ -2530,10 +2544,17 @@ function applyScheduleChange(worker, change) {
 }
 
 function weeklyHoursFor(availability, weekStart = db?.focusWeekStart || SOURCE_WEEK_START) {
+  const spaces = db?.spaces || seedData.spaces;
   const hours = (availability || [])
-    .filter((item) => scheduleItemInWeek(item, weekStart))
+    .filter((item) => scheduleItemInWeek(item, weekStart) && !scheduleItemOnClosedSpace(item, weekStart, spaces))
     .reduce((total, item) => total + paidHoursForScheduleItem(item), 0);
   return roundHours(hours);
+}
+
+function scheduleItemOnClosedSpace(item, weekStart, spaces) {
+  const space = (spaces || []).find((spaceItem) => spaceItem.name === item.space);
+  const date = item.date || (DAYS.includes(item.day) ? addDays(weekStart, DAYS.indexOf(item.day)) : "");
+  return Boolean(date && isClosedDate(space, date));
 }
 
 function paidHoursForScheduleItem(item) {

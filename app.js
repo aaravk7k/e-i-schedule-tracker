@@ -358,9 +358,10 @@ function studentHoursSummaryPanel(worker) {
   if (!worker) return "";
   const rows = DAYS.map((day, index) => {
     const date = addDays(app.data.focusWeekStart, index);
-    const slots = (worker.availability || []).filter((slot) => scheduleItemMatchesDate(slot, day, date));
+    const slots = (worker.availability || []).filter((slot) => scheduleItemMatchesDate(slot, day, date) && !slotOnClosedSpace(slot, date));
+    const closed = workerDayClosed(worker, date);
     const hours = slots.reduce((sum, slot) => sum + paidHoursForRange(slot.start, slot.end), 0);
-    return { day, date, slots, hours };
+    return { day, date, slots, hours, closed };
   });
   const total = rows.reduce((sum, row) => sum + row.hours, 0);
   const limit = worker.weeklyLimit || 40;
@@ -379,7 +380,7 @@ function studentHoursSummaryPanel(worker) {
             <strong>${row.day.slice(0, 3)}</strong>
             <span>${formatShortDate(row.date)}</span>
             <b>${formatHours(row.hours)}h</b>
-            <em>${row.slots.length ? row.slots.map((slot) => `${formatTime(slot.start)}-${formatTime(slot.end)}`).join(", ") : "Off"}</em>
+            <em>${row.closed ? "ASU observed holiday" : row.slots.length ? row.slots.map((slot) => `${formatTime(slot.start)}-${formatTime(slot.end)}`).join(", ") : "Off"}</em>
           </article>
         `).join("")}
       </div>
@@ -547,6 +548,7 @@ function calendarExportActions(includeScheduleEdit) {
 }
 
 function calendarDayCard(day, date, visibleSpaceSet, workerFilter) {
+  const closed = visibleSpacesClosedForDate(visibleSpaceSet, date);
   const shifts = calendarShiftItems(day, date, visibleSpaceSet, workerFilter);
   const events = eventsInFocusWeek(app.data.events || []).filter((event) => event.date === date && visibleSpaceSet.has(event.space));
   const gapCount = app.data.role === "staff" ? (app.data.coverageGaps || []).filter((gap) => gap.date === date && visibleSpaceSet.has(gap.space)).length : 0;
@@ -557,11 +559,12 @@ function calendarDayCard(day, date, visibleSpaceSet, workerFilter) {
           <strong>${escapeHtml(day)}</strong>
           <span>${formatShortDate(date)}</span>
         </div>
+        ${closed ? `<span class="badge warning-badge">Closed</span>` : ""}
         ${gapCount ? `<span class="badge warning-badge">${gapCount} gap${gapCount === 1 ? "" : "s"}</span>` : ""}
       </header>
       <div class="calendar-section">
         <h4>Schedule</h4>
-        ${shifts.length ? shifts.map(calendarShiftCard).join("") : `<p class="task-meta">No scheduled coverage.</p>`}
+        ${shifts.length ? shifts.map(calendarShiftCard).join("") : `<p class="task-meta">${closed ? "ASU observed holiday. No scheduled coverage needed." : "No scheduled coverage."}</p>`}
       </div>
       <div class="calendar-section">
         <h4>Events</h4>
@@ -596,7 +599,7 @@ function calendarShiftItems(day, date, visibleSpaceSet, workerFilter) {
     : [currentWorker()].filter(Boolean);
   const studentShifts = workers.flatMap((worker) =>
     (worker.availability || [])
-      .filter((slot) => visibleSpaceSet.has(slot.space) && scheduleItemMatchesDate(slot, day, date))
+      .filter((slot) => visibleSpaceSet.has(slot.space) && scheduleItemMatchesDate(slot, day, date) && !slotOnClosedSpace(slot, date))
       .map((slot) => ({
         type: staffView ? "student" : "my",
         name: worker.name,
@@ -608,7 +611,7 @@ function calendarShiftItems(day, date, visibleSpaceSet, workerFilter) {
   const staffShifts = staffView
     ? (app.data.staffSchedules || [])
       .filter(calendarStaffScheduleVisible)
-      .filter((slot) => visibleSpaceSet.has(slot.space) && scheduleItemMatchesDate(slot, day, date))
+      .filter((slot) => visibleSpaceSet.has(slot.space) && scheduleItemMatchesDate(slot, day, date) && !slotOnClosedSpace(slot, date))
       .map((slot) => ({
         type: "staff",
         name: slot.name,
@@ -1476,6 +1479,7 @@ function staffScheduleTable() {
   const schedules = (app.data.staffSchedules || [])
     .filter(calendarStaffScheduleVisible)
     .filter(scheduleItemInFocusWeek)
+    .filter((schedule) => !slotOnClosedSpace(schedule, schedule.date || addDays(app.data.focusWeekStart, DAYS.indexOf(schedule.day))))
     .sort((a, b) => (a.date || "").localeCompare(b.date || "") || DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || minutes(a.start) - minutes(b.start) || a.space.localeCompare(b.space));
   if (!schedules.length) return emptyState("No staff schedules added yet.");
   return `
@@ -1944,8 +1948,9 @@ function scheduleGrid() {
       const date = addDays(app.data.focusWeekStart, dayIndex);
       const slots = worker.availability
         .map((slot, index) => ({ slot, index }))
-        .filter(({ slot }) => scheduleItemMatchesDate(slot, day, date));
-      return `<div class="schedule-cell">${slots.length ? slots.map(({ slot, index }) => scheduleMiniCard(slot, worker, index, app.data.role === "staff" || app.data.currentUser.workerId === worker.id)).join("") : `<span class="task-meta">Off</span>`}</div>`;
+        .filter(({ slot }) => scheduleItemMatchesDate(slot, day, date) && !slotOnClosedSpace(slot, date));
+      const closed = workerDayClosed(worker, date);
+      return `<div class="schedule-cell">${slots.length ? slots.map(({ slot, index }) => scheduleMiniCard(slot, worker, index, app.data.role === "staff" || app.data.currentUser.workerId === worker.id)).join("") : `<span class="task-meta">${closed ? "Closed" : "Off"}</span>`}</div>`;
     }).join("");
     return `<div class="schedule-cell worker-name">${escapeHtml(worker.name)}<div class="task-meta">${escapeHtml(worker.primarySpaces.join(", "))}</div></div>${cells}`;
   }).join("");
@@ -2010,10 +2015,37 @@ function eventById(id) {
   return (app.data.events || []).find((event) => event.id === id);
 }
 
+function spaceByName(name) {
+  return (app.data.spaces || []).find((space) => space.name === name);
+}
+
+function spaceIsClosed(name, date) {
+  const space = spaceByName(name);
+  return Boolean(space?.closedDates?.includes(date));
+}
+
+function slotOnClosedSpace(slot, date) {
+  return spaceIsClosed(slot.space, date);
+}
+
+function workerDayClosed(worker, date) {
+  const spaces = new Set(worker.primarySpaces || []);
+  (worker.availability || [])
+    .filter((slot) => (!slot.date || slot.date === date))
+    .forEach((slot) => spaces.add(slot.space));
+  const names = [...spaces].filter(Boolean);
+  return Boolean(names.length && names.every((name) => spaceIsClosed(name, date)));
+}
+
+function visibleSpacesClosedForDate(visibleSpaceSet, date) {
+  const spaces = [...visibleSpaceSet].filter(Boolean);
+  return Boolean(spaces.length && spaces.every((space) => spaceIsClosed(space, date)));
+}
+
 function availabilityInFocusWeek(worker) {
   return (worker.availability || [])
     .map((slot, index) => ({ slot, index }))
-    .filter(({ slot }) => scheduleItemInFocusWeek(slot))
+    .filter(({ slot }) => scheduleItemInFocusWeek(slot) && !slotOnClosedSpace(slot, slot.date || addDays(app.data.focusWeekStart, DAYS.indexOf(slot.day))))
     .sort((a, b) => (a.slot.date || "").localeCompare(b.slot.date || "") || DAYS.indexOf(a.slot.day) - DAYS.indexOf(b.slot.day) || minutes(a.slot.start) - minutes(b.slot.start) || a.slot.space.localeCompare(b.slot.space));
 }
 

@@ -84,6 +84,8 @@ const SPACE_OWNER_WORKER_IDS = {
 
 const SAKSHI_WORKER_ID = "sakshi";
 const SAKSHI_START_DATE = "2026-06-15";
+const SAKSHI_DEFAULT_SCHEDULE_SOURCE = "Staff-provided Sakshi schedule";
+const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student schedule change"]);
 const OBSERVED_CLOSED_DATES = ["2026-07-03"];
 
 const sessions = new Map();
@@ -1156,31 +1158,40 @@ function ensureSakshiWorker(appDb) {
   sakshi.supervisor ||= "Unassigned";
   sakshi.primarySpaces = ["850PBC"];
   sakshi.skills = normalizeSkillList([...(sakshi.skills || []), "coverage", "customer-service", "events"]);
+  const endDate = latestScheduleDate(appDb) || "2026-07-31";
   sakshi.availability = [
-    ...(sakshi.availability || []).filter((slotItem) => slotItem.source !== "Staff-provided Sakshi schedule")
+    ...(sakshi.availability || []).filter((slotItem) => slotItem.source !== SAKSHI_DEFAULT_SCHEDULE_SOURCE)
   ];
-  sakshi.availability.push(...sakshiSummerSchedule(appDb));
+  sakshi.availability.push(...sakshiSummerSchedule(appDb, sakshi.availability, endDate));
   sakshi.availability.sort(sortScheduleSlots);
 
   if (!worker) appDb.workers.push(sakshi);
 }
 
-function sakshiSummerSchedule(appDb) {
-  const endDate = latestScheduleDate(appDb) || "2026-07-31";
+function sakshiSummerSchedule(appDb, existingAvailability = [], endDate = latestScheduleDate(appDb) || "2026-07-31") {
   const schedule = [];
   for (let date = SAKSHI_START_DATE; date <= endDate; date = addDays(date, 1)) {
     const day = dayFromDate(date);
     if (!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].includes(day)) continue;
+    if (hasManualScheduleOverride(existingAvailability, date, "850PBC")) continue;
     schedule.push(slot(
       day,
       "850PBC",
       "07:45",
       day === "Friday" ? "13:45" : "16:15",
-      "Staff-provided Sakshi schedule",
+      SAKSHI_DEFAULT_SCHEDULE_SOURCE,
       date
     ));
   }
   return schedule;
+}
+
+function hasManualScheduleOverride(availability, date, space) {
+  return (availability || []).some((slotItem) =>
+    slotItem.date === date &&
+    cleanText(slotItem.space) === space &&
+    SCHEDULE_OVERRIDE_SOURCES.has(cleanText(slotItem.source))
+  );
 }
 
 function latestScheduleDate(appDb) {

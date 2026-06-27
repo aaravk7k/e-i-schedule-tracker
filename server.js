@@ -384,6 +384,12 @@ async function handleApi(req, res) {
       sendJson(res, 404, { error: "Worker not found" });
       return;
     }
+    if (user.role !== "staff") {
+      const request = createScheduleChangeRequest(worker, body, user, "change");
+      saveDb();
+      sendJson(res, 202, viewForUser(user));
+      return;
+    }
     applyScheduleChange(worker, {
       day: body.day,
       space: body.space,
@@ -394,6 +400,26 @@ async function handleApi(req, res) {
       source: user.role === "staff" ? "Staff schedule edit" : "Student schedule change",
       by: user.name
     });
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
+  const scheduleChangeMatch = url.pathname.match(/^\/api\/schedule-change-requests\/([^/]+)\/action$/);
+  if (req.method === "POST" && scheduleChangeMatch) {
+    requireStaff(user);
+    const request = db.scheduleChangeRequests.find((item) => item.id === decodeURIComponent(scheduleChangeMatch[1]));
+    if (!request) {
+      sendJson(res, 404, { error: "Schedule change request not found" });
+      return;
+    }
+    const body = await readJson(req);
+    const action = cleanText(body.action);
+    if (!["approve", "reject"].includes(action)) {
+      sendJson(res, 400, { error: "Action not allowed" });
+      return;
+    }
+    handleScheduleChangeRequestAction(request, action, user);
     saveDb();
     sendJson(res, 200, viewForUser(user));
     return;
@@ -431,6 +457,12 @@ async function handleApi(req, res) {
     const worker = db.workers.find((item) => item.id === workerId);
     if (!worker || !worker.availability[slotIndex]) {
       sendJson(res, 404, { error: "Schedule block not found" });
+      return;
+    }
+    if (user.role !== "staff") {
+      createScheduleChangeRequest(worker, { slotIndex }, user, "remove");
+      saveDb();
+      sendJson(res, 202, viewForUser(user));
       return;
     }
     const removed = worker.availability.splice(slotIndex, 1)[0];
@@ -531,6 +563,169 @@ async function handleApi(req, res) {
   }
 
   sendJson(res, 404, { error: "Not found" });
+}
+
+function createScheduleChangeRequest(worker, input, user, type = "change") {
+  db.scheduleChangeRequests ||= [];
+  const normalized = normalizeScheduleChangeRequest(worker, input, type);
+  const request = {
+    id: `schedule-change-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+    workerId: worker.id,
+    status: "pending",
+    type,
+    day: normalized.day,
+    date: normalized.date,
+    space: normalized.space,
+    start: normalized.start,
+    end: normalized.end,
+    mode: normalized.mode,
+    slotIndex: normalized.slotIndex,
+    originalSlot: normalized.originalSlot,
+    requestedBy: user.id,
+    requestedByName: user.name,
+    createdAt: new Date().toISOString(),
+    reviewedAt: "",
+    reviewedBy: "",
+    reviewNote: ""
+  };
+
+  db.scheduleChangeRequests = db.scheduleChangeRequests.filter((item) =>
+    !(item.status === "pending" && item.workerId === worker.id && item.date === request.date && item.space === request.space)
+  );
+  db.scheduleChangeRequests.unshift(request);
+  addAlert("warning", "Schedule change needs approval", `${worker.name} requested ${scheduleChangeSummary(request)}.`);
+  addActivity(`${worker.name} submitted a schedule change for approval: ${scheduleChangeSummary(request)}.`);
+  return request;
+}
+
+function normalizeScheduleChangeRequest(worker, input, type) {
+  const slotIndex = Number(input.slotIndex);
+  const originalSlot = Number.isInteger(slotIndex) && slotIndex >= 0 ? worker.availability[slotIndex] : null;
+  if (type === "remove") {
+    if (!originalSlot) {
+      const error = new Error("Choose a schedule block to remove.");
+      error.status = 400;
+      throw error;
+    }
+    return {
+      day: originalSlot.day,
+      date: originalSlot.date || (DAYS.includes(originalSlot.day) ? addDays(db.focusWeekStart, DAYS.indexOf(originalSlot.day)) : ""),
+      space: originalSlot.space,
+      start: originalSlot.start,
+      end: originalSlot.end,
+      mode: "remove",
+      slotIndex,
+      originalSlot: structuredClone(originalSlot)
+    };
+  }
+
+  const day = cleanText(input.day);
+  const space = normalizeSpaceName(input.space);
+  const start = normalizeTimeValue(input.start, "09:00");
+  const end = normalizeTimeValue(input.end, "17:00");
+  const mode = cleanText(input.mode) || "add";
+  const date = normalizeDateValue(input.date) || (DAYS.includes(day) ? addDays(db.focusWeekStart, DAYS.indexOf(day)) : "");
+  if (!DAYS.includes(day) || minutes(end) <= minutes(start)) {
+    const error = new Error("Invalid schedule block.");
+    error.status = 400;
+    throw error;
+  }
+  if (mode === "edit-slot" && !originalSlot) {
+    const error = new Error("Choose a schedule block to edit.");
+    error.status = 400;
+    throw error;
+  }
+  return {
+    day,
+    date,
+    space,
+    start,
+    end,
+    mode,
+    slotIndex: Number.isInteger(slotIndex) ? slotIndex : "",
+    originalSlot: originalSlot ? structuredClone(originalSlot) : null
+  };
+}
+
+function handleScheduleChangeRequestAction(request, action, user) {
+  if (request.status !== "pending") {
+    const error = new Error("This schedule change has already been reviewed.");
+    error.status = 400;
+    throw error;
+  }
+  if (action === "reject") {
+    request.status = "rejected";
+    request.reviewedAt = new Date().toISOString();
+    request.reviewedBy = user.name;
+    request.reviewNote = "Rejected by staff.";
+    const worker = db.workers.find((item) => item.id === request.workerId);
+    addAlert("info", "Schedule change rejected", `${worker?.name || "Student"}'s request was rejected.`);
+    addActivity(`${user.name} rejected ${worker?.name || "student"} schedule request: ${scheduleChangeSummary(request)}.`);
+    return;
+  }
+
+  const worker = db.workers.find((item) => item.id === request.workerId);
+  if (!worker) {
+    const error = new Error("Worker not found.");
+    error.status = 404;
+    throw error;
+  }
+  if (request.type === "remove") {
+    removeScheduleBlockFromApprovedRequest(worker, request, user);
+  } else {
+    const slotIndex = request.mode === "edit-slot" && request.originalSlot
+      ? findScheduleSlotIndex(worker, request.originalSlot)
+      : request.slotIndex;
+    if (request.mode === "edit-slot" && slotIndex === -1) {
+      const error = new Error("That schedule block is no longer on the student's schedule.");
+      error.status = 400;
+      throw error;
+    }
+    applyScheduleChange(worker, {
+      date: request.date,
+      day: request.day,
+      space: request.space,
+      start: request.start,
+      end: request.end,
+      mode: request.mode,
+      slotIndex,
+      source: "Student schedule change",
+      by: request.requestedByName || "Student"
+    });
+  }
+  request.status = "approved";
+  request.reviewedAt = new Date().toISOString();
+  request.reviewedBy = user.name;
+  request.reviewNote = "Approved by staff.";
+  addAlert("info", "Schedule change approved", `${worker.name}'s request was approved: ${scheduleChangeSummary(request)}.`);
+  addActivity(`${user.name} approved ${worker.name} schedule request: ${scheduleChangeSummary(request)}.`);
+}
+
+function removeScheduleBlockFromApprovedRequest(worker, request, user) {
+  const index = findScheduleSlotIndex(worker, request.originalSlot || request);
+  if (index === -1) {
+    const error = new Error("That schedule block is no longer on the student's schedule.");
+    error.status = 400;
+    throw error;
+  }
+  const removed = worker.availability.splice(index, 1)[0];
+  addAlert("warning", "Schedule removed", `${user.name} approved removing ${worker.name}'s ${removed.space} block on ${removed.day}, ${formatTime(removed.start)}-${formatTime(removed.end)}.`);
+  addActivity(`Approved removal of ${worker.name} schedule block at ${removed.space}.`);
+}
+
+function findScheduleSlotIndex(worker, slotItem) {
+  return (worker.availability || []).findIndex((item) =>
+    item.day === slotItem.day &&
+    (item.date || "") === (slotItem.date || "") &&
+    item.space === slotItem.space &&
+    item.start === slotItem.start &&
+    item.end === slotItem.end
+  );
+}
+
+function scheduleChangeSummary(request) {
+  const verb = request.type === "remove" ? "remove" : "change";
+  return `${verb} ${request.space} on ${request.day}, ${formatTime(request.start)}-${formatTime(request.end)}`;
 }
 
 function handleTaskAction(task, action, user) {
@@ -843,6 +1038,7 @@ function viewForUser(user) {
     spaces: db.spaces,
     events: visibleEvents.map(publicEvent),
     staffSchedules: cleanStaffSchedules(db.staffSchedules),
+    scheduleChangeRequests: scheduleChangeRequestsForUser(user).map(publicScheduleChangeRequest),
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
     storage: storageStatusForClient(),
@@ -955,13 +1151,44 @@ function publicCoverageRequest(request) {
   };
 }
 
+function scheduleChangeRequestsForUser(user) {
+  const requests = db.scheduleChangeRequests || [];
+  if (user.role === "staff") return requests;
+  return requests.filter((request) => request.workerId === user.workerId);
+}
+
+function publicScheduleChangeRequest(request) {
+  return {
+    id: request.id,
+    workerId: request.workerId,
+    status: request.status || "pending",
+    type: request.type || "change",
+    day: request.day || "",
+    date: request.date || "",
+    space: request.space || "",
+    start: request.start || "",
+    end: request.end || "",
+    mode: request.mode || "",
+    originalSlot: request.originalSlot || null,
+    requestedByName: request.requestedByName || "",
+    createdAt: request.createdAt || "",
+    reviewedAt: request.reviewedAt || "",
+    reviewedBy: request.reviewedBy || "",
+    reviewNote: request.reviewNote || ""
+  };
+}
+
 function buildAlerts(gaps) {
   const gapAlerts = gaps.slice(0, 10).map(gapToAlert);
   const eventAlerts = db.events
     .filter((event) => !isLegacyBookingImport(event) && event.afterHours && isDateInFocusWeek(event.date) && ["needs-review", "requesting", "accepted"].includes(event.status))
     .slice(0, 8)
     .map(eventToAlert);
-  return [...eventAlerts, ...gapAlerts, ...(db.alerts || []).slice(0, 8)];
+  const scheduleAlerts = (db.scheduleChangeRequests || [])
+    .filter((request) => request.status === "pending")
+    .slice(0, 6)
+    .map(scheduleChangeToAlert);
+  return [...scheduleAlerts, ...eventAlerts, ...gapAlerts, ...(db.alerts || []).slice(0, 8)];
 }
 
 function gapToAlert(gap) {
@@ -969,6 +1196,15 @@ function gapToAlert(gap) {
     level: "warning",
     title: `${gap.space} has an uncovered time`,
     message: `${formatShortDate(gap.date)} from ${gap.detail}. ${gap.blocks.length ? `Other scheduled blocks that day: ${gap.blocks.join(", ")}.` : "No one is scheduled at that space that day."}`
+  };
+}
+
+function scheduleChangeToAlert(request) {
+  const worker = db.workers.find((item) => item.id === request.workerId);
+  return {
+    level: "warning",
+    title: "Schedule approval needed",
+    message: `${worker?.name || "Student"} requested to ${scheduleChangeSummary(request)}.`
   };
 }
 
@@ -1005,6 +1241,7 @@ function createInitialDb() {
     staffSchedules: structuredClone(seedData.staffSchedules),
     events: cleanEvents(seedData.events.map(createScheduleEvent)),
     coverageRequests: [],
+    scheduleChangeRequests: [],
     tasks: [],
     activity: [],
     alerts: [],
@@ -1091,6 +1328,7 @@ function migrateDb(appDb) {
   appDb.staffSchedules = cleanStaffSchedules(appDb.staffSchedules || structuredClone(seedData.staffSchedules));
   appDb.events ||= seedData.events.map(createScheduleEvent);
   appDb.coverageRequests ||= [];
+  appDb.scheduleChangeRequests ||= [];
   appDb.users ||= [];
   ensureSakshiWorker(appDb);
   appDb.workers.forEach((worker) => {
@@ -1117,6 +1355,16 @@ function migrateDb(appDb) {
     request.score ||= 0;
   });
   appDb.coverageRequests = cleanCoverageRequests(appDb.coverageRequests, appDb.events);
+  appDb.scheduleChangeRequests.forEach((request) => {
+    request.status ||= "pending";
+    request.type ||= "change";
+    request.mode ||= request.type === "remove" ? "remove" : "add";
+    request.createdAt ||= new Date().toISOString();
+    request.reviewedAt ||= "";
+    request.reviewedBy ||= "";
+    request.reviewNote ||= "";
+    request.originalSlot ||= null;
+  });
   if (!appDb.coverageRequests.length) {
     ensureCoverageRequestsForFocusWeek(appDb);
   }

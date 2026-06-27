@@ -12,6 +12,7 @@ const app = {
 
 const staffViews = [
   ["space-calendar", "Space Calendar"],
+  ["approvals", "Approvals"],
   ["schedules", "Coverage"],
   ["events", "Bookings"],
   ["people", "People"],
@@ -138,6 +139,7 @@ function render() {
   if (app.data.role === "staff" && app.view === "events") region.innerHTML = renderEvents();
   if (app.data.role === "staff" && app.view === "people") region.innerHTML = renderPeople();
   if (app.data.role === "staff" && app.view === "access") region.innerHTML = renderAccess();
+  if (app.data.role === "staff" && app.view === "approvals") region.innerHTML = renderScheduleApprovals();
   if (app.view === "space-calendar") region.innerHTML = renderSpaceCalendar();
   if (app.view === "my-tasks") region.innerHTML = renderMyTasks();
   if (app.view === "requests") region.innerHTML = renderRequests();
@@ -1292,6 +1294,7 @@ function renderEvents() {
 
 function renderRequests() {
   const requests = requestsInFocusWeek(app.data.coverageRequests || []);
+  const scheduleRequests = scheduleChangesInFocusWeek(app.data.scheduleChangeRequests || []);
   const pending = requests.filter((request) => request.status === "pending").length;
   const accepted = requests.filter((request) => request.status === "accepted").length;
   const scheduled = requests.filter((request) => request.status === "scheduled").length;
@@ -1311,7 +1314,38 @@ function renderRequests() {
       </div>
     </section>
     <section class="panel">
+      <h3>My Schedule Change Requests</h3>
+      ${renderScheduleChangeList(scheduleRequests)}
+    </section>
+    <section class="panel">
+      <h3>Coverage Requests</h3>
       ${renderRequestList(requests)}
+    </section>
+  `;
+}
+
+function renderScheduleApprovals() {
+  const requests = scheduleChangesInFocusWeek(app.data.scheduleChangeRequests || []);
+  const pending = requests.filter((request) => request.status === "pending").length;
+  const approved = requests.filter((request) => request.status === "approved").length;
+  const rejected = requests.filter((request) => request.status === "rejected").length;
+  return `
+    <section class="band">
+      <div class="band-header">
+        <div>
+          <p class="eyebrow">Schedule Approval</p>
+          <h3>Student Schedule Changes</h3>
+        </div>
+      </div>
+      <div class="kpi-grid">
+        ${kpiCard(pending, "Need review")}
+        ${kpiCard(approved, "Approved this week")}
+        ${kpiCard(rejected, "Rejected this week")}
+        ${kpiCard(requests.length, "Total requests")}
+      </div>
+    </section>
+    <section class="panel">
+      ${renderScheduleChangeList(requests)}
     </section>
   `;
 }
@@ -1382,6 +1416,11 @@ function renderRequestList(requests) {
   return sorted.length ? `<div class="task-list">${sorted.map(coverageRequestCard).join("")}</div>` : emptyState("No coverage requests yet.");
 }
 
+function renderScheduleChangeList(requests) {
+  const sorted = [...requests].sort((a, b) => scheduleChangeSortValue(a) - scheduleChangeSortValue(b));
+  return sorted.length ? `<div class="task-list">${sorted.map(scheduleChangeCard).join("")}</div>` : emptyState(app.data.role === "staff" ? "No schedule changes need review for this week." : "No schedule changes waiting for approval.");
+}
+
 function renderAttentionList() {
   const eventAlerts = (app.data.alerts || [])
     .filter((alert) => !alert.title.includes("uncovered time") && !alert.title.startsWith("Gap:"))
@@ -1396,6 +1435,57 @@ function requestSortValue(request) {
   const event = eventById(request.eventId);
   const statusRank = { pending: 0, accepted: 1, scheduled: 2, denied: 3, dismissed: 4, covered: 5, closed: 6 };
   return (statusRank[request.status] ?? 9) * 100000000 + new Date(`${event?.date || "2099-12-31"}T12:00:00`).getTime();
+}
+
+function scheduleChangeSortValue(request) {
+  const statusRank = { pending: 0, approved: 1, rejected: 2 };
+  return (statusRank[request.status] ?? 9) * 100000000 + new Date(`${request.date || "2099-12-31"}T12:00:00`).getTime();
+}
+
+function scheduleChangeCard(request) {
+  const worker = workerById(request.workerId);
+  const staff = app.data.role === "staff";
+  const original = request.originalSlot;
+  const actionLabel = request.type === "remove" ? "Remove schedule block" : scheduleModeLabel(request.mode);
+  return `
+    <article class="task-card">
+      <div class="task-head">
+        <h4>${escapeHtml(actionLabel)}</h4>
+        ${statusPill(request.status)}
+      </div>
+      <div class="badge-row">
+        ${staff ? `<span class="badge">${escapeHtml(worker?.name || "Unknown student")}</span>` : ""}
+        ${spaceChip(request.space)}
+        <span class="badge">${formatShortDate(request.date)}</span>
+        <span class="badge">${formatTime(request.start)}-${formatTime(request.end)}</span>
+      </div>
+      ${original ? `<p class="task-meta">Original: ${escapeHtml(original.space)} ${formatTime(original.start)}-${formatTime(original.end)}.</p>` : ""}
+      <p class="task-meta">${escapeHtml(scheduleChangeStatusText(request))}</p>
+      <div class="task-footer">
+        <span class="task-meta">${request.createdAt ? `Submitted ${formatDateTime(request.createdAt)}` : ""}${request.reviewedBy ? ` · Reviewed by ${escapeHtml(request.reviewedBy)}` : ""}</span>
+        <div class="action-row">
+          ${staff && request.status === "pending" ? scheduleChangeButton(request, "approve", "Approve", "primary-button") + scheduleChangeButton(request, "reject", "Reject", "danger-button") : ""}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function scheduleModeLabel(mode) {
+  return {
+    "edit-slot": "Edit schedule block",
+    "replace-space": "Replace this space/day",
+    "replace-day": "Replace full day",
+    add: "Add schedule block",
+    remove: "Remove schedule block"
+  }[mode] || "Schedule change";
+}
+
+function scheduleChangeStatusText(request) {
+  if (request.status === "pending") return app.data.role === "staff" ? "Waiting for staff approval. This is not visible on the live schedule yet." : "Waiting for staff approval. Your live schedule has not changed yet.";
+  if (request.status === "approved") return `Approved${request.reviewedBy ? ` by ${request.reviewedBy}` : ""}. This change is now on the live schedule.`;
+  if (request.status === "rejected") return `Rejected${request.reviewedBy ? ` by ${request.reviewedBy}` : ""}. The live schedule was not changed.`;
+  return "Schedule request reviewed.";
 }
 
 function coverageRequestCard(request) {
@@ -1631,6 +1721,14 @@ async function handleAction(action, button) {
       render();
       return;
     }
+    if (action === "schedule-change-request") {
+      const requestId = button.dataset.scheduleRequestId;
+      const requestAction = button.dataset.scheduleRequestAction;
+      app.data = await api(`/api/schedule-change-requests/${encodeURIComponent(requestId)}/action`, { method: "POST", body: { action: requestAction } });
+      showToast(requestAction === "approve" ? "Schedule change approved." : "Schedule change rejected.");
+      render();
+      return;
+    }
     if (action === "event-coverage-action") {
       const eventId = button.dataset.eventId;
       const eventAction = button.dataset.eventAction;
@@ -1644,7 +1742,7 @@ async function handleAction(action, button) {
       const index = button.dataset.slotIndex;
       app.data = await api(`/api/workers/${encodeURIComponent(workerId)}/schedules/${index}`, { method: "DELETE" });
       app.editingSchedule = null;
-      showToast("Schedule block removed. Coverage alerts updated.");
+      showToast(app.data.role === "staff" ? "Schedule block removed. Coverage alerts updated." : "Schedule removal sent to staff for approval.");
       render();
     }
   } catch (error) {
@@ -1788,7 +1886,7 @@ async function saveSchedule(form) {
     }
   });
   app.editingSchedule = null;
-  showToast("Schedule saved. Coverage alerts updated.");
+  showToast(app.data.role === "staff" ? "Schedule saved. Coverage alerts updated." : "Schedule change sent to staff for approval.");
   render();
 }
 
@@ -1912,6 +2010,10 @@ function taskButton(task, taskAction, label, className) {
 
 function requestButton(request, requestAction, label, className) {
   return `<button class="${className}" type="button" data-action="coverage-request" data-request-id="${request.id}" data-request-action="${requestAction}">${label}</button>`;
+}
+
+function scheduleChangeButton(request, requestAction, label, className) {
+  return `<button class="${className}" type="button" data-action="schedule-change-request" data-schedule-request-id="${request.id}" data-schedule-request-action="${requestAction}">${label}</button>`;
 }
 
 function workerCard(worker) {
@@ -2071,6 +2173,12 @@ function requestsInFocusWeek(requests) {
     const event = eventById(request.eventId);
     return event && eventsInFocusWeek([event]).length > 0;
   });
+}
+
+function scheduleChangesInFocusWeek(requests) {
+  const start = app.data.focusWeekStart;
+  const end = addDays(start, 6);
+  return (requests || []).filter((request) => request.date >= start && request.date <= end);
 }
 
 function studentRequestHint(requestOrStatus) {
@@ -2273,7 +2381,7 @@ function skillLabel(skill) {
 }
 
 function statusPill(status) {
-  const label = { pending: "Pending", accepted: "Accepted", scheduled: "Scheduled", covered: "Covered", rejected: "Rejected", dismissed: "Dismissed", requesting: "Requesting", closed: "Closed", "needs-review": "Needs Review", done: "Complete", denied: "Denied", unassigned: "Needs Assignment", draft: "Draft" }[status] || status;
+  const label = { pending: "Pending", approved: "Approved", accepted: "Accepted", scheduled: "Scheduled", covered: "Covered", rejected: "Rejected", dismissed: "Dismissed", requesting: "Requesting", closed: "Closed", "needs-review": "Needs Review", done: "Complete", denied: "Denied", unassigned: "Needs Assignment", draft: "Draft" }[status] || status;
   return `<span class="status-pill ${status}">${label}</span>`;
 }
 

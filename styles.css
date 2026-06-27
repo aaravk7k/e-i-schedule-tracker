@@ -528,6 +528,7 @@ tr:last-child td {
 }
 
 .status-pill.done,
+.status-pill.approved,
 .status-pill.scheduled,
 .status-pill.covered {
   background: #e8f5e9;

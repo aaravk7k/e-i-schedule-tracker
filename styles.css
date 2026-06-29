@@ -685,6 +685,23 @@ tr:last-child td {
   accent-color: var(--asu-maroon);
 }
 
+.inline-check {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fbfcfe;
+}
+
+.inline-check input {
+  width: 16px;
+  min-height: 16px;
+  accent-color: var(--asu-maroon);
+}
+
 .skill-form,
 .schedule-change-form {
   display: grid;

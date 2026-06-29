@@ -39,6 +39,9 @@ const SOURCE_WEEK_START = "2026-05-25";
 const FALLBACK_FOCUS_DATE = "2026-05-27";
 const CURRENT_SEED_VERSION = "pbis-summer-2026-june-bookings-0604";
 const WEEKLY_HOUR_LIMIT = Number(process.env.STUDENT_WEEKLY_HOUR_LIMIT || 40);
+const DEFAULT_LONG_SHIFT_BREAK_MINUTES = 60;
+const LONG_SHIFT_BREAK_THRESHOLD_MINUTES = 9 * 60;
+const NO_UNPAID_BREAK_OVERRIDE_MINUTES = 10 * 60;
 
 const SKILL_OPTIONS = [
   { id: "administrative", label: "Administrative" },
@@ -87,6 +90,10 @@ const SAKSHI_START_DATE = "2026-06-15";
 const SAKSHI_DEFAULT_SCHEDULE_SOURCE = "Staff-provided Sakshi schedule";
 const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student schedule change"]);
 const OBSERVED_CLOSED_DATES = ["2026-07-03"];
+const NO_UNPAID_BREAK_OVERRIDES = [
+  { workerId: "aarav-kapoor", startDate: "2026-06-29", endDate: "2026-07-02" },
+  { workerId: "amanda", startDate: "2026-06-29", endDate: "2026-07-02" }
+];
 
 const sessions = new Map();
 let db;
@@ -397,6 +404,8 @@ async function handleApi(req, res) {
       end: body.end,
       mode: body.mode,
       slotIndex: body.slotIndex,
+      noUnpaidBreak: body.noUnpaidBreak,
+      preserveBreak: false,
       source: user.role === "staff" ? "Staff schedule edit" : "Student schedule change",
       by: user.name
     });
@@ -1038,7 +1047,7 @@ function viewForUser(user) {
     spaces: db.spaces,
     events: visibleEvents.map(publicEvent),
     staffSchedules: cleanStaffSchedules(db.staffSchedules),
-    scheduleChangeRequests: scheduleChangeRequestsForUser(user).map(publicScheduleChangeRequest),
+    scheduleChangeRequests: scheduleChangeRequestsForUser(user).map((request) => publicScheduleChangeRequest(request, user.role === "staff")),
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
     storage: storageStatusForClient(),
@@ -1090,12 +1099,28 @@ function publicWorker(worker, forStaff) {
     supervisor: forStaff ? worker.supervisor : "",
     primarySpaces: worker.primarySpaces,
     skills: worker.skills,
-    availability: worker.availability,
+    availability: worker.availability.map((slotItem) => publicScheduleSlot(slotItem, forStaff)),
     weeklyHours,
     weeklyLimit: WEEKLY_HOUR_LIMIT,
     remainingHours: Math.max(0, roundHours(WEEKLY_HOUR_LIMIT - weeklyHours)),
     overLimit: weeklyHours > WEEKLY_HOUR_LIMIT
   };
+}
+
+function publicScheduleSlot(slotItem, forStaff) {
+  const visible = {
+    day: slotItem.day,
+    space: slotItem.space,
+    start: slotItem.start,
+    end: slotItem.end,
+    source: slotItem.source || "",
+    paidHours: paidHoursForScheduleItem(slotItem)
+  };
+  if (slotItem.date) visible.date = slotItem.date;
+  if (forStaff && slotItem.unpaidBreakMinutes !== undefined) {
+    visible.unpaidBreakMinutes = slotItem.unpaidBreakMinutes;
+  }
+  return visible;
 }
 
 function publicEvent(event) {
@@ -1157,7 +1182,7 @@ function scheduleChangeRequestsForUser(user) {
   return requests.filter((request) => request.workerId === user.workerId);
 }
 
-function publicScheduleChangeRequest(request) {
+function publicScheduleChangeRequest(request, forStaff) {
   return {
     id: request.id,
     workerId: request.workerId,
@@ -1169,7 +1194,7 @@ function publicScheduleChangeRequest(request) {
     start: request.start || "",
     end: request.end || "",
     mode: request.mode || "",
-    originalSlot: request.originalSlot || null,
+    originalSlot: request.originalSlot ? publicScheduleSlot(request.originalSlot, forStaff) : null,
     requestedByName: request.requestedByName || "",
     createdAt: request.createdAt || "",
     reviewedAt: request.reviewedAt || "",
@@ -1272,6 +1297,7 @@ function createInitialDb() {
   });
 
   ensureSakshiWorker(initial);
+  ensureNoUnpaidBreakOverrides(initial);
   ensureCoverageRequestsForFocusWeek(initial);
   return initial;
 }
@@ -1336,6 +1362,7 @@ function migrateDb(appDb) {
     worker.primarySpaces ||= [];
     worker.availability ||= [];
   });
+  ensureNoUnpaidBreakOverrides(appDb);
   appDb.tasks.forEach((task) => {
     task.deniedBy ||= [];
     task.requiredSkills = normalizeSkillList(task.requiredSkills || []);
@@ -1414,6 +1441,19 @@ function ensureSakshiWorker(appDb) {
   sakshi.availability.sort(sortScheduleSlots);
 
   if (!worker) appDb.workers.push(sakshi);
+}
+
+function ensureNoUnpaidBreakOverrides(appDb) {
+  NO_UNPAID_BREAK_OVERRIDES.forEach((override) => {
+    const worker = (appDb.workers || []).find((item) => item.id === override.workerId);
+    if (!worker) return;
+    (worker.availability || []).forEach((slotItem) => {
+      if (!slotItem.date || slotItem.date < override.startDate || slotItem.date > override.endDate) return;
+      const durationMinutes = Math.max(0, minutes(slotItem.end) - minutes(slotItem.start));
+      if (durationMinutes < NO_UNPAID_BREAK_OVERRIDE_MINUTES) return;
+      slotItem.unpaidBreakMinutes = 0;
+    });
+  });
 }
 
 function sakshiSummerSchedule(appDb, existingAvailability = [], endDate = latestScheduleDate(appDb) || "2026-07-31") {
@@ -2762,6 +2802,7 @@ function applyScheduleChange(worker, change) {
   const mode = cleanText(change.mode) || "add";
   const slotIndex = Number(change.slotIndex);
   const date = normalizeDateValue(change.date) || (DAYS.includes(day) ? addDays(db.focusWeekStart, DAYS.indexOf(day)) : "");
+  const originalSlot = Number.isInteger(slotIndex) && slotIndex >= 0 ? worker.availability[slotIndex] : null;
 
   if (!DAYS.includes(day) || minutes(end) <= minutes(start)) {
     throw new Error("Invalid schedule block");
@@ -2785,7 +2826,9 @@ function applyScheduleChange(worker, change) {
     }
     nextAvailability = nextAvailability.filter((_, index) => index !== slotIndex);
   }
-  nextAvailability.push(slot(day, space, start, end, change.source, date));
+  const nextSlot = slot(day, space, start, end, change.source, date);
+  applyBreakOverride(nextSlot, scheduleBreakMinutesFromChange(change, originalSlot, start, end));
+  nextAvailability.push(nextSlot);
   nextAvailability.sort(sortScheduleSlots);
 
   const nextHours = weeklyHoursFor(nextAvailability, weekStart);
@@ -2817,8 +2860,36 @@ function scheduleItemOnClosedSpace(item, weekStart, spaces) {
 }
 
 function paidHoursForScheduleItem(item) {
-  const hours = Math.max(0, minutes(item.end) - minutes(item.start)) / 60;
-  return hours >= 9 ? hours - 1 : hours;
+  const durationMinutes = Math.max(0, minutes(item.end) - minutes(item.start));
+  const breakMinutes = scheduleBreakMinutes(item, durationMinutes);
+  return Math.max(0, durationMinutes - breakMinutes) / 60;
+}
+
+function scheduleBreakMinutes(item, durationMinutes = Math.max(0, minutes(item.end) - minutes(item.start))) {
+  if (Number.isFinite(Number(item.unpaidBreakMinutes))) {
+    return Math.max(0, Math.min(durationMinutes, Number(item.unpaidBreakMinutes)));
+  }
+  return durationMinutes >= LONG_SHIFT_BREAK_THRESHOLD_MINUTES ? DEFAULT_LONG_SHIFT_BREAK_MINUTES : 0;
+}
+
+function scheduleBreakMinutesFromChange(change, originalSlot, start, end) {
+  const durationMinutes = Math.max(0, minutes(end) - minutes(start));
+  if (change.noUnpaidBreak === true || cleanText(change.noUnpaidBreak) === "true" || cleanText(change.noUnpaidBreak) === "on") return 0;
+  if (change.unpaidBreakMinutes !== undefined && change.unpaidBreakMinutes !== "") {
+    const minutesValue = Number(change.unpaidBreakMinutes);
+    if (Number.isFinite(minutesValue)) return Math.max(0, Math.min(durationMinutes, minutesValue));
+  }
+  if (change.preserveBreak !== false && originalSlot && originalSlot.unpaidBreakMinutes !== undefined) {
+    return scheduleBreakMinutes(originalSlot, durationMinutes);
+  }
+  return scheduleBreakMinutes({ start, end }, durationMinutes);
+}
+
+function applyBreakOverride(slotItem, breakMinutes) {
+  const defaultBreak = scheduleBreakMinutes({ start: slotItem.start, end: slotItem.end });
+  if (breakMinutes !== defaultBreak) {
+    slotItem.unpaidBreakMinutes = breakMinutes;
+  }
 }
 
 function scheduleItemInWeek(item, weekStart = db?.focusWeekStart || SOURCE_WEEK_START) {

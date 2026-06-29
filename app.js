@@ -362,7 +362,7 @@ function studentHoursSummaryPanel(worker) {
     const date = addDays(app.data.focusWeekStart, index);
     const slots = (worker.availability || []).filter((slot) => scheduleItemMatchesDate(slot, day, date) && !slotOnClosedSpace(slot, date));
     const closed = workerDayClosed(worker, date);
-    const hours = slots.reduce((sum, slot) => sum + paidHoursForRange(slot.start, slot.end), 0);
+    const hours = slots.reduce((sum, slot) => sum + paidHoursForSlot(slot), 0);
     return { day, date, slots, hours, closed };
   });
   const total = rows.reduce((sum, row) => sum + row.hours, 0);
@@ -1882,7 +1882,8 @@ async function saveSchedule(form) {
       start: data.get("start"),
       end: data.get("end"),
       mode: data.get("mode"),
-      slotIndex: data.get("slotIndex")
+      slotIndex: data.get("slotIndex"),
+      noUnpaidBreak: data.get("noUnpaidBreak") === "on"
     }
   });
   app.editingSchedule = null;
@@ -1943,10 +1944,12 @@ function scheduleForm(workerId, includeWorkerSelect) {
   const editing = app.editingSchedule?.workerId === workerId ? app.editingSchedule : null;
   const worker = workerById(workerId);
   const editSlot = editing ? worker?.availability[editing.slotIndex] : null;
+  const staff = app.data.role === "staff";
   const day = editSlot?.day || "Monday";
   const space = editSlot?.space || app.data.spaces[0]?.name || "1951@SkySong";
   const start = editSlot?.start || "09:00";
   const end = editSlot?.end || "17:00";
+  const noUnpaidBreak = Number(editSlot?.unpaidBreakMinutes) === 0;
   return `
     <form id="scheduleForm" class="schedule-change-form">
       <div class="form-grid">
@@ -1964,6 +1967,12 @@ function scheduleForm(workerId, includeWorkerSelect) {
             <option value="replace-day">Replace full day</option>
           </select>
         </label>
+        ${staff ? `
+          <label class="span-2 inline-check">
+            <input name="noUnpaidBreak" type="checkbox" ${noUnpaidBreak ? "checked" : ""}>
+            <span>Count full shift / no unpaid lunch</span>
+          </label>
+        ` : ""}
         <div class="span-6 action-row">
           <button class="primary-button" type="submit">${editSlot ? "Save Edited Hours" : "Save Schedule"}</button>
           ${editSlot ? `<button class="ghost-button" type="button" data-action="clear-schedule-edit">Cancel Edit</button>` : ""}
@@ -2299,8 +2308,16 @@ function hoursBetween(start, end) {
   return Math.max(0, minutes(end) - minutes(start)) / 60;
 }
 
-function paidHoursForRange(start, end) {
+function paidHoursForSlot(slot) {
+  if (Number.isFinite(Number(slot?.paidHours))) return Number(slot.paidHours);
+  return paidHoursForRange(slot?.start, slot?.end, slot?.unpaidBreakMinutes);
+}
+
+function paidHoursForRange(start, end, unpaidBreakMinutes) {
   const hours = hoursBetween(start, end);
+  if (Number.isFinite(Number(unpaidBreakMinutes))) {
+    return Math.max(0, hours - Number(unpaidBreakMinutes) / 60);
+  }
   return hours >= 9 ? hours - 1 : hours;
 }
 

@@ -1447,6 +1447,9 @@ function scheduleChangeCard(request) {
   const staff = app.data.role === "staff";
   const original = request.originalSlot;
   const actionLabel = request.type === "remove" ? "Remove schedule block" : scheduleModeLabel(request.mode);
+  const timeLabel = request.mode === "split-day"
+    ? `${formatTime(request.start)}-${formatTime(request.breakStart)} + ${formatTime(request.breakEnd)}-${formatTime(request.end)}`
+    : `${formatTime(request.start)}-${formatTime(request.end)}`;
   return `
     <article class="task-card">
       <div class="task-head">
@@ -1457,7 +1460,7 @@ function scheduleChangeCard(request) {
         ${staff ? `<span class="badge">${escapeHtml(worker?.name || "Unknown student")}</span>` : ""}
         ${spaceChip(request.space)}
         <span class="badge">${formatShortDate(request.date)}</span>
-        <span class="badge">${formatTime(request.start)}-${formatTime(request.end)}</span>
+        <span class="badge">${timeLabel}</span>
       </div>
       ${original ? `<p class="task-meta">Original: ${escapeHtml(original.space)} ${formatTime(original.start)}-${formatTime(original.end)}.</p>` : ""}
       <p class="task-meta">${escapeHtml(scheduleChangeStatusText(request))}</p>
@@ -1476,6 +1479,7 @@ function scheduleModeLabel(mode) {
     "edit-slot": "Edit schedule block",
     "replace-space": "Replace this space/day",
     "replace-day": "Replace full day",
+    "split-day": "Split day around away time",
     add: "Add schedule block",
     remove: "Remove schedule block"
   }[mode] || "Schedule change";
@@ -1881,6 +1885,8 @@ async function saveSchedule(form) {
       space: data.get("space"),
       start: data.get("start"),
       end: data.get("end"),
+      breakStart: data.get("breakStart"),
+      breakEnd: data.get("breakEnd"),
       mode: data.get("mode"),
       slotIndex: data.get("slotIndex"),
       noUnpaidBreak: data.get("noUnpaidBreak") === "on"
@@ -1950,6 +1956,8 @@ function scheduleForm(workerId, includeWorkerSelect) {
   const start = editSlot?.start || "09:00";
   const end = editSlot?.end || "17:00";
   const noUnpaidBreak = Number(editSlot?.unpaidBreakMinutes) === 0;
+  const defaultBreakStart = start < "12:00" && end > "12:00" ? "12:00" : "";
+  const defaultBreakEnd = start < "13:00" && end > "13:00" ? "13:00" : "";
   return `
     <form id="scheduleForm" class="schedule-change-form">
       <div class="form-grid">
@@ -1959,12 +1967,17 @@ function scheduleForm(workerId, includeWorkerSelect) {
         <label>Space${spaceSelect("space", space)}</label>
         <label>Start<input name="start" type="time" value="${start}" required></label>
         <label>End<input name="end" type="time" value="${end}" required></label>
+        ${staff ? `
+          <label>Away Start<input name="breakStart" type="time" value="${defaultBreakStart}"></label>
+          <label>Back At<input name="breakEnd" type="time" value="${defaultBreakEnd}"></label>
+        ` : ""}
         <label class="span-2">Change Type
           <select name="mode">
             ${editSlot ? `<option value="edit-slot">Edit selected block</option>` : ""}
             <option value="replace-space" ${editSlot ? "" : "selected"}>Replace this space/day</option>
             <option value="add">Add block</option>
             <option value="replace-day">Replace full day</option>
+            ${staff ? `<option value="split-day">Split day around away time</option>` : ""}
           </select>
         </label>
         ${staff ? `

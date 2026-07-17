@@ -404,6 +404,8 @@ async function handleApi(req, res) {
       end: body.end,
       mode: body.mode,
       slotIndex: body.slotIndex,
+      breakStart: body.breakStart,
+      breakEnd: body.breakEnd,
       noUnpaidBreak: body.noUnpaidBreak,
       preserveBreak: false,
       source: user.role === "staff" ? "Staff schedule edit" : "Student schedule change",
@@ -587,6 +589,8 @@ function createScheduleChangeRequest(worker, input, user, type = "change") {
     space: normalized.space,
     start: normalized.start,
     end: normalized.end,
+    breakStart: normalized.breakStart,
+    breakEnd: normalized.breakEnd,
     mode: normalized.mode,
     slotIndex: normalized.slotIndex,
     originalSlot: normalized.originalSlot,
@@ -633,9 +637,16 @@ function normalizeScheduleChangeRequest(worker, input, type) {
   const start = normalizeTimeValue(input.start, "09:00");
   const end = normalizeTimeValue(input.end, "17:00");
   const mode = cleanText(input.mode) || "add";
+  const breakStart = normalizeTimeValue(input.breakStart, "");
+  const breakEnd = normalizeTimeValue(input.breakEnd, "");
   const date = normalizeDateValue(input.date) || (DAYS.includes(day) ? addDays(db.focusWeekStart, DAYS.indexOf(day)) : "");
   if (!DAYS.includes(day) || minutes(end) <= minutes(start)) {
     const error = new Error("Invalid schedule block.");
+    error.status = 400;
+    throw error;
+  }
+  if (mode === "split-day" && !(minutes(start) < minutes(breakStart) && minutes(breakStart) < minutes(breakEnd) && minutes(breakEnd) < minutes(end))) {
+    const error = new Error("For split day, start must be before away start, away start before back time, and back time before end.");
     error.status = 400;
     throw error;
   }
@@ -650,6 +661,8 @@ function normalizeScheduleChangeRequest(worker, input, type) {
     space,
     start,
     end,
+    breakStart: mode === "split-day" ? breakStart : "",
+    breakEnd: mode === "split-day" ? breakEnd : "",
     mode,
     slotIndex: Number.isInteger(slotIndex) ? slotIndex : "",
     originalSlot: originalSlot ? structuredClone(originalSlot) : null
@@ -696,6 +709,8 @@ function handleScheduleChangeRequestAction(request, action, user) {
       space: request.space,
       start: request.start,
       end: request.end,
+      breakStart: request.breakStart,
+      breakEnd: request.breakEnd,
       mode: request.mode,
       slotIndex,
       source: "Student schedule change",
@@ -734,6 +749,9 @@ function findScheduleSlotIndex(worker, slotItem) {
 
 function scheduleChangeSummary(request) {
   const verb = request.type === "remove" ? "remove" : "change";
+  if (request.mode === "split-day") {
+    return `${verb} ${request.space} on ${request.day}, ${formatTime(request.start)}-${formatTime(request.breakStart)} and ${formatTime(request.breakEnd)}-${formatTime(request.end)}`;
+  }
   return `${verb} ${request.space} on ${request.day}, ${formatTime(request.start)}-${formatTime(request.end)}`;
 }
 
@@ -1193,6 +1211,8 @@ function publicScheduleChangeRequest(request, forStaff) {
     space: request.space || "",
     start: request.start || "",
     end: request.end || "",
+    breakStart: request.breakStart || "",
+    breakEnd: request.breakEnd || "",
     mode: request.mode || "",
     originalSlot: request.originalSlot ? publicScheduleSlot(request.originalSlot, forStaff) : null,
     requestedByName: request.requestedByName || "",
@@ -1391,6 +1411,8 @@ function migrateDb(appDb) {
     request.reviewedBy ||= "";
     request.reviewNote ||= "";
     request.originalSlot ||= null;
+    request.breakStart ||= "";
+    request.breakEnd ||= "";
   });
   if (!appDb.coverageRequests.length) {
     ensureCoverageRequestsForFocusWeek(appDb);
@@ -2800,12 +2822,19 @@ function applyScheduleChange(worker, change) {
   const start = normalizeTimeValue(change.start, "09:00");
   const end = normalizeTimeValue(change.end, "17:00");
   const mode = cleanText(change.mode) || "add";
+  const breakStart = normalizeTimeValue(change.breakStart, "");
+  const breakEnd = normalizeTimeValue(change.breakEnd, "");
   const slotIndex = Number(change.slotIndex);
   const date = normalizeDateValue(change.date) || (DAYS.includes(day) ? addDays(db.focusWeekStart, DAYS.indexOf(day)) : "");
   const originalSlot = Number.isInteger(slotIndex) && slotIndex >= 0 ? worker.availability[slotIndex] : null;
 
   if (!DAYS.includes(day) || minutes(end) <= minutes(start)) {
     throw new Error("Invalid schedule block");
+  }
+  if (mode === "split-day" && !(minutes(start) < minutes(breakStart) && minutes(breakStart) < minutes(breakEnd) && minutes(breakEnd) < minutes(end))) {
+    const error = new Error("For split day, start must be before away start, away start before back time, and back time before end.");
+    error.status = 400;
+    throw error;
   }
 
   const before = worker.availability.length;
@@ -2815,7 +2844,7 @@ function applyScheduleChange(worker, change) {
   if (mode === "replace-day") {
     nextAvailability = nextAvailability.filter((item) => !scheduleItemMatchesDate(item, day, date));
   }
-  if (mode === "replace-space") {
+  if (mode === "replace-space" || mode === "split-day") {
     nextAvailability = nextAvailability.filter((item) => !(scheduleItemMatchesDate(item, day, date) && item.space === space));
   }
   if (mode === "edit-slot") {
@@ -2826,9 +2855,14 @@ function applyScheduleChange(worker, change) {
     }
     nextAvailability = nextAvailability.filter((_, index) => index !== slotIndex);
   }
-  const nextSlot = slot(day, space, start, end, change.source, date);
-  applyBreakOverride(nextSlot, scheduleBreakMinutesFromChange(change, originalSlot, start, end));
-  nextAvailability.push(nextSlot);
+  const slotRanges = mode === "split-day"
+    ? [[start, breakStart], [breakEnd, end]]
+    : [[start, end]];
+  slotRanges.forEach(([slotStart, slotEnd]) => {
+    const nextSlot = slot(day, space, slotStart, slotEnd, change.source, date);
+    applyBreakOverride(nextSlot, scheduleBreakMinutesFromChange(change, originalSlot, slotStart, slotEnd));
+    nextAvailability.push(nextSlot);
+  });
   nextAvailability.sort(sortScheduleSlots);
 
   const nextHours = weeklyHoursFor(nextAvailability, weekStart);
@@ -2840,8 +2874,11 @@ function applyScheduleChange(worker, change) {
 
   worker.availability = nextAvailability;
 
-  const modeLabel = mode === "add" ? "added" : mode === "edit-slot" ? "edited" : "changed";
-  addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${space} on ${day}, ${formatTime(start)}-${formatTime(end)}. Weekly total: ${formatHourTotal(nextHours)}/${WEEKLY_HOUR_LIMIT} hours.`);
+  const modeLabel = mode === "add" ? "added" : mode === "edit-slot" ? "edited" : mode === "split-day" ? "split" : "changed";
+  const timeLabel = mode === "split-day"
+    ? `${formatTime(start)}-${formatTime(breakStart)} and ${formatTime(breakEnd)}-${formatTime(end)}`
+    : `${formatTime(start)}-${formatTime(end)}`;
+  addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${space} on ${day}, ${timeLabel}. Weekly total: ${formatHourTotal(nextHours)}/${WEEKLY_HOUR_LIMIT} hours.`);
   addActivity(`${worker.name} ${modeLabel} schedule at ${space}; ${before} block${before === 1 ? "" : "s"} became ${worker.availability.length}, ${formatHourTotal(beforeHours)}h became ${formatHourTotal(nextHours)}h.`);
 }
 

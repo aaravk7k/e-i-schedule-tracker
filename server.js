@@ -94,6 +94,14 @@ const NO_UNPAID_BREAK_OVERRIDES = [
   { workerId: "aarav-kapoor", startDate: "2026-06-29", endDate: "2026-07-02" },
   { workerId: "amanda", startDate: "2026-06-29", endDate: "2026-07-02" }
 ];
+const STAFF_STATUS_PEOPLE = [
+  "Matthew Kohlbeck",
+  "Paula Alvarado",
+  "Lynn Romero",
+  "Dania Alcala-Calvillo"
+];
+const STAFF_STATUS_OPTIONS = ["In Office", "Remote", "Out of Office"];
+const STAFF_STATUS_DEFAULT = "Not Set";
 
 const sessions = new Map();
 let db;
@@ -189,6 +197,16 @@ async function handleApi(req, res) {
     addActivity(`Added staff schedule for ${staffSchedule.name}.`);
     saveDb();
     sendJson(res, 201, viewForUser(user));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/staff-statuses") {
+    requireStaff(user);
+    const body = await readJson(req);
+    const status = upsertStaffStatus(body, user);
+    addActivity(`${user.name} set ${status.name} as ${status.status}${status.space ? ` at ${status.space}` : ""} for ${formatShortDate(status.date)}.`);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
     return;
   }
 
@@ -1065,6 +1083,10 @@ function viewForUser(user) {
     spaces: db.spaces,
     events: visibleEvents.map(publicEvent),
     staffSchedules: cleanStaffSchedules(db.staffSchedules),
+    staffStatuses: staffStatusesForDate(db.focusDate),
+    staffStatusRecords: cleanStaffStatusRecords(db.staffStatuses).map(publicStaffStatus),
+    staffStatusPeople: STAFF_STATUS_PEOPLE,
+    staffStatusOptions: STAFF_STATUS_OPTIONS,
     scheduleChangeRequests: scheduleChangeRequestsForUser(user).map((request) => publicScheduleChangeRequest(request, user.role === "staff")),
     spaceColors: SPACE_COLORS,
     skillOptions: SKILL_OPTIONS,
@@ -1287,6 +1309,7 @@ function createInitialDb() {
     events: cleanEvents(seedData.events.map(createScheduleEvent)),
     coverageRequests: [],
     scheduleChangeRequests: [],
+    staffStatuses: [],
     tasks: [],
     activity: [],
     alerts: [],
@@ -1372,6 +1395,7 @@ function migrateDb(appDb) {
   appDb.spaces = cleanSpaces(appDb.spaces || structuredClone(seedData.spaces));
   ensureObservedClosedDates(appDb);
   appDb.staffSchedules = cleanStaffSchedules(appDb.staffSchedules || structuredClone(seedData.staffSchedules));
+  appDb.staffStatuses = cleanStaffStatusRecords(appDb.staffStatuses || []);
   appDb.events ||= seedData.events.map(createScheduleEvent);
   appDb.coverageRequests ||= [];
   appDb.scheduleChangeRequests ||= [];
@@ -2363,6 +2387,101 @@ function createStaffSchedule(input) {
     throw error;
   }
   return schedule;
+}
+
+function upsertStaffStatus(input, user) {
+  db.staffStatuses ||= [];
+  const record = createStaffStatusRecord(input, user);
+  const existingIndex = db.staffStatuses.findIndex((item) =>
+    item.date === record.date && staffStatusNameMatches(item.name, record.name)
+  );
+  if (existingIndex >= 0) {
+    db.staffStatuses[existingIndex] = {
+      ...db.staffStatuses[existingIndex],
+      ...record,
+      id: db.staffStatuses[existingIndex].id || record.id
+    };
+  } else {
+    db.staffStatuses.push(record);
+  }
+  db.staffStatuses = cleanStaffStatusRecords(db.staffStatuses);
+  return record;
+}
+
+function createStaffStatusRecord(input, user) {
+  const name = staffStatusPersonName(input.name);
+  if (!name) {
+    const error = new Error("Choose one of the listed staff members.");
+    error.status = 400;
+    throw error;
+  }
+  const status = cleanText(input.status);
+  if (!STAFF_STATUS_OPTIONS.includes(status)) {
+    const error = new Error("Choose In Office, Remote, or Out of Office.");
+    error.status = 400;
+    throw error;
+  }
+  const space = status === "In Office" ? normalizeSpaceName(input.space) : "";
+  if (status === "In Office" && (!space || space === "General")) {
+    const error = new Error("Choose which space the staff member is in.");
+    error.status = 400;
+    throw error;
+  }
+  return {
+    id: cleanText(input.id) || `staff-status-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+    date: normalizeDateValue(input.date) || db.focusDate || FALLBACK_FOCUS_DATE,
+    name,
+    status,
+    space,
+    note: cleanText(input.note || input.notes).slice(0, 160),
+    updatedAt: new Date().toISOString(),
+    updatedBy: user.name
+  };
+}
+
+function staffStatusesForDate(date) {
+  const targetDate = normalizeDateValue(date) || db.focusDate || FALLBACK_FOCUS_DATE;
+  return STAFF_STATUS_PEOPLE.map((name) => {
+    const record = latestStaffStatusForPerson(targetDate, name);
+    return publicStaffStatus(record || {
+      id: "",
+      date: targetDate,
+      name,
+      status: STAFF_STATUS_DEFAULT,
+      space: "",
+      note: "",
+      updatedAt: "",
+      updatedBy: ""
+    });
+  });
+}
+
+function latestStaffStatusForPerson(date, name) {
+  return [...(db.staffStatuses || [])]
+    .reverse()
+    .find((item) => item.date === date && staffStatusNameMatches(item.name, name));
+}
+
+function publicStaffStatus(record) {
+  return {
+    id: record.id || "",
+    date: record.date,
+    name: record.name,
+    status: record.status || STAFF_STATUS_DEFAULT,
+    space: record.space || "",
+    note: record.note || "",
+    updatedAt: record.updatedAt || "",
+    updatedBy: record.updatedBy || ""
+  };
+}
+
+function staffStatusPersonName(value) {
+  const clean = cleanText(value);
+  return STAFF_STATUS_PEOPLE.find((name) => staffStatusNameMatches(name, clean)) || "";
+}
+
+function staffStatusNameMatches(left, right) {
+  return cleanText(left).toLowerCase() === cleanText(right).toLowerCase();
 }
 
 function createTask(input) {
@@ -3407,6 +3526,28 @@ function cleanStaffSchedules(schedules = []) {
       seen.add(key);
       return true;
     });
+}
+
+function cleanStaffStatusRecords(records = []) {
+  const latestByPersonDate = new Map();
+  (records || []).forEach((record) => {
+    const name = staffStatusPersonName(record.name);
+    const date = normalizeDateValue(record.date);
+    if (!name || !date) return;
+    const status = STAFF_STATUS_OPTIONS.includes(record.status) ? record.status : STAFF_STATUS_DEFAULT;
+    const cleanRecord = {
+      id: cleanText(record.id) || `staff-status-${date}-${slugify(name)}`,
+      date,
+      name,
+      status,
+      space: status === "In Office" ? normalizeSpaceName(record.space) : "",
+      note: cleanText(record.note || record.notes).slice(0, 160),
+      updatedAt: record.updatedAt || "",
+      updatedBy: cleanText(record.updatedBy)
+    };
+    latestByPersonDate.set(`${date}|${name.toLowerCase()}`, cleanRecord);
+  });
+  return [...latestByPersonDate.values()].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
 }
 
 function staffScheduleVisible(schedule = {}) {

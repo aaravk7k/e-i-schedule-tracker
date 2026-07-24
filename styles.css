@@ -370,6 +370,44 @@ button:disabled {
   line-height: 1;
 }
 
+.staff-status-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.staff-status-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.staff-status-head h3 {
+  margin: 0 0 4px;
+}
+
+.staff-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.staff-status-card {
+  display: grid;
+  gap: 10px;
+  min-height: 116px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--asu-maroon);
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.staff-status-form {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
 .split-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
@@ -548,6 +586,26 @@ tr:last-child td {
 .status-pill.dismissed {
   background: #f0edff;
   color: #4f2fb0;
+}
+
+.status-pill.staff-in-office {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.status-pill.staff-remote {
+  background: #e7f4ff;
+  color: #174a7c;
+}
+
+.status-pill.staff-out-of-office {
+  background: #fff0ee;
+  color: var(--danger);
+}
+
+.status-pill.staff-not-set {
+  background: #eef2f7;
+  color: var(--muted);
 }
 
 .warning-badge {
@@ -1172,6 +1230,7 @@ tr:last-child td {
   .three-grid,
   .kpi-grid,
   .hours-summary-grid,
+  .staff-status-grid,
   .calendar-toolbar,
   .student-calendar-note {
     grid-template-columns: 1fr;

@@ -487,6 +487,8 @@ function renderSpaceCalendar() {
       </div>
     </section>
 
+    ${staffStatusPanel()}
+
     ${staff ? "" : studentHoursSummaryPanel(currentWorker())}
 
     <section class="panel">
@@ -536,6 +538,83 @@ function calendarStudentSummary(visibleSpaces) {
       </div>
       ${calendarExportActions(true)}
     </div>
+  `;
+}
+
+function staffStatusPanel() {
+  const statuses = staffStatusesForSelectedDate();
+  return `
+    <section class="panel staff-status-panel">
+      <div class="staff-status-head">
+        <div>
+          <h3>Staff Status</h3>
+          <p class="task-meta">For ${formatShortDate(app.data.focusDate)}.</p>
+        </div>
+        ${app.data.role === "staff" ? `<span class="badge">Visible to students</span>` : ""}
+      </div>
+      <div class="staff-status-grid">
+        ${statuses.map(staffStatusCard).join("") || emptyState("No staff status records yet.")}
+      </div>
+      ${app.data.role === "staff" ? staffStatusForm(statuses) : ""}
+    </section>
+  `;
+}
+
+function staffStatusesForSelectedDate() {
+  const date = app.data.focusDate;
+  const records = app.data.staffStatusRecords || app.data.staffStatuses || [];
+  return (app.data.staffStatusPeople || []).map((name) => {
+    const record = [...records].reverse().find((item) => item.name === name && item.date === date);
+    return record || {
+      id: "",
+      date,
+      name,
+      status: "Not Set",
+      space: "",
+      note: "",
+      updatedAt: "",
+      updatedBy: ""
+    };
+  });
+}
+
+function staffStatusCard(record) {
+  const inOffice = record.status === "In Office";
+  return `
+    <article class="staff-status-card">
+      <div class="task-head">
+        <strong>${escapeHtml(record.name)}</strong>
+        ${staffStatusPill(record.status)}
+      </div>
+      <div class="badge-row">
+        ${inOffice && record.space ? spaceChip(record.space) : ""}
+        ${record.updatedBy ? `<span class="badge">Updated by ${escapeHtml(record.updatedBy)}</span>` : ""}
+      </div>
+      ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
+    </article>
+  `;
+}
+
+function staffStatusForm(statuses = []) {
+  const first = statuses[0] || {};
+  return `
+    <form id="staffStatusForm" class="form-grid staff-status-form">
+      <input type="hidden" name="date" value="${app.data.focusDate}">
+      <label class="span-2">Staff
+        <select name="name" data-staff-status-person required>
+          ${(app.data.staffStatusPeople || []).map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")}
+        </select>
+      </label>
+      <label class="span-2">Status
+        <select name="status" data-staff-status-select required>
+          <option value="">Choose status</option>
+          ${(app.data.staffStatusOptions || []).map((status) => `<option value="${escapeHtml(status)}" ${first.status === status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}
+        </select>
+      </label>
+      <label class="span-2" data-staff-status-space>Space${spaceSelect("space", first.space || "")}</label>
+      <label class="span-6">Note<input name="note" value="${escapeHtml(first.note || "")}" placeholder="Optional note for the team"></label>
+      <div class="span-6 action-row"><button class="secondary-button" type="submit">Update Staff Status</button></div>
+    </form>
   `;
 }
 
@@ -1617,10 +1696,13 @@ function bindEvents() {
   bindForm("eventForm", createEvents);
   bindForm("smartEventForm", createSmartEvent);
   bindForm("staffScheduleForm", createStaffSchedule);
+  bindForm("staffStatusForm", saveStaffStatus);
   bindForm("workerForm", createWorker);
   bindForm("userForm", createUser);
   bindForm("skillForm", saveSkills);
   bindForm("scheduleForm", saveSchedule);
+  bindStaffStatusControls();
+  bindScheduleModeControls();
   document.querySelectorAll("[data-coverage-block-form]").forEach((form) => {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -1630,6 +1712,46 @@ function bindEvents() {
         showToast(error.message);
       }
     });
+  });
+}
+
+function bindStaffStatusControls() {
+  const form = document.getElementById("staffStatusForm");
+  if (!form) return;
+  const personSelect = form.querySelector("[data-staff-status-person]");
+  const statusSelect = form.querySelector("[data-staff-status-select]");
+  const syncStatusForPerson = () => {
+    const record = staffStatusesForSelectedDate().find((item) => item.name === personSelect.value) || {};
+    statusSelect.value = (app.data.staffStatusOptions || []).includes(record.status) ? record.status : "";
+    form.querySelector("[name='space']").value = record.space || app.data.spaces[0]?.name || "1951@SkySong";
+    form.querySelector("[name='note']").value = record.note || "";
+    toggleStaffStatusSpace(form);
+  };
+  personSelect.addEventListener("change", syncStatusForPerson);
+  statusSelect.addEventListener("change", () => toggleStaffStatusSpace(form));
+  syncStatusForPerson();
+}
+
+function toggleStaffStatusSpace(form) {
+  const status = form.querySelector("[data-staff-status-select]")?.value;
+  const spaceField = form.querySelector("[data-staff-status-space]");
+  const spaceSelectElement = spaceField?.querySelector("select");
+  const needsSpace = status === "In Office";
+  if (spaceField) spaceField.hidden = !needsSpace;
+  if (spaceSelectElement) spaceSelectElement.required = needsSpace;
+}
+
+function bindScheduleModeControls() {
+  document.querySelectorAll("[data-schedule-mode]").forEach((select) => {
+    toggleSplitDayFields(select.form);
+    select.addEventListener("change", () => toggleSplitDayFields(select.form));
+  });
+}
+
+function toggleSplitDayFields(form) {
+  const splitDay = form?.querySelector("[data-schedule-mode]")?.value === "split-day";
+  form?.querySelectorAll("[data-split-day-field]").forEach((field) => {
+    field.hidden = !splitDay;
   });
 }
 
@@ -1832,6 +1954,22 @@ async function createStaffSchedule(form) {
   render();
 }
 
+async function saveStaffStatus(form) {
+  const data = new FormData(form);
+  app.data = await api("/api/staff-statuses", {
+    method: "POST",
+    body: {
+      name: data.get("name"),
+      date: data.get("date"),
+      status: data.get("status"),
+      space: data.get("space"),
+      note: data.get("note")
+    }
+  });
+  showToast("Staff status updated.");
+  render();
+}
+
 async function createWorker(form) {
   const data = new FormData(form);
   app.data = await api("/api/workers", {
@@ -1968,11 +2106,11 @@ function scheduleForm(workerId, includeWorkerSelect) {
         <label>Start<input name="start" type="time" value="${start}" required></label>
         <label>End<input name="end" type="time" value="${end}" required></label>
         ${staff ? `
-          <label>Away Start<input name="breakStart" type="time" value="${defaultBreakStart}"></label>
-          <label>Back At<input name="breakEnd" type="time" value="${defaultBreakEnd}"></label>
+          <label data-split-day-field>Away Start<input name="breakStart" type="time" value="${defaultBreakStart}"></label>
+          <label data-split-day-field>Back At<input name="breakEnd" type="time" value="${defaultBreakEnd}"></label>
         ` : ""}
         <label class="span-2">Change Type
-          <select name="mode">
+          <select name="mode" data-schedule-mode>
             ${editSlot ? `<option value="edit-slot">Edit selected block</option>` : ""}
             <option value="replace-space" ${editSlot ? "" : "selected"}>Replace this space/day</option>
             <option value="add">Add block</option>
@@ -2413,6 +2551,15 @@ function skillLabel(skill) {
 function statusPill(status) {
   const label = { pending: "Pending", approved: "Approved", accepted: "Accepted", scheduled: "Scheduled", covered: "Covered", rejected: "Rejected", dismissed: "Dismissed", requesting: "Requesting", closed: "Closed", "needs-review": "Needs Review", done: "Complete", denied: "Denied", unassigned: "Needs Assignment", draft: "Draft" }[status] || status;
   return `<span class="status-pill ${status}">${label}</span>`;
+}
+
+function staffStatusPill(status) {
+  const key = {
+    "In Office": "in-office",
+    Remote: "remote",
+    "Out of Office": "out-of-office"
+  }[status] || "not-set";
+  return `<span class="status-pill staff-${key}">${escapeHtml(status || "Not Set")}</span>`;
 }
 
 function spaceChip(space) {

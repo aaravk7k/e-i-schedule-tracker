@@ -89,6 +89,17 @@ const SAKSHI_WORKER_ID = "sakshi";
 const SAKSHI_START_DATE = "2026-06-15";
 const SAKSHI_DEFAULT_SCHEDULE_SOURCE = "Staff-provided Sakshi schedule";
 const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student schedule change"]);
+const AUGUST_USUAL_SCHEDULE_START = "2026-08-03";
+const AUGUST_USUAL_SCHEDULE_END = "2026-08-19";
+const AUGUST_USUAL_SCHEDULE_SOURCE = "August usual schedule extension";
+const AUGUST_USUAL_SCHEDULES = {
+  "aarav-kapoor": { space: "SkySong", start: "09:00", end: "17:00" },
+  amanda: { space: "1951@SkySong", start: "08:00", end: "17:00" },
+  "deepinderjit-singh": { space: "ACIC", start: "08:00", end: "17:00" },
+  palash: { space: "850PBC", start: "08:00", end: "17:00" },
+  shreyas: { space: "The Studios", start: "08:00", end: "17:00" },
+  sakshi: { space: "850PBC", start: "07:45", end: { default: "16:15", Friday: "13:45" } }
+};
 const OBSERVED_CLOSED_DATES = ["2026-07-03"];
 const NO_UNPAID_BREAK_OVERRIDES = [
   { workerId: "aarav-kapoor", startDate: "2026-06-29", endDate: "2026-07-02" },
@@ -1340,6 +1351,7 @@ function createInitialDb() {
   });
 
   ensureSakshiWorker(initial);
+  ensureAugustUsualSchedules(initial);
   ensureNoUnpaidBreakOverrides(initial);
   ensureCoverageRequestsForFocusWeek(initial);
   return initial;
@@ -1401,6 +1413,7 @@ function migrateDb(appDb) {
   appDb.scheduleChangeRequests ||= [];
   appDb.users ||= [];
   ensureSakshiWorker(appDb);
+  ensureAugustUsualSchedules(appDb);
   appDb.workers.forEach((worker) => {
     worker.skills = normalizeSkillList(worker.skills || []);
     worker.primarySpaces ||= [];
@@ -1489,6 +1502,40 @@ function ensureSakshiWorker(appDb) {
   if (!worker) appDb.workers.push(sakshi);
 }
 
+function ensureAugustUsualSchedules(appDb) {
+  appDb.workers ||= [];
+  Object.entries(AUGUST_USUAL_SCHEDULES).forEach(([workerId, template]) => {
+    const worker = appDb.workers.find((item) => item.id === workerId);
+    if (!worker) return;
+
+    worker.availability ||= [];
+    worker.availability = worker.availability.filter((slotItem) =>
+      !(slotItem.source === AUGUST_USUAL_SCHEDULE_SOURCE &&
+        slotItem.date >= AUGUST_USUAL_SCHEDULE_START &&
+        slotItem.date <= AUGUST_USUAL_SCHEDULE_END)
+    );
+
+    for (let date = AUGUST_USUAL_SCHEDULE_START; date <= AUGUST_USUAL_SCHEDULE_END; date = addDays(date, 1)) {
+      const day = dayFromDate(date);
+      if (!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].includes(day)) continue;
+      if (hasManualScheduleOverrideForDate(worker.availability, date)) continue;
+
+      const end = typeof template.end === "object" ? template.end[day] || template.end.default : template.end;
+      const duplicate = worker.availability.some((slotItem) =>
+        slotItem.date === date &&
+        slotItem.space === template.space &&
+        slotItem.start === template.start &&
+        slotItem.end === end
+      );
+      if (duplicate) continue;
+
+      worker.availability.push(slot(day, template.space, template.start, end, AUGUST_USUAL_SCHEDULE_SOURCE, date));
+    }
+
+    worker.availability.sort(sortScheduleSlots);
+  });
+}
+
 function ensureNoUnpaidBreakOverrides(appDb) {
   NO_UNPAID_BREAK_OVERRIDES.forEach((override) => {
     const worker = (appDb.workers || []).find((item) => item.id === override.workerId);
@@ -1524,6 +1571,13 @@ function hasManualScheduleOverride(availability, date, space) {
   return (availability || []).some((slotItem) =>
     slotItem.date === date &&
     cleanText(slotItem.space) === space &&
+    SCHEDULE_OVERRIDE_SOURCES.has(cleanText(slotItem.source))
+  );
+}
+
+function hasManualScheduleOverrideForDate(availability, date) {
+  return (availability || []).some((slotItem) =>
+    slotItem.date === date &&
     SCHEDULE_OVERRIDE_SOURCES.has(cleanText(slotItem.source))
   );
 }

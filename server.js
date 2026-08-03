@@ -92,6 +92,7 @@ const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student sched
 const AUGUST_USUAL_SCHEDULE_START = "2026-08-03";
 const AUGUST_USUAL_SCHEDULE_END = "2026-08-19";
 const AUGUST_USUAL_SCHEDULE_SOURCE = "August usual schedule extension";
+const GENERATED_SCHEDULE_SOURCES = new Set([SAKSHI_DEFAULT_SCHEDULE_SOURCE, AUGUST_USUAL_SCHEDULE_SOURCE]);
 const AUGUST_USUAL_SCHEDULES = {
   "aarav-kapoor": { space: "SkySong", start: "09:00", end: "17:00" },
   amanda: { space: "1951@SkySong", start: "08:00", end: "17:00" },
@@ -506,6 +507,7 @@ async function handleApi(req, res) {
       return;
     }
     const removed = worker.availability.splice(slotIndex, 1)[0];
+    recordScheduleSuppression(db, worker.id, removed, user.name);
     addAlert("warning", "Schedule removed", `${worker.name} removed ${removed.space} on ${removed.day}, ${formatTime(removed.start)}-${formatTime(removed.end)}.`);
     addActivity(`Removed ${worker.name} schedule block at ${removed.space}.`);
     saveDb();
@@ -762,6 +764,7 @@ function removeScheduleBlockFromApprovedRequest(worker, request, user) {
     throw error;
   }
   const removed = worker.availability.splice(index, 1)[0];
+  recordScheduleSuppression(db, worker.id, removed, user.name);
   addAlert("warning", "Schedule removed", `${user.name} approved removing ${worker.name}'s ${removed.space} block on ${removed.day}, ${formatTime(removed.start)}-${formatTime(removed.end)}.`);
   addActivity(`Approved removal of ${worker.name} schedule block at ${removed.space}.`);
 }
@@ -1322,6 +1325,7 @@ function createInitialDb() {
     events: cleanEvents(seedData.events.map(createScheduleEvent)),
     coverageRequests: [],
     scheduleChangeRequests: [],
+    scheduleSuppressions: [],
     staffStatuses: [],
     tasks: [],
     activity: [],
@@ -1413,6 +1417,7 @@ function migrateDb(appDb) {
   appDb.events ||= seedData.events.map(createScheduleEvent);
   appDb.coverageRequests ||= [];
   appDb.scheduleChangeRequests ||= [];
+  appDb.scheduleSuppressions = cleanScheduleSuppressions(appDb.scheduleSuppressions || []);
   appDb.users ||= [];
   ensureSakshiWorker(appDb);
   ensureAugustUsualSchedules(appDb);
@@ -1523,6 +1528,9 @@ function ensureAugustUsualSchedules(appDb) {
       if (hasManualScheduleOverrideForDate(worker.availability, date)) continue;
 
       const end = typeof template.end === "object" ? template.end[day] || template.end.default : template.end;
+      const generatedSlot = slot(day, template.space, template.start, end, AUGUST_USUAL_SCHEDULE_SOURCE, date);
+      if (scheduleSuppressed(appDb, workerId, generatedSlot)) continue;
+
       const duplicate = worker.availability.some((slotItem) =>
         slotItem.date === date &&
         slotItem.space === template.space &&
@@ -1531,7 +1539,7 @@ function ensureAugustUsualSchedules(appDb) {
       );
       if (duplicate) continue;
 
-      worker.availability.push(slot(day, template.space, template.start, end, AUGUST_USUAL_SCHEDULE_SOURCE, date));
+      worker.availability.push(generatedSlot);
     }
 
     worker.availability.sort(sortScheduleSlots);
@@ -1557,14 +1565,16 @@ function sakshiSummerSchedule(appDb, existingAvailability = [], endDate = latest
     const day = dayFromDate(date);
     if (!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].includes(day)) continue;
     if (hasManualScheduleOverride(existingAvailability, date, "850PBC")) continue;
-    schedule.push(slot(
+    const generatedSlot = slot(
       day,
       "850PBC",
       "07:45",
       day === "Friday" ? "13:45" : "16:15",
       SAKSHI_DEFAULT_SCHEDULE_SOURCE,
       date
-    ));
+    );
+    if (scheduleSuppressed(appDb, SAKSHI_WORKER_ID, generatedSlot)) continue;
+    schedule.push(generatedSlot);
   }
   return schedule;
 }
@@ -1582,6 +1592,81 @@ function hasManualScheduleOverrideForDate(availability, date) {
     slotItem.date === date &&
     SCHEDULE_OVERRIDE_SOURCES.has(cleanText(slotItem.source))
   );
+}
+
+function recordScheduleSuppression(appDb, workerId, slotItem, removedBy = "") {
+  if (!slotItem || !GENERATED_SCHEDULE_SOURCES.has(cleanText(slotItem.source))) return;
+  const suppression = normalizeScheduleSuppression({
+    workerId,
+    date: slotItem.date,
+    day: slotItem.day,
+    space: slotItem.space,
+    start: slotItem.start,
+    end: slotItem.end,
+    source: slotItem.source,
+    removedBy,
+    removedAt: new Date().toISOString()
+  });
+  if (!suppression) return;
+  appDb.scheduleSuppressions = cleanScheduleSuppressions(appDb.scheduleSuppressions || []);
+  if (appDb.scheduleSuppressions.some((item) => scheduleSuppressionMatchesSlot(item, suppression.workerId, suppression))) return;
+  appDb.scheduleSuppressions.push(suppression);
+}
+
+function scheduleSuppressed(appDb, workerId, slotItem) {
+  return (appDb.scheduleSuppressions || []).some((suppression) =>
+    scheduleSuppressionMatchesSlot(suppression, workerId, slotItem)
+  );
+}
+
+function scheduleSuppressionMatchesSlot(suppression, workerId, slotItem) {
+  return suppression.workerId === workerId &&
+    suppression.date === (slotItem.date || "") &&
+    suppression.day === slotItem.day &&
+    suppression.space === slotItem.space &&
+    suppression.start === slotItem.start &&
+    suppression.end === slotItem.end &&
+    suppression.source === cleanText(slotItem.source);
+}
+
+function cleanScheduleSuppressions(suppressions) {
+  const seen = new Set();
+  return (suppressions || [])
+    .map(normalizeScheduleSuppression)
+    .filter(Boolean)
+    .filter((suppression) => {
+      const key = [
+        suppression.workerId,
+        suppression.date,
+        suppression.day,
+        suppression.space,
+        suppression.start,
+        suppression.end,
+        suppression.source
+      ].join("|");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function normalizeScheduleSuppression(input = {}) {
+  const workerId = cleanText(input.workerId);
+  const date = normalizeDateValue(input.date);
+  const day = cleanText(input.day) || (date ? dayFromDate(date) : "");
+  const source = cleanText(input.source);
+  if (!workerId || !date || !DAYS.includes(day) || !GENERATED_SCHEDULE_SOURCES.has(source)) return null;
+  return {
+    workerId,
+    date,
+    day,
+    space: normalizeSpaceName(input.space),
+    start: normalizeTimeValue(input.start, ""),
+    end: normalizeTimeValue(input.end, ""),
+    source,
+    removedBy: cleanText(input.removedBy),
+    removedAt: input.removedAt || ""
+  };
 }
 
 function latestScheduleDate(appDb) {

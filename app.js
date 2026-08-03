@@ -10,7 +10,8 @@ const app = {
   toastTimer: null
 };
 
-const FOCUS_DATE_STORAGE_KEY = "edson-ei-schedule-manager-focus-date";
+const FOCUS_DATE_STORAGE_PREFIX = "edson-ei-schedule-manager-focus-date:";
+const LEGACY_FOCUS_DATE_STORAGE_KEY = "edson-ei-schedule-manager-focus-date";
 
 const staffViews = [
   ["space-calendar", "Space Calendar"],
@@ -36,13 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadState() {
-  const response = await fetch(stateEndpoint());
+  const response = await fetch("/api/state");
   if (response.status === 401) {
     app.data = null;
     renderLogin();
     return;
   }
-  app.data = await response.json();
+  app.data = await applyStoredFocusDate(await response.json());
   app.selectedWorkerId = app.selectedWorkerId || app.data.currentUser.workerId || app.data.workers[0]?.id || "";
   app.view = defaultViewForRole(app.data.role);
   render();
@@ -111,7 +112,7 @@ function renderLogin() {
 
 async function refreshState(keepView = true) {
   const priorView = app.view;
-  const data = await api(stateEndpoint());
+  const data = await applyStoredFocusDate(await api("/api/state"));
   app.data = data;
   if (keepView && availableViews().some(([id]) => id === priorView)) app.view = priorView;
   else app.view = defaultViewForRole(data.role);
@@ -121,14 +122,25 @@ async function refreshState(keepView = true) {
   render();
 }
 
-function stateEndpoint() {
-  const focusDate = storedFocusDate();
-  return focusDate ? `/api/state?focusDate=${encodeURIComponent(focusDate)}` : "/api/state";
+async function applyStoredFocusDate(data) {
+  const focusDate = storedFocusDate(data);
+  clearLegacyFocusDate();
+  if (focusDate && focusDate !== data.focusDate) {
+    return api("/api/focus-date", { method: "POST", body: { focusDate } });
+  }
+  return data;
 }
 
-function storedFocusDate() {
+function focusDateStorageKey(data = app.data) {
+  const user = data?.currentUser;
+  const accountId = user?.id || user?.email;
+  return accountId ? `${FOCUS_DATE_STORAGE_PREFIX}${accountId}` : "";
+}
+
+function storedFocusDate(data = app.data) {
   try {
-    const value = localStorage.getItem(FOCUS_DATE_STORAGE_KEY) || "";
+    const key = focusDateStorageKey(data);
+    const value = key ? localStorage.getItem(key) || "" : "";
     return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
   } catch (error) {
     return "";
@@ -137,9 +149,19 @@ function storedFocusDate() {
 
 function storeFocusDate(focusDate) {
   try {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(focusDate || "")) localStorage.setItem(FOCUS_DATE_STORAGE_KEY, focusDate);
+    const key = focusDateStorageKey();
+    if (key && /^\d{4}-\d{2}-\d{2}$/.test(focusDate || "")) localStorage.setItem(key, focusDate);
+    clearLegacyFocusDate();
   } catch (error) {
     // Local storage can be unavailable in locked-down browsers; session state still works.
+  }
+}
+
+function clearLegacyFocusDate() {
+  try {
+    localStorage.removeItem(LEGACY_FOCUS_DATE_STORAGE_KEY);
+  } catch (error) {
+    // Ignore locked-down browser storage.
   }
 }
 

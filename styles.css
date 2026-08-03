@@ -408,6 +408,50 @@ button:disabled {
   border-top: 1px solid var(--line);
 }
 
+.staff-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(210px, 1fr));
+}
+
+.staff-calendar-day {
+  min-width: 210px;
+}
+
+.staff-calendar-list {
+  display: grid;
+  gap: 10px;
+}
+
+.staff-calendar-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--muted);
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.staff-calendar-card.is-in-office {
+  border-left-color: #2e7d32;
+}
+
+.staff-calendar-card.is-remote {
+  border-left-color: #2563eb;
+}
+
+.staff-calendar-card.is-out {
+  border-left-color: var(--danger);
+}
+
+.staff-calendar-card.is-unset {
+  border-left-color: #98a2b3;
+}
+
+.staff-calendar-card .mini-button {
+  justify-self: start;
+}
+
 .split-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
@@ -1231,6 +1275,7 @@ tr:last-child td {
   .kpi-grid,
   .hours-summary-grid,
   .staff-status-grid,
+  .staff-calendar-grid,
   .calendar-toolbar,
   .student-calendar-note {
     grid-template-columns: 1fr;

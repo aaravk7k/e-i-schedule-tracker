@@ -15,6 +15,7 @@ const LEGACY_FOCUS_DATE_STORAGE_KEY = "edson-ei-schedule-manager-focus-date";
 
 const staffViews = [
   ["space-calendar", "Space Calendar"],
+  ["staff-calendar", "Staff Calendar"],
   ["approvals", "Approvals"],
   ["schedules", "Coverage"],
   ["events", "Bookings"],
@@ -25,6 +26,7 @@ const staffViews = [
 
 const studentViews = [
   ["space-calendar", "My Space Calendar"],
+  ["staff-calendar", "Staff Calendar"],
   ["requests", "Requests"],
   ["profile", "My Schedule"],
   ["schedules", "Coverage"]
@@ -187,6 +189,7 @@ function render() {
   if (app.data.role === "staff" && app.view === "access") region.innerHTML = renderAccess();
   if (app.data.role === "staff" && app.view === "approvals") region.innerHTML = renderScheduleApprovals();
   if (app.view === "space-calendar") region.innerHTML = renderSpaceCalendar();
+  if (app.view === "staff-calendar") region.innerHTML = renderStaffCalendar();
   if (app.view === "my-tasks") region.innerHTML = renderMyTasks();
   if (app.view === "requests") region.innerHTML = renderRequests();
   if (app.view === "profile") region.innerHTML = renderProfile();
@@ -533,8 +536,6 @@ function renderSpaceCalendar() {
       </div>
     </section>
 
-    ${staffStatusPanel()}
-
     ${staff ? "" : studentHoursSummaryPanel(currentWorker())}
 
     <section class="panel">
@@ -548,6 +549,91 @@ function renderSpaceCalendar() {
         </div>
       </div>
     </section>
+  `;
+}
+
+function renderStaffCalendar() {
+  const statuses = staffStatusWeekRows();
+  const inOfficeCount = statuses.flat().filter((record) => record.status === "In Office").length;
+  const remoteCount = statuses.flat().filter((record) => record.status === "Remote").length;
+  const outCount = statuses.flat().filter((record) => record.status === "Out of Office").length;
+  const unsetCount = statuses.flat().filter((record) => record.status === "Not Set").length;
+  return `
+    <section class="band">
+      <div class="band-header">
+        <div>
+          <p class="eyebrow">${app.data.role === "staff" ? "Staff Planning" : "Student View"}</p>
+          <h3>Staff Calendar</h3>
+        </div>
+        <span class="badge">Week of ${formatShortDate(app.data.focusWeekStart)}</span>
+      </div>
+      <div class="kpi-grid">
+        ${kpiCard(inOfficeCount, "In-office statuses")}
+        ${kpiCard(remoteCount, "Remote statuses")}
+        ${kpiCard(outCount, "Out of office")}
+        ${kpiCard(unsetCount, "Not set")}
+      </div>
+    </section>
+
+    ${app.data.role === "staff" ? `
+      <section class="panel staff-status-panel">
+        <div class="staff-status-head">
+          <div>
+            <h3>Update Staff Status</h3>
+            <p class="task-meta">Choose any day in the selected week. Students can view the calendar, but only staff can update it.</p>
+          </div>
+        </div>
+        ${staffStatusForm(staffStatusesForDate(app.data.focusDate), true)}
+      </section>
+    ` : ""}
+
+    <section class="panel flush">
+      <div class="table-wrap">
+        <div class="staff-calendar-grid">
+          ${DAYS.map((day, index) => staffCalendarDay(day, addDays(app.data.focusWeekStart, index))).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function staffStatusWeekRows() {
+  return DAYS.map((day, index) => staffStatusesForDate(addDays(app.data.focusWeekStart, index)));
+}
+
+function staffCalendarDay(day, date) {
+  const statuses = staffStatusesForDate(date);
+  return `
+    <article class="calendar-day staff-calendar-day">
+      <header class="calendar-day-head">
+        <div>
+          <strong>${escapeHtml(day)}</strong>
+          <span>${formatShortDate(date)}</span>
+        </div>
+        ${date === app.data.focusDate ? `<span class="badge">Focus day</span>` : ""}
+      </header>
+      <div class="staff-calendar-list">
+        ${statuses.map((record) => staffCalendarCard(record)).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function staffCalendarCard(record) {
+  const inOffice = record.status === "In Office";
+  return `
+    <article class="staff-calendar-card ${staffStatusClass(record.status)}">
+      <div class="task-head">
+        <strong>${escapeHtml(record.name)}</strong>
+        ${staffStatusPill(record.status)}
+      </div>
+      <div class="badge-row">
+        ${inOffice && record.space ? spaceChip(record.space) : ""}
+        ${record.updatedBy ? `<span class="badge">Updated by ${escapeHtml(record.updatedBy)}</span>` : ""}
+      </div>
+      ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
+      ${app.data.role === "staff" ? `<button class="mini-button" type="button" data-action="edit-staff-status" data-staff-status-date="${record.date}" data-staff-status-name="${escapeHtml(record.name)}">Edit</button>` : ""}
+    </article>
   `;
 }
 
@@ -607,7 +693,10 @@ function staffStatusPanel() {
 }
 
 function staffStatusesForSelectedDate() {
-  const date = app.data.focusDate;
+  return staffStatusesForDate(app.data.focusDate);
+}
+
+function staffStatusesForDate(date) {
   const records = app.data.staffStatusRecords || app.data.staffStatuses || [];
   return (app.data.staffStatusPeople || []).map((name) => {
     const record = [...records].reverse().find((item) => item.name === name && item.date === date);
@@ -641,11 +730,21 @@ function staffStatusCard(record) {
   `;
 }
 
-function staffStatusForm(statuses = []) {
+function staffStatusForm(statuses = [], includeDatePicker = false) {
   const first = statuses[0] || {};
+  const date = first.date || app.data.focusDate;
   return `
     <form id="staffStatusForm" class="form-grid staff-status-form">
-      <input type="hidden" name="date" value="${app.data.focusDate}">
+      ${includeDatePicker ? `
+        <label class="span-2">Day
+          <select name="date" data-staff-status-date required>
+            ${DAYS.map((day, index) => {
+              const dayDate = addDays(app.data.focusWeekStart, index);
+              return `<option value="${dayDate}" ${dayDate === date ? "selected" : ""}>${day} ${formatShortDate(dayDate)}</option>`;
+            }).join("")}
+          </select>
+        </label>
+      ` : `<input type="hidden" name="date" value="${date}">`}
       <label class="span-2">Staff
         <select name="name" data-staff-status-person required>
           ${(app.data.staffStatusPeople || []).map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")}
@@ -1764,18 +1863,39 @@ function bindEvents() {
 function bindStaffStatusControls() {
   const form = document.getElementById("staffStatusForm");
   if (!form) return;
+  const dateSelect = form.querySelector("[data-staff-status-date]");
   const personSelect = form.querySelector("[data-staff-status-person]");
   const statusSelect = form.querySelector("[data-staff-status-select]");
   const syncStatusForPerson = () => {
-    const record = staffStatusesForSelectedDate().find((item) => item.name === personSelect.value) || {};
+    const date = dateSelect?.value || form.querySelector("[name='date']")?.value || app.data.focusDate;
+    const record = staffStatusesForDate(date).find((item) => item.name === personSelect.value) || {};
     statusSelect.value = (app.data.staffStatusOptions || []).includes(record.status) ? record.status : "";
     form.querySelector("[name='space']").value = record.space || app.data.spaces[0]?.name || "1951@SkySong";
     form.querySelector("[name='note']").value = record.note || "";
     toggleStaffStatusSpace(form);
   };
+  dateSelect?.addEventListener("change", syncStatusForPerson);
   personSelect.addEventListener("change", syncStatusForPerson);
   statusSelect.addEventListener("change", () => toggleStaffStatusSpace(form));
   syncStatusForPerson();
+}
+
+function selectStaffStatusForEdit(date, name) {
+  const form = document.getElementById("staffStatusForm");
+  if (!form) return;
+  const dateField = form.querySelector("[name='date']");
+  const personField = form.querySelector("[data-staff-status-person]");
+  if (dateField) dateField.value = date;
+  if (personField) personField.value = name;
+  const record = staffStatusesForDate(date).find((item) => item.name === name) || {};
+  const statusField = form.querySelector("[data-staff-status-select]");
+  if (statusField) statusField.value = (app.data.staffStatusOptions || []).includes(record.status) ? record.status : "";
+  const spaceField = form.querySelector("[name='space']");
+  if (spaceField) spaceField.value = record.space || app.data.spaces[0]?.name || "1951@SkySong";
+  const noteField = form.querySelector("[name='note']");
+  if (noteField) noteField.value = record.note || "";
+  toggleStaffStatusSpace(form);
+  form.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function toggleStaffStatusSpace(form) {
@@ -1861,6 +1981,10 @@ async function handleAction(action, button) {
     }
     if (action === "export-space-calendar-xlsx") {
       exportSpaceCalendarXlsx();
+      return;
+    }
+    if (action === "edit-staff-status") {
+      selectStaffStatusForEdit(button.dataset.staffStatusDate, button.dataset.staffStatusName);
       return;
     }
     if (action === "clear-schedule-edit") {
@@ -2601,6 +2725,15 @@ function staffStatusPill(status) {
     "Out of Office": "out-of-office"
   }[status] || "not-set";
   return `<span class="status-pill staff-${key}">${escapeHtml(status || "Not Set")}</span>`;
+}
+
+function staffStatusClass(status) {
+  return {
+    "In Office": "is-in-office",
+    Remote: "is-remote",
+    "Out of Office": "is-out",
+    "Not Set": "is-unset"
+  }[status] || "is-unset";
 }
 
 function spaceChip(space) {

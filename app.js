@@ -10,6 +10,8 @@ const app = {
   toastTimer: null
 };
 
+const FOCUS_DATE_STORAGE_KEY = "edson-ei-schedule-manager-focus-date";
+
 const staffViews = [
   ["space-calendar", "Space Calendar"],
   ["approvals", "Approvals"],
@@ -34,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadState() {
-  const response = await fetch("/api/state");
+  const response = await fetch(stateEndpoint());
   if (response.status === 401) {
     app.data = null;
     renderLogin();
@@ -109,7 +111,7 @@ function renderLogin() {
 
 async function refreshState(keepView = true) {
   const priorView = app.view;
-  const data = await api("/api/state");
+  const data = await api(stateEndpoint());
   app.data = data;
   if (keepView && availableViews().some(([id]) => id === priorView)) app.view = priorView;
   else app.view = defaultViewForRole(data.role);
@@ -117,6 +119,28 @@ async function refreshState(keepView = true) {
     app.selectedWorkerId = data.currentUser.workerId || data.workers[0]?.id || "";
   }
   render();
+}
+
+function stateEndpoint() {
+  const focusDate = storedFocusDate();
+  return focusDate ? `/api/state?focusDate=${encodeURIComponent(focusDate)}` : "/api/state";
+}
+
+function storedFocusDate() {
+  try {
+    const value = localStorage.getItem(FOCUS_DATE_STORAGE_KEY) || "";
+    return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function storeFocusDate(focusDate) {
+  try {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(focusDate || "")) localStorage.setItem(FOCUS_DATE_STORAGE_KEY, focusDate);
+  } catch (error) {
+    // Local storage can be unavailable in locked-down browsers; session state still works.
+  }
 }
 
 function render() {
@@ -2038,12 +2062,7 @@ async function saveSchedule(form) {
 async function setFocusDate(event) {
   if (!app.data) return;
   const focusDate = event.target.value;
-  if (app.data.role !== "staff") {
-    app.data.focusDate = focusDate;
-    app.data.focusWeekStart = weekStartMonday(focusDate);
-    render();
-    return;
-  }
+  storeFocusDate(focusDate);
   try {
     app.data = await api("/api/focus-date", { method: "POST", body: { focusDate } });
     render();

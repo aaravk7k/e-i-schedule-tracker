@@ -175,6 +175,9 @@ async function handleApi(req, res) {
     return;
   }
 
+  const requestedFocusDate = normalizeDateValue(url.searchParams.get("focusDate"));
+  if (requestedFocusDate) setSessionFocusDate(req, requestedFocusDate, user);
+
   if (req.method === "GET" && url.pathname === "/api/state") {
     sendJson(res, 200, viewForUser(user));
     return;
@@ -332,17 +335,13 @@ async function handleApi(req, res) {
   }
 
   if (req.method === "POST" && url.pathname === "/api/focus-date") {
-    requireStaff(user);
     const body = await readJson(req);
     const focusDate = normalizeDateValue(body.focusDate);
     if (!focusDate) {
       sendJson(res, 400, { error: "Invalid focus date" });
       return;
     }
-    db.focusDate = focusDate;
-    db.focusWeekStart = weekStartMonday(focusDate);
-    ensureCoverageRequestsForFocusWeek(db);
-    saveDb();
+    setSessionFocusDate(req, focusDate, user);
     sendJson(res, 200, viewForUser(user));
     return;
   }
@@ -598,7 +597,7 @@ async function handleApi(req, res) {
     requireStaff(user);
     db = createInitialDb();
     saveDb();
-    sendJson(res, 200, viewForUser(db.users[0]));
+    sendJson(res, 200, viewForUser(user));
     return;
   }
 
@@ -1078,7 +1077,9 @@ function coverageBlocksCoverEvent(event) {
 }
 
 function viewForUser(user) {
-  const coverageGaps = getCoverageGaps();
+  const focusDate = normalizeDateValue(user.__focusDate) || db.focusDate || FALLBACK_FOCUS_DATE;
+  const focusWeekStart = normalizeDateValue(user.__focusWeekStart) || weekStartMonday(focusDate);
+  const coverageGaps = getCoverageGaps(focusWeekStart);
   const coverageSuggestions = getCoverageSuggestions(coverageGaps);
   const currentUser = publicUser(user);
   const visibleEvents = db.events.filter((event) => !isLegacyBookingImport(event));
@@ -1089,12 +1090,12 @@ function viewForUser(user) {
   const base = {
     currentUser,
     role: user.role,
-    focusDate: db.focusDate,
-    focusWeekStart: db.focusWeekStart,
+    focusDate,
+    focusWeekStart,
     spaces: db.spaces,
     events: visibleEvents.map(publicEvent),
     staffSchedules: cleanStaffSchedules(db.staffSchedules),
-    staffStatuses: staffStatusesForDate(db.focusDate),
+    staffStatuses: staffStatusesForDate(focusDate),
     staffStatusRecords: cleanStaffStatusRecords(db.staffStatuses).map(publicStaffStatus),
     staffStatusPeople: STAFF_STATUS_PEOPLE,
     staffStatusOptions: STAFF_STATUS_OPTIONS,
@@ -1105,7 +1106,7 @@ function viewForUser(user) {
     integrations: {
       mazevo: mazevoStatusForClient()
     },
-    workers: db.workers.map((worker) => publicWorker(worker, user.role === "staff")),
+    workers: db.workers.map((worker) => publicWorker(worker, user.role === "staff", focusWeekStart)),
     coverageGaps,
     coverageSuggestions
   };
@@ -1115,13 +1116,13 @@ function viewForUser(user) {
       ...base,
       tasks: db.tasks,
       coverageRequests: visibleCoverageRequests.map(publicCoverageRequest),
-      alerts: buildAlerts(coverageGaps),
+      alerts: buildAlerts(coverageGaps, focusWeekStart),
       activity: db.activity,
       users: db.users.map(publicUser)
     };
   }
 
-  const studentRequests = visibleCoverageRequests.filter((request) => request.workerId === user.workerId && coverageRequestInFocusWeek(request, db));
+  const studentRequests = visibleCoverageRequests.filter((request) => request.workerId === user.workerId && coverageRequestInFocusWeek(request, focusWeekStart, db));
   return {
     ...base,
     tasks: db.tasks.filter((task) => task.assignedTo === user.workerId),
@@ -1140,8 +1141,8 @@ function publicUser(user) {
   };
 }
 
-function publicWorker(worker, forStaff) {
-  const weeklyHours = weeklyHoursFor(worker.availability, db.focusWeekStart);
+function publicWorker(worker, forStaff, focusWeekStart = db.focusWeekStart) {
+  const weeklyHours = weeklyHoursFor(worker.availability, focusWeekStart);
   return {
     id: worker.id,
     name: worker.name,
@@ -1256,10 +1257,10 @@ function publicScheduleChangeRequest(request, forStaff) {
   };
 }
 
-function buildAlerts(gaps) {
+function buildAlerts(gaps, focusWeekStart = db.focusWeekStart) {
   const gapAlerts = gaps.slice(0, 10).map(gapToAlert);
   const eventAlerts = db.events
-    .filter((event) => !isLegacyBookingImport(event) && event.afterHours && isDateInFocusWeek(event.date) && ["needs-review", "requesting", "accepted"].includes(event.status))
+    .filter((event) => !isLegacyBookingImport(event) && event.afterHours && isDateInFocusWeek(event.date, focusWeekStart) && ["needs-review", "requesting", "accepted"].includes(event.status))
     .slice(0, 8)
     .map(eventToAlert);
   const scheduleAlerts = (db.scheduleChangeRequests || [])
@@ -1304,9 +1305,9 @@ function requestToAlert(request) {
   };
 }
 
-function coverageRequestInFocusWeek(request, appDb = db) {
+function coverageRequestInFocusWeek(request, focusWeekStart = db.focusWeekStart, appDb = db) {
   const event = appDb.events.find((item) => item.id === request.eventId);
-  return Boolean(event && !isLegacyBookingImport(event) && isDateInFocusWeek(event.date, appDb.focusWeekStart));
+  return Boolean(event && !isLegacyBookingImport(event) && isDateInFocusWeek(event.date, focusWeekStart));
 }
 
 function createInitialDb() {
@@ -2906,7 +2907,7 @@ function scoreWorkerForScheduleNeed(worker, need, appDb) {
   };
 }
 
-function getCoverageGaps() {
+function getCoverageGaps(focusWeekStart = db.focusWeekStart) {
   const gaps = [];
   db.spaces
     .filter((space) => space.name !== "WorldLabs Remote" && space.coverageRequired !== false)
@@ -2914,7 +2915,7 @@ function getCoverageGaps() {
       DAYS.forEach((day, dayIndex) => {
         const hours = space.hours[day];
         if (!hours) return;
-        const date = addDays(db.focusWeekStart, dayIndex);
+        const date = addDays(focusWeekStart, dayIndex);
         if (isClosedDate(space, date)) return;
         const open = minutes(hours[0]);
         const close = minutes(hours[1]);
@@ -3239,14 +3240,44 @@ function verifyPassword(password, stored) {
 }
 
 function getUserFromRequest(req) {
+  const session = getSessionFromRequest(req);
+  if (!session) return null;
+  const user = db.users.find((item) => item.id === session.userId);
+  if (!user) return null;
+  return {
+    ...user,
+    __focusDate: session.focusDate || "",
+    __focusWeekStart: session.focusWeekStart || ""
+  };
+}
+
+function getSessionFromRequest(req) {
+  if (Object.prototype.hasOwnProperty.call(req, "__scheduleManagerSession")) {
+    return req.__scheduleManagerSession;
+  }
   const token = getCookie(req, COOKIE_NAME);
   const session = token ? sessions.get(token) : null;
   if (!session || session.expiresAt < Date.now()) {
     if (token) sessions.delete(token);
+    req.__scheduleManagerSession = null;
     return null;
   }
   session.expiresAt = Date.now() + SESSION_TTL_MS;
-  return db.users.find((user) => user.id === session.userId) || null;
+  req.__scheduleManagerSession = session;
+  return session;
+}
+
+function setSessionFocusDate(req, focusDate, user) {
+  const session = getSessionFromRequest(req);
+  const focusWeekStart = weekStartMonday(focusDate);
+  if (session) {
+    session.focusDate = focusDate;
+    session.focusWeekStart = focusWeekStart;
+  }
+  if (user) {
+    user.__focusDate = focusDate;
+    user.__focusWeekStart = focusWeekStart;
+  }
 }
 
 function requireStaff(user) {

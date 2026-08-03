@@ -427,6 +427,7 @@ async function handleApi(req, res) {
     }
     applyScheduleChange(worker, {
       day: body.day,
+      date: body.date,
       space: body.space,
       start: body.start,
       end: body.end,

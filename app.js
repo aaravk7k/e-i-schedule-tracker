@@ -1848,6 +1848,7 @@ function bindEvents() {
   bindForm("scheduleForm", saveSchedule);
   bindStaffStatusControls();
   bindScheduleModeControls();
+  bindScheduleDateControls();
   document.querySelectorAll("[data-coverage-block-form]").forEach((form) => {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -1912,6 +1913,24 @@ function bindScheduleModeControls() {
     toggleSplitDayFields(select.form);
     select.addEventListener("change", () => toggleSplitDayFields(select.form));
   });
+}
+
+function bindScheduleDateControls() {
+  document.querySelectorAll("[data-schedule-date]").forEach((input) => {
+    const sync = () => syncScheduleDate(input.form);
+    input.addEventListener("change", sync);
+    sync();
+  });
+}
+
+function syncScheduleDate(form) {
+  const dateInput = form?.querySelector("[data-schedule-date]");
+  const dayInput = form?.querySelector("[data-schedule-day]");
+  const label = form?.querySelector("[data-schedule-date-label]");
+  if (!dateInput || !dayInput) return;
+  const day = dayFromDate(dateInput.value);
+  dayInput.value = day;
+  if (label) label.textContent = day ? `Editing ${day}, ${formatShortDate(dateInput.value)}` : "Choose a date in this focus week";
 }
 
 function toggleSplitDayFields(form) {
@@ -2190,6 +2209,7 @@ async function saveSchedule(form) {
     body: {
       workerId: data.get("workerId"),
       day: data.get("day"),
+      date: data.get("date"),
       space: data.get("space"),
       start: data.get("start"),
       end: data.get("end"),
@@ -2254,7 +2274,9 @@ function scheduleForm(workerId, includeWorkerSelect) {
   const worker = workerById(workerId);
   const editSlot = editing ? worker?.availability[editing.slotIndex] : null;
   const staff = app.data.role === "staff";
-  const day = editSlot?.day || "Monday";
+  const fallbackSlotDate = editSlot?.day && DAYS.includes(editSlot.day) ? addDays(app.data.focusWeekStart, DAYS.indexOf(editSlot.day)) : "";
+  const date = editSlot?.date || fallbackSlotDate || app.data.focusDate;
+  const day = dayFromDate(date) || editSlot?.day || dayFromDate(app.data.focusDate);
   const space = editSlot?.space || app.data.spaces[0]?.name || "1951@SkySong";
   const start = editSlot?.start || "09:00";
   const end = editSlot?.end || "17:00";
@@ -2266,7 +2288,11 @@ function scheduleForm(workerId, includeWorkerSelect) {
       <div class="form-grid">
         ${includeWorkerSelect && !editSlot ? `<label class="span-2">Student${workerSelect(workerId)}</label>` : `<input type="hidden" name="workerId" value="${workerId}">${includeWorkerSelect ? `<label class="span-2">Student<input value="${escapeHtml(worker?.name || "Student")}" disabled></label>` : ""}`}
         ${editSlot ? `<input type="hidden" name="slotIndex" value="${editing.slotIndex}">` : ""}
-        <label>Day${daySelect(day)}</label>
+        <input type="hidden" name="day" value="${escapeHtml(day)}" data-schedule-day>
+        <label class="span-2">Date
+          <input name="date" type="date" min="${app.data.focusWeekStart}" max="${addDays(app.data.focusWeekStart, 6)}" value="${date}" data-schedule-date required>
+          <span class="field-hint" data-schedule-date-label>Editing ${escapeHtml(day)}, ${formatShortDate(date)}</span>
+        </label>
         <label>Space${spaceSelect("space", space)}</label>
         <label>Start<input name="start" type="time" value="${start}" required></label>
         <label>End<input name="end" type="time" value="${end}" required></label>
@@ -2385,8 +2411,11 @@ function scheduleGrid() {
 }
 
 function scheduleMiniCard(slot, worker, index, editable) {
+  const date = slot.date || (DAYS.includes(slot.day) ? addDays(app.data.focusWeekStart, DAYS.indexOf(slot.day)) : "");
+  const dateLabel = date ? `${slot.day}, ${formatShortDate(date)}` : slot.day;
   return `
     <article class="slot" style="color:${app.data.spaceColors[slot.space] || app.data.spaceColors.General}">
+      <span class="slot-date">${escapeHtml(dateLabel)}</span>
       <strong>${escapeHtml(slot.space)}</strong>
       <span>${formatTime(slot.start)}-${formatTime(slot.end)}</span>
       ${editable ? `<div class="slot-actions">

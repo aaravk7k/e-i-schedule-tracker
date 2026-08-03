@@ -782,6 +782,13 @@ tr:last-child td {
   resize: vertical;
 }
 
+.field-hint {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
 .checkbox-panel {
   min-width: 0;
   margin: 0;
@@ -955,6 +962,12 @@ tr:last-child td {
   background: #f8fafc;
   font-size: 0.78rem;
   line-height: 1.25;
+}
+
+.slot-date {
+  color: #344054;
+  font-size: 0.72rem;
+  font-weight: 900;
 }
 
 .slot + .slot {

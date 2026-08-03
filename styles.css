@@ -410,11 +410,15 @@ button:disabled {
 
 .staff-calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(210px, 1fr));
+  grid-template-columns: repeat(5, minmax(185px, 1fr));
+  min-width: 925px;
+  border: 1px solid var(--line);
+  background: #fff;
 }
 
 .staff-calendar-day {
-  min-width: 210px;
+  min-width: 0;
+  min-height: 0;
 }
 
 .staff-calendar-list {
@@ -425,11 +429,44 @@ button:disabled {
 .staff-calendar-card {
   display: grid;
   gap: 8px;
+  min-width: 0;
+  overflow: hidden;
   padding: 12px;
   border: 1px solid var(--line);
   border-left: 4px solid var(--muted);
   border-radius: 8px;
   background: #fbfcff;
+}
+
+.staff-calendar-card .task-head {
+  display: grid;
+  gap: 6px;
+}
+
+.staff-calendar-card .task-head strong {
+  min-width: 0;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.staff-calendar-card .task-head .status-pill {
+  justify-self: start;
+}
+
+.staff-calendar-card .badge-row {
+  display: grid;
+  justify-items: start;
+  min-width: 0;
+}
+
+.staff-calendar-card .badge {
+  display: block;
+  max-width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .staff-calendar-card.is-in-office {

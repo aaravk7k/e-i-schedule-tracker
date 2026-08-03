@@ -590,7 +590,7 @@ function renderStaffCalendar() {
     <section class="panel flush">
       <div class="table-wrap">
         <div class="staff-calendar-grid">
-          ${DAYS.map((day, index) => staffCalendarDay(day, addDays(app.data.focusWeekStart, index))).join("")}
+          ${STAFF_STATUS_DAYS.map((day, index) => staffCalendarDay(day, addDays(app.data.focusWeekStart, index))).join("")}
         </div>
       </div>
     </section>
@@ -598,7 +598,7 @@ function renderStaffCalendar() {
 }
 
 function staffStatusWeekRows() {
-  return DAYS.map((day, index) => staffStatusesForDate(addDays(app.data.focusWeekStart, index)));
+  return STAFF_STATUS_DAYS.map((day, index) => staffStatusesForDate(addDays(app.data.focusWeekStart, index)));
 }
 
 function staffCalendarDay(day, date) {
@@ -738,7 +738,7 @@ function staffStatusForm(statuses = [], includeDatePicker = false) {
       ${includeDatePicker ? `
         <label class="span-2">Day
           <select name="date" data-staff-status-date required>
-            ${DAYS.map((day, index) => {
+            ${STAFF_STATUS_DAYS.map((day, index) => {
               const dayDate = addDays(app.data.focusWeekStart, index);
               return `<option value="${dayDate}" ${dayDate === date ? "selected" : ""}>${day} ${formatShortDate(dayDate)}</option>`;
             }).join("")}
@@ -2820,3 +2820,4 @@ function escapeHtml(value) {
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const STAFF_STATUS_DAYS = DAYS.slice(0, 5);

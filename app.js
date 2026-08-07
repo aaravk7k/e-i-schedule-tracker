@@ -516,6 +516,7 @@ function renderSpaceCalendar() {
   }, 0);
   const staffStatusRows = DAYS.flatMap((day, index) => staffStatusesForDate(addDays(app.data.focusWeekStart, index)));
   const activeStaffStatuses = staffStatusRows.filter((record) => record.status !== "Not Set").length;
+  const staffCoverageNeeds = staffStatusRows.filter((record) => record.coverageNeeded).length;
 
   return `
     <section class="band">
@@ -530,6 +531,7 @@ function renderSpaceCalendar() {
         ${kpiCard(visibleSpaces.length, app.data.role === "staff" ? "Spaces shown" : "My spaces")}
         ${kpiCard(studentShiftCount, "Student worker shifts")}
         ${kpiCard(activeStaffStatuses, "Staff statuses")}
+        ${kpiCard(staffCoverageNeeds, "Staff coverage needs")}
         ${kpiCard(focusEvents.length, "Events this week")}
         ${kpiCard(focusEvents.filter((event) => event.afterHours).length, "After-hours events")}
         ${app.data.role === "staff" ? kpiCard(visibleGaps.length, "Coverage gaps") : ""}
@@ -687,8 +689,10 @@ function compactStaffStatusRow(record) {
       <div>
         <strong>${escapeHtml(record.name)}</strong>
         ${staffStatusPill(record.status)}
+        ${staffStatusTimeBadge(record)}
       </div>
       ${inOffice && record.space ? spaceChip(record.space) : ""}
+      ${staffCoverageNeedBadge(record)}
       ${record.note ? `<span>${escapeHtml(record.note)}</span>` : ""}
     </div>
   `;
@@ -700,6 +704,7 @@ function renderStaffCalendar() {
   const remoteCount = statuses.flat().filter((record) => record.status === "Remote").length;
   const outCount = statuses.flat().filter((record) => record.status === "Out of Office").length;
   const unsetCount = statuses.flat().filter((record) => record.status === "Not Set").length;
+  const coverageNeedCount = statuses.flat().filter((record) => record.coverageNeeded).length;
   return `
     <section class="band">
       <div class="band-header">
@@ -714,6 +719,7 @@ function renderStaffCalendar() {
         ${kpiCard(remoteCount, "Remote statuses")}
         ${kpiCard(outCount, "Out of office")}
         ${kpiCard(unsetCount, "Not set")}
+        ${kpiCard(coverageNeedCount, "Coverage needs")}
       </div>
     </section>
 
@@ -771,6 +777,8 @@ function staffCalendarCard(record) {
       </div>
       <div class="badge-row">
         ${inOffice && record.space ? spaceChip(record.space) : ""}
+        ${staffStatusTimeBadge(record)}
+        ${staffCoverageNeedBadge(record)}
         ${record.updatedBy ? `<span class="badge">Updated by ${escapeHtml(record.updatedBy)}</span>` : ""}
       </div>
       ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
@@ -849,6 +857,10 @@ function staffStatusesForDate(date) {
       status: "Not Set",
       space: "",
       note: "",
+      start: "",
+      end: "",
+      coverageNeeded: false,
+      coverageAssignedTo: "",
       updatedAt: "",
       updatedBy: ""
     };
@@ -865,11 +877,34 @@ function staffStatusCard(record) {
       </div>
       <div class="badge-row">
         ${inOffice && record.space ? spaceChip(record.space) : ""}
+        ${staffStatusTimeBadge(record)}
+        ${staffCoverageNeedBadge(record)}
         ${record.updatedBy ? `<span class="badge">Updated by ${escapeHtml(record.updatedBy)}</span>` : ""}
       </div>
       ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
     </article>
   `;
+}
+
+function staffStatusTimeText(record) {
+  return record.start && record.end ? `${formatTime(record.start)}-${formatTime(record.end)}` : "";
+}
+
+function staffStatusTimeBadge(record) {
+  const timeText = staffStatusTimeText(record);
+  return timeText ? `<span class="badge">${escapeHtml(timeText)}</span>` : "";
+}
+
+function staffCoverageNeedText(record) {
+  if (!record.coverageNeeded) return "";
+  const spaceText = record.space ? ` at ${record.space}` : "";
+  const assignedText = record.coverageAssignedTo ? `, assigned to ${record.coverageAssignedTo}` : "";
+  return `Coverage needed${spaceText}${assignedText}`;
+}
+
+function staffCoverageNeedBadge(record) {
+  const text = staffCoverageNeedText(record);
+  return text ? `<span class="badge warning-badge">${escapeHtml(text)}</span>` : "";
 }
 
 function staffStatusForm(statuses = [], includeDatePicker = false) {
@@ -899,6 +934,22 @@ function staffStatusForm(statuses = [], includeDatePicker = false) {
         </select>
       </label>
       <label class="span-2" data-staff-status-space>Space${spaceSelect("space", first.space || "")}</label>
+      <label class="span-1">From
+        <input name="start" type="time" value="${escapeHtml(first.start || "")}">
+      </label>
+      <label class="span-1">Until
+        <input name="end" type="time" value="${escapeHtml(first.end || "")}">
+      </label>
+      <label class="span-2 check-pill staff-coverage-toggle">
+        <input name="coverageNeeded" type="checkbox" value="true" data-staff-coverage-needed ${first.coverageNeeded ? "checked" : ""}>
+        Coverage needed
+      </label>
+      <label class="span-2" data-staff-coverage-assignee>Assign coverage to
+        <select name="coverageAssignedTo">
+          <option value="">Choose staff</option>
+          ${(app.data.staffStatusPeople || []).map((name) => `<option value="${escapeHtml(name)}" ${first.coverageAssignedTo === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+        </select>
+      </label>
       <label class="span-6">Note<input name="note" value="${escapeHtml(first.note || "")}" placeholder="Optional note for the team"></label>
       <div class="span-6 action-row"><button class="secondary-button" type="submit">Update Staff Status</button></div>
     </form>
@@ -2018,17 +2069,23 @@ function bindStaffStatusControls() {
   const dateSelect = form.querySelector("[data-staff-status-date]");
   const personSelect = form.querySelector("[data-staff-status-person]");
   const statusSelect = form.querySelector("[data-staff-status-select]");
+  const coverageNeeded = form.querySelector("[data-staff-coverage-needed]");
   const syncStatusForPerson = () => {
     const date = dateSelect?.value || form.querySelector("[name='date']")?.value || app.data.focusDate;
     const record = staffStatusesForDate(date).find((item) => item.name === personSelect.value) || {};
     statusSelect.value = (app.data.staffStatusOptions || []).includes(record.status) ? record.status : "";
     form.querySelector("[name='space']").value = record.space || app.data.spaces[0]?.name || "1951@SkySong";
+    form.querySelector("[name='start']").value = record.start || "";
+    form.querySelector("[name='end']").value = record.end || "";
+    form.querySelector("[name='coverageNeeded']").checked = Boolean(record.coverageNeeded);
+    form.querySelector("[name='coverageAssignedTo']").value = record.coverageAssignedTo || "";
     form.querySelector("[name='note']").value = record.note || "";
-    toggleStaffStatusSpace(form);
+    toggleStaffStatusFields(form);
   };
   dateSelect?.addEventListener("change", syncStatusForPerson);
   personSelect.addEventListener("change", syncStatusForPerson);
-  statusSelect.addEventListener("change", () => toggleStaffStatusSpace(form));
+  statusSelect.addEventListener("change", () => toggleStaffStatusFields(form));
+  coverageNeeded?.addEventListener("change", () => toggleStaffStatusFields(form));
   syncStatusForPerson();
 }
 
@@ -2044,19 +2101,32 @@ function selectStaffStatusForEdit(date, name) {
   if (statusField) statusField.value = (app.data.staffStatusOptions || []).includes(record.status) ? record.status : "";
   const spaceField = form.querySelector("[name='space']");
   if (spaceField) spaceField.value = record.space || app.data.spaces[0]?.name || "1951@SkySong";
+  const startField = form.querySelector("[name='start']");
+  if (startField) startField.value = record.start || "";
+  const endField = form.querySelector("[name='end']");
+  if (endField) endField.value = record.end || "";
+  const coverageField = form.querySelector("[name='coverageNeeded']");
+  if (coverageField) coverageField.checked = Boolean(record.coverageNeeded);
+  const coverageAssignedToField = form.querySelector("[name='coverageAssignedTo']");
+  if (coverageAssignedToField) coverageAssignedToField.value = record.coverageAssignedTo || "";
   const noteField = form.querySelector("[name='note']");
   if (noteField) noteField.value = record.note || "";
-  toggleStaffStatusSpace(form);
+  toggleStaffStatusFields(form);
   form.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-function toggleStaffStatusSpace(form) {
+function toggleStaffStatusFields(form) {
   const status = form.querySelector("[data-staff-status-select]")?.value;
   const spaceField = form.querySelector("[data-staff-status-space]");
   const spaceSelectElement = spaceField?.querySelector("select");
-  const needsSpace = status === "In Office";
+  const coverageNeeded = form.querySelector("[data-staff-coverage-needed]")?.checked;
+  const assigneeField = form.querySelector("[data-staff-coverage-assignee]");
+  const assigneeSelect = assigneeField?.querySelector("select");
+  const needsSpace = status === "In Office" || coverageNeeded;
   if (spaceField) spaceField.hidden = !needsSpace;
   if (spaceSelectElement) spaceSelectElement.required = needsSpace;
+  if (assigneeField) assigneeField.hidden = !coverageNeeded;
+  if (assigneeSelect) assigneeSelect.required = false;
 }
 
 function bindScheduleModeControls() {
@@ -2303,6 +2373,10 @@ async function saveStaffStatus(form) {
       date: data.get("date"),
       status: data.get("status"),
       space: data.get("space"),
+      start: data.get("start"),
+      end: data.get("end"),
+      coverageNeeded: data.get("coverageNeeded") === "true",
+      coverageAssignedTo: data.get("coverageAssignedTo"),
       note: data.get("note")
     }
   });

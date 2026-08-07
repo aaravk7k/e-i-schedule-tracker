@@ -469,6 +469,12 @@ button:disabled {
   white-space: nowrap;
 }
 
+.staff-calendar-card .warning-badge {
+  line-height: 1.2;
+  text-overflow: clip;
+  white-space: normal;
+}
+
 .staff-calendar-card.is-in-office {
   border-left-color: #2e7d32;
 }
@@ -752,6 +758,11 @@ tr:last-child td {
   gap: 12px;
 }
 
+.form-grid .check-pill {
+  display: flex;
+  align-self: end;
+}
+
 .form-grid label,
 .stacked-field {
   display: grid;
@@ -912,6 +923,10 @@ tr:last-child td {
 
 .span-2 {
   grid-column: span 2;
+}
+
+.span-1 {
+  grid-column: span 1;
 }
 
 .span-3 {
@@ -1430,6 +1445,7 @@ tr:last-child td {
   }
 
   .span-2,
+  .span-1,
   .span-3,
   .span-6 {
     grid-column: auto;

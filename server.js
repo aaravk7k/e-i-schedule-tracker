@@ -2562,9 +2562,23 @@ function createStaffStatusRecord(input, user) {
     error.status = 400;
     throw error;
   }
-  const space = status === "In Office" ? normalizeSpaceName(input.space) : "";
-  if (status === "In Office" && (!space || space === "General")) {
-    const error = new Error("Choose which space the staff member is in.");
+  const start = normalizeTimeValue(input.start, "");
+  const end = normalizeTimeValue(input.end, "");
+  if ((start && !end) || (!start && end)) {
+    const error = new Error("Enter both staff status start and end times, or leave both blank.");
+    error.status = 400;
+    throw error;
+  }
+  if (start && end && minutes(end) <= minutes(start)) {
+    const error = new Error("Staff status end time must be after the start time.");
+    error.status = 400;
+    throw error;
+  }
+  const coverageNeeded = formBoolean(input.coverageNeeded);
+  const coverageAssignedTo = coverageNeeded ? staffStatusPersonName(input.coverageAssignedTo) : "";
+  const space = (status === "In Office" || coverageNeeded) ? normalizeSpaceName(input.space) : "";
+  if ((status === "In Office" || coverageNeeded) && (!space || space === "General")) {
+    const error = new Error(coverageNeeded ? "Choose which space needs staff coverage." : "Choose which space the staff member is in.");
     error.status = 400;
     throw error;
   }
@@ -2574,6 +2588,10 @@ function createStaffStatusRecord(input, user) {
     name,
     status,
     space,
+    start,
+    end,
+    coverageNeeded,
+    coverageAssignedTo,
     note: cleanText(input.note || input.notes).slice(0, 160),
     updatedAt: new Date().toISOString(),
     updatedBy: user.name
@@ -2590,6 +2608,10 @@ function staffStatusesForDate(date) {
       name,
       status: STAFF_STATUS_DEFAULT,
       space: "",
+      start: "",
+      end: "",
+      coverageNeeded: false,
+      coverageAssignedTo: "",
       note: "",
       updatedAt: "",
       updatedBy: ""
@@ -2610,6 +2632,10 @@ function publicStaffStatus(record) {
     name: record.name,
     status: record.status || STAFF_STATUS_DEFAULT,
     space: record.space || "",
+    start: record.start || "",
+    end: record.end || "",
+    coverageNeeded: Boolean(record.coverageNeeded),
+    coverageAssignedTo: record.coverageAssignedTo || "",
     note: record.note || "",
     updatedAt: record.updatedAt || "",
     updatedBy: record.updatedBy || ""
@@ -3569,6 +3595,10 @@ function normalizeTimeValue(value, fallback) {
   return `${String(hour).padStart(2, "0")}:${minute}`;
 }
 
+function formBoolean(value) {
+  return value === true || ["1", "true", "yes", "on"].includes(cleanText(value).toLowerCase());
+}
+
 function normalizeSpaceName(value) {
   const clean = cleanText(value);
   const lowered = clean.toLowerCase();
@@ -3706,12 +3736,20 @@ function cleanStaffStatusRecords(records = []) {
     const date = normalizeDateValue(record.date);
     if (!name || !date) return;
     const status = STAFF_STATUS_OPTIONS.includes(record.status) ? record.status : STAFF_STATUS_DEFAULT;
+    const coverageNeeded = formBoolean(record.coverageNeeded);
+    const start = normalizeTimeValue(record.start, "");
+    const end = normalizeTimeValue(record.end, "");
+    const hasValidTimeRange = start && end && minutes(end) > minutes(start);
     const cleanRecord = {
       id: cleanText(record.id) || `staff-status-${date}-${slugify(name)}`,
       date,
       name,
       status,
-      space: status === "In Office" ? normalizeSpaceName(record.space) : "",
+      space: (status === "In Office" || coverageNeeded) ? normalizeSpaceName(record.space) : "",
+      start: hasValidTimeRange ? start : "",
+      end: hasValidTimeRange ? end : "",
+      coverageNeeded,
+      coverageAssignedTo: coverageNeeded ? staffStatusPersonName(record.coverageAssignedTo) : "",
       note: cleanText(record.note || record.notes).slice(0, 160),
       updatedAt: record.updatedAt || "",
       updatedBy: cleanText(record.updatedBy)

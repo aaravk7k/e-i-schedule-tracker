@@ -418,7 +418,7 @@ function studentHoursSummaryPanel(worker) {
     return { day, date, slots, hours, closed };
   });
   const total = rows.reduce((sum, row) => sum + row.hours, 0);
-  const limit = worker.weeklyLimit || 40;
+  const limit = worker.weeklyLimit || 20;
   return `
     <section class="panel">
       <div class="band-header compact-header">

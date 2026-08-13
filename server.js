@@ -38,7 +38,9 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const SOURCE_WEEK_START = "2026-05-25";
 const FALLBACK_FOCUS_DATE = "2026-05-27";
 const CURRENT_SEED_VERSION = "pbis-summer-2026-june-bookings-0604";
-const WEEKLY_HOUR_LIMIT = Number(process.env.STUDENT_WEEKLY_HOUR_LIMIT || 40);
+const CONFIGURED_STUDENT_WEEKLY_HOUR_LIMIT = Number(process.env.STUDENT_WEEKLY_HOUR_LIMIT || "");
+const SUMMER_WEEKLY_HOUR_LIMIT = 40;
+const FALL_WEEKLY_HOUR_LIMIT = 20;
 const DEFAULT_LONG_SHIFT_BREAK_MINUTES = 60;
 const LONG_SHIFT_BREAK_THRESHOLD_MINUTES = 9 * 60;
 const NO_UNPAID_BREAK_OVERRIDE_MINUTES = 10 * 60;
@@ -92,7 +94,10 @@ const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student sched
 const AUGUST_USUAL_SCHEDULE_START = "2026-08-03";
 const AUGUST_USUAL_SCHEDULE_END = "2026-08-19";
 const AUGUST_USUAL_SCHEDULE_SOURCE = "August usual schedule extension";
-const GENERATED_SCHEDULE_SOURCES = new Set([SAKSHI_DEFAULT_SCHEDULE_SOURCE, AUGUST_USUAL_SCHEDULE_SOURCE]);
+const FALL_SCHEDULE_START = "2026-08-17";
+const FALL_SCHEDULE_END = "2026-12-18";
+const FALL_SCHEDULE_SOURCE = "Fall 2026 student schedule";
+const GENERATED_SCHEDULE_SOURCES = new Set([SAKSHI_DEFAULT_SCHEDULE_SOURCE, AUGUST_USUAL_SCHEDULE_SOURCE, FALL_SCHEDULE_SOURCE]);
 const AUGUST_USUAL_SCHEDULES = {
   "aarav-kapoor": { space: "SkySong", start: "09:00", end: "17:00" },
   amanda: { space: "1951@SkySong", start: "08:00", end: "17:00" },
@@ -100,6 +105,38 @@ const AUGUST_USUAL_SCHEDULES = {
   palash: { space: "850PBC", start: "08:00", end: "17:00" },
   shreyas: { space: "The Studios", start: "08:00", end: "17:00" },
   sakshi: { space: "850PBC", start: "07:45", end: { default: "16:15", Friday: "13:45" } }
+};
+const FALL_STUDENT_SCHEDULES = {
+  "aarav-kapoor": [
+    { day: "Tuesday", space: "SkySong", start: "09:00", end: "17:00" },
+    { day: "Wednesday", space: "SkySong", start: "10:00", end: "14:00" },
+    { day: "Thursday", space: "SkySong", start: "09:00", end: "17:00" }
+  ],
+  "deepinderjit-singh": [
+    { day: "Tuesday", space: "ACIC", start: "08:00", end: "12:00" },
+    { day: "Wednesday", space: "ACIC", start: "08:00", end: "17:00" },
+    { day: "Friday", space: "ACIC", start: "08:00", end: "17:00" }
+  ],
+  amanda: [
+    { day: "Monday", space: "1951@SkySong", start: "08:00", end: "17:00" },
+    { day: "Wednesday", space: "1951@SkySong", start: "08:00", end: "15:00" },
+    { day: "Thursday", space: "1951@SkySong", start: "08:00", end: "13:00" }
+  ],
+  sakshi: [
+    { day: "Monday", space: "850PBC", start: "08:00", end: "10:00" },
+    { day: "Tuesday", space: "850PBC", start: "08:00", end: "17:00", unpaidBreakMinutes: 0 },
+    { day: "Thursday", space: "850PBC", start: "08:00", end: "17:00", unpaidBreakMinutes: 0 }
+  ],
+  palash: [
+    { day: "Monday", space: "850PBC", start: "12:00", end: "16:00" },
+    { day: "Wednesday", space: "850PBC", start: "08:00", end: "17:00" },
+    { day: "Friday", space: "850PBC", start: "08:00", end: "17:00" }
+  ],
+  shreyas: [
+    { day: "Monday", space: "The Studios", start: "08:00", end: "13:00" },
+    { day: "Tuesday", space: "The Studios", start: "08:00", end: "17:00" },
+    { day: "Wednesday", space: "The Studios", start: "08:00", end: "15:00" }
+  ]
 };
 const OBSERVED_CLOSED_DATES = ["2026-07-03"];
 const NO_UNPAID_BREAK_OVERRIDES = [
@@ -1147,6 +1184,7 @@ function publicUser(user) {
 
 function publicWorker(worker, forStaff, focusWeekStart = db.focusWeekStart) {
   const weeklyHours = weeklyHoursFor(worker.availability, focusWeekStart);
+  const weeklyLimit = weeklyHourLimitFor(focusWeekStart);
   return {
     id: worker.id,
     name: worker.name,
@@ -1157,10 +1195,20 @@ function publicWorker(worker, forStaff, focusWeekStart = db.focusWeekStart) {
     skills: worker.skills,
     availability: worker.availability.map((slotItem) => publicScheduleSlot(slotItem, forStaff)),
     weeklyHours,
-    weeklyLimit: WEEKLY_HOUR_LIMIT,
-    remainingHours: Math.max(0, roundHours(WEEKLY_HOUR_LIMIT - weeklyHours)),
-    overLimit: weeklyHours > WEEKLY_HOUR_LIMIT
+    weeklyLimit,
+    remainingHours: Math.max(0, roundHours(weeklyLimit - weeklyHours)),
+    overLimit: weeklyHours > weeklyLimit
   };
+}
+
+function weeklyHourLimitFor(weekStart = db?.focusWeekStart || SOURCE_WEEK_START) {
+  const defaultLimit = weekStart >= FALL_SCHEDULE_START ? FALL_WEEKLY_HOUR_LIMIT : SUMMER_WEEKLY_HOUR_LIMIT;
+  if (!Number.isFinite(CONFIGURED_STUDENT_WEEKLY_HOUR_LIMIT) || CONFIGURED_STUDENT_WEEKLY_HOUR_LIMIT <= 0) {
+    return defaultLimit;
+  }
+  return weekStart >= FALL_SCHEDULE_START
+    ? Math.min(CONFIGURED_STUDENT_WEEKLY_HOUR_LIMIT, FALL_WEEKLY_HOUR_LIMIT)
+    : CONFIGURED_STUDENT_WEEKLY_HOUR_LIMIT;
 }
 
 function publicScheduleSlot(slotItem, forStaff) {
@@ -1358,6 +1406,7 @@ function createInitialDb() {
 
   ensureSakshiWorker(initial);
   ensureAugustUsualSchedules(initial);
+  ensureFallStudentSchedules(initial);
   ensureNoUnpaidBreakOverrides(initial);
   ensureCoverageRequestsForFocusWeek(initial);
   return initial;
@@ -1421,6 +1470,7 @@ function migrateDb(appDb) {
   appDb.users ||= [];
   ensureSakshiWorker(appDb);
   ensureAugustUsualSchedules(appDb);
+  ensureFallStudentSchedules(appDb);
   appDb.workers.forEach((worker) => {
     worker.skills = normalizeSkillList(worker.skills || []);
     worker.primarySpaces ||= [];
@@ -1540,6 +1590,46 @@ function ensureAugustUsualSchedules(appDb) {
       if (duplicate) continue;
 
       worker.availability.push(generatedSlot);
+    }
+
+    worker.availability.sort(sortScheduleSlots);
+  });
+}
+
+function ensureFallStudentSchedules(appDb) {
+  appDb.workers ||= [];
+  Object.entries(FALL_STUDENT_SCHEDULES).forEach(([workerId, templates]) => {
+    const worker = appDb.workers.find((item) => item.id === workerId);
+    if (!worker) return;
+
+    worker.availability ||= [];
+    worker.availability = worker.availability.filter((slotItem) =>
+      !(GENERATED_SCHEDULE_SOURCES.has(cleanText(slotItem.source)) &&
+        slotItem.date >= FALL_SCHEDULE_START &&
+        slotItem.date <= FALL_SCHEDULE_END)
+    );
+
+    for (let date = FALL_SCHEDULE_START; date <= FALL_SCHEDULE_END; date = addDays(date, 1)) {
+      const day = dayFromDate(date);
+      const dayTemplates = templates.filter((template) => template.day === day);
+      if (!dayTemplates.length) continue;
+      if (hasManualScheduleOverrideForDate(worker.availability, date)) continue;
+
+      dayTemplates.forEach((template) => {
+        const generatedSlot = slot(day, template.space, template.start, template.end, FALL_SCHEDULE_SOURCE, date);
+        applyBreakOverride(generatedSlot, template.unpaidBreakMinutes);
+        if (scheduleSuppressed(appDb, workerId, generatedSlot)) return;
+
+        const duplicate = worker.availability.some((slotItem) =>
+          slotItem.date === date &&
+          slotItem.space === template.space &&
+          slotItem.start === template.start &&
+          slotItem.end === template.end
+        );
+        if (duplicate) return;
+
+        worker.availability.push(generatedSlot);
+      });
     }
 
     worker.availability.sort(sortScheduleSlots);
@@ -3152,8 +3242,9 @@ function applyScheduleChange(worker, change) {
   nextAvailability.sort(sortScheduleSlots);
 
   const nextHours = weeklyHoursFor(nextAvailability, weekStart);
-  if (nextHours > WEEKLY_HOUR_LIMIT) {
-    const error = new Error(`${worker.name} would be scheduled for ${formatHourTotal(nextHours)} hours this week. Student workers must stay at or under ${WEEKLY_HOUR_LIMIT} hours, so edit or remove another block first.`);
+  const weeklyLimit = weeklyHourLimitFor(weekStart);
+  if (nextHours > weeklyLimit) {
+    const error = new Error(`${worker.name} would be scheduled for ${formatHourTotal(nextHours)} hours this week. Student workers must stay at or under ${weeklyLimit} hours, so edit or remove another block first.`);
     error.status = 400;
     throw error;
   }
@@ -3164,7 +3255,7 @@ function applyScheduleChange(worker, change) {
   const timeLabel = mode === "split-day"
     ? `${formatTime(start)}-${formatTime(breakStart)} and ${formatTime(breakEnd)}-${formatTime(end)}`
     : `${formatTime(start)}-${formatTime(end)}`;
-  addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${space} on ${day}, ${timeLabel}. Weekly total: ${formatHourTotal(nextHours)}/${WEEKLY_HOUR_LIMIT} hours.`);
+  addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${space} on ${day}, ${timeLabel}. Weekly total: ${formatHourTotal(nextHours)}/${weeklyLimit} hours.`);
   addActivity(`${worker.name} ${modeLabel} schedule at ${space}; ${before} block${before === 1 ? "" : "s"} became ${worker.availability.length}, ${formatHourTotal(beforeHours)}h became ${formatHourTotal(nextHours)}h.`);
 }
 

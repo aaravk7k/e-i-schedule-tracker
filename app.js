@@ -623,6 +623,7 @@ function combinedCalendarStaffFilters() {
         <strong>What this shows</strong>
         <span>Student worker coverage, staff status, bookings, after-hours needs, and coverage gaps for the selected week.</span>
       </div>
+      ${combinedCalendarExportActions()}
     </div>
   `;
 }
@@ -634,6 +635,15 @@ function combinedCalendarStudentSummary(visibleSpaces) {
         <strong>What this shows</strong>
         <span>Your assigned space${visibleSpaces.length === 1 ? "" : "s"} with student worker coverage, staff status, and event activity for the full week.</span>
       </div>
+      ${combinedCalendarExportActions()}
+    </div>
+  `;
+}
+
+function combinedCalendarExportActions() {
+  return `
+    <div class="calendar-export-actions">
+      <button class="ghost-button" type="button" data-action="export-space-calendar-pdf">Export PDF</button>
     </div>
   `;
 }
@@ -1298,7 +1308,7 @@ function exportSpaceCalendarPdf() {
     return;
   }
   printWindow.document.open();
-  printWindow.document.write(spaceCalendarPrintHtml(context));
+  printWindow.document.write(app.view === "space-calendar" ? combinedSpaceCalendarPrintHtml(context) : spaceCalendarPrintHtml(context));
   printWindow.document.close();
   const printCalendar = () => {
     printWindow.focus();
@@ -1310,6 +1320,129 @@ function exportSpaceCalendarPdf() {
     printWindow.addEventListener("load", () => setTimeout(printCalendar, 150), { once: true });
   }
   showToast("PDF export opened. Choose Save as PDF.");
+}
+
+function combinedSpaceCalendarPrintHtml(context) {
+  const days = DAYS.map((day, index) => combinedSpaceCalendarSnapshotDay(context, day, addDays(context.weekStart, index))).join("");
+  return `<!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${escapeHtml(context.title)} Export</title>
+        <style>
+          * { box-sizing: border-box; }
+          body { color: #191919; font-family: Arial, sans-serif; margin: 0; }
+          header { align-items: flex-end; border-bottom: 3px solid #8c1d40; display: flex; justify-content: space-between; margin-bottom: 9px; padding-bottom: 8px; }
+          h1 { font-size: 19px; margin: 0; }
+          .meta { color: #667085; font-size: 10px; margin-top: 3px; }
+          .legend { color: #344054; font-size: 9px; text-align: right; }
+          .combined-snapshot-grid { display: grid; gap: 5px; grid-template-columns: repeat(7, minmax(0, 1fr)); width: 100%; }
+          .snapshot-day { border: 1px solid #d8dee8; min-width: 0; padding: 5px; }
+          .snapshot-day-head { border-bottom: 1px solid #d8dee8; display: grid; gap: 3px; margin-bottom: 5px; min-height: 40px; padding-bottom: 5px; }
+          .snapshot-day-head strong { font-size: 10.5px; line-height: 1.15; }
+          .snapshot-day-head span,
+          .snapshot-empty,
+          .snapshot-more { color: #667085; font-size: 7.5px; line-height: 1.2; }
+          .snapshot-badge-row { display: flex; flex-wrap: wrap; gap: 3px; }
+          .snapshot-badge { background: #eef2f7; border-radius: 999px; color: #344054; display: inline-flex; font-size: 7px; font-weight: 800; line-height: 1; padding: 3px 5px; }
+          .snapshot-badge.warning { background: #fff3cd; color: #7a4c00; }
+          .snapshot-section { display: grid; gap: 3px; margin-top: 5px; }
+          .snapshot-section h2 { color: #3b4452; font-size: 7.5px; letter-spacing: 0.08em; margin: 0; text-transform: uppercase; }
+          .snapshot-item { border-left: 3px solid #8c1d40; display: grid; gap: 1px; margin-bottom: 3px; min-width: 0; padding-left: 4px; }
+          .snapshot-item.event { border-left-color: #ffc627; }
+          .snapshot-item.staff { border-left-color: #2e7d32; }
+          .snapshot-item.remote { border-left-color: #2563eb; }
+          .snapshot-item.out { border-left-color: #b42318; }
+          .snapshot-item strong { display: block; font-size: 8px; line-height: 1.12; overflow-wrap: anywhere; }
+          .snapshot-item span,
+          .snapshot-item em { color: #344054; display: block; font-size: 7.2px; font-style: normal; line-height: 1.15; overflow-wrap: anywhere; }
+          .snapshot-item em { color: #667085; }
+          @page { size: letter landscape; margin: 0.22in; }
+          @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <header>
+          <div>
+            <h1>${escapeHtml(context.title)}</h1>
+            <div class="meta">Week of ${escapeHtml(formatShortDate(context.weekStart))} - ${escapeHtml(formatShortDate(context.weekEnd))}</div>
+            <div class="meta">Spaces: ${escapeHtml(context.visibleSpaces.join(", ") || "No spaces")}</div>
+          </div>
+          <div class="legend">Student filter: ${escapeHtml(context.workerName || (context.staff ? "All students" : app.data.currentUser.name))}</div>
+        </header>
+        <main class="combined-snapshot-grid">
+          ${days}
+        </main>
+      </body>
+    </html>`;
+}
+
+function combinedSpaceCalendarSnapshotDay(context, day, date) {
+  const closed = visibleSpacesClosedForDate(context.visibleSpaceSet, date);
+  const shifts = calendarStudentShiftItems(day, date, context.visibleSpaceSet, context.workerFilter).map((shift) => ({
+    type: "shift",
+    title: shift.name,
+    meta: `${shift.space} | ${formatTime(shift.start)}-${formatTime(shift.end)}`,
+    detail: calendarShiftRoleLabel(shift.type)
+  }));
+  const staffStatuses = staffStatusesForDate(date);
+  const activeStaff = staffStatuses
+    .filter((record) => record.status !== "Not Set")
+    .map((record) => ({
+      type: record.status === "Remote" ? "remote" : record.status === "Out of Office" ? "out" : "staff",
+      title: record.name,
+      meta: [record.status, record.status === "In Office" && record.space ? record.space : "", staffStatusTimeText(record)].filter(Boolean).join(" | "),
+      detail: [staffCoverageNeedText(record), record.note].filter(Boolean).join(" | ")
+    }));
+  const unsetCount = staffStatuses.filter((record) => record.status === "Not Set").length;
+  const events = eventsInFocusWeek(app.data.events || [])
+    .filter((event) => event.date === date && context.visibleSpaceSet.has(event.space))
+    .map((event) => ({
+      type: "event",
+      title: event.title,
+      meta: [event.space, eventRoomLabel(event), `${formatTime(event.start)}-${formatTime(event.end)}`, event.afterHours ? "After hours" : ""].filter(Boolean).join(" | "),
+      detail: calendarEventCoverageText(event)
+    }));
+  const gapCount = context.staff ? (app.data.coverageGaps || []).filter((gap) => gap.date === date && context.visibleSpaceSet.has(gap.space)).length : 0;
+  return `
+    <section class="snapshot-day">
+      <div class="snapshot-day-head">
+        <strong>${escapeHtml(day)}</strong>
+        <span>${escapeHtml(formatShortDate(date))}</span>
+        <div class="snapshot-badge-row">
+          ${closed ? `<span class="snapshot-badge warning">Closed</span>` : ""}
+          ${gapCount ? `<span class="snapshot-badge warning">${gapCount} gap${gapCount === 1 ? "" : "s"}</span>` : ""}
+        </div>
+      </div>
+      ${combinedSnapshotSection("Student Workers", shifts, closed ? "ASU observed holiday. No scheduled coverage needed." : "No student worker coverage.", 5)}
+      ${combinedSnapshotSection("Staff Status", activeStaff, "No staff status set.", 4, unsetCount ? `Not set: ${unsetCount}` : "")}
+      ${combinedSnapshotSection("Events", events, "No events in these spaces.", 5)}
+    </section>
+  `;
+}
+
+function combinedSnapshotSection(title, items, emptyText, maxItems, footer = "") {
+  const visibleItems = items.slice(0, maxItems);
+  return `
+    <div class="snapshot-section">
+      <h2>${escapeHtml(title)}</h2>
+      ${visibleItems.length ? visibleItems.map(combinedSnapshotItem).join("") : `<span class="snapshot-empty">${escapeHtml(emptyText)}</span>`}
+      ${items.length > visibleItems.length ? `<span class="snapshot-more">+${items.length - visibleItems.length} more</span>` : ""}
+      ${footer ? `<span class="snapshot-more">${escapeHtml(footer)}</span>` : ""}
+    </div>
+  `;
+}
+
+function combinedSnapshotItem(item) {
+  return `
+    <div class="snapshot-item ${escapeHtml(item.type || "")}">
+      <strong>${escapeHtml(item.title)}</strong>
+      ${item.meta ? `<span>${escapeHtml(item.meta)}</span>` : ""}
+      ${item.detail ? `<em>${escapeHtml(item.detail)}</em>` : ""}
+    </div>
+  `;
 }
 
 function spaceCalendarPrintHtml(context) {

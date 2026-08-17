@@ -3138,7 +3138,8 @@ function getCoverageGaps(focusWeekStart = db.focusWeekStart) {
             end: minutes(slotItem.end),
             label: `${slotItem.name} ${formatTime(slotItem.start)}-${formatTime(slotItem.end)}`
           }));
-        const allBlocks = [...studentBlocks, ...staffBlocks];
+        const staffStatusBlocks = staffStatusCoverageBlocksForSpace(space.name, date, open, close);
+        const allBlocks = [...studentBlocks, ...staffBlocks, ...staffStatusBlocks];
         const intervals = allBlocks
           .map((block) => ({
             start: Math.max(open, block.start),
@@ -3190,6 +3191,24 @@ function getCoverageGaps(focusWeekStart = db.focusWeekStart) {
       });
     });
   return gaps;
+}
+
+function staffStatusCoverageBlocksForSpace(spaceName, date, open, close) {
+  return staffStatusesForDate(date)
+    .filter((record) => record.status === "In Office" && record.space === spaceName)
+    .map((record) => {
+      const hasTimes = record.start && record.end;
+      const start = hasTimes ? minutes(record.start) : open;
+      const end = hasTimes ? minutes(record.end) : close;
+      return {
+        start,
+        end,
+        label: hasTimes
+          ? `${record.name} ${formatTime(record.start)}-${formatTime(record.end)}`
+          : `${record.name} In Office`
+      };
+    })
+    .filter((block) => block.end > block.start);
 }
 
 function applyScheduleChange(worker, change) {

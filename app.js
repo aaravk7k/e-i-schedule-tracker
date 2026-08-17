@@ -652,7 +652,7 @@ function combinedSpaceCalendarDay(day, date, context) {
   const closed = visibleSpacesClosedForDate(context.visibleSpaceSet, date);
   const shifts = calendarStudentShiftItems(day, date, context.visibleSpaceSet, context.workerFilter);
   const events = eventsInFocusWeek(app.data.events || []).filter((event) => event.date === date && context.visibleSpaceSet.has(event.space));
-  const gapCount = app.data.role === "staff" ? (app.data.coverageGaps || []).filter((gap) => gap.date === date && context.visibleSpaceSet.has(gap.space)).length : 0;
+  const gaps = coverageGapsForDate(date, context.visibleSpaceSet);
   return `
     <article class="calendar-day combined-calendar-day">
       <header class="calendar-day-head">
@@ -661,7 +661,7 @@ function combinedSpaceCalendarDay(day, date, context) {
           <span>${formatShortDate(date)}</span>
         </div>
         ${closed ? `<span class="badge warning-badge">Closed</span>` : ""}
-        ${gapCount ? `<span class="badge warning-badge">${gapCount} gap${gapCount === 1 ? "" : "s"}</span>` : ""}
+        ${gapDetailsControl(gaps)}
       </header>
       <div class="calendar-section">
         <h4>Student Workers</h4>
@@ -982,7 +982,7 @@ function calendarDayCard(day, date, visibleSpaceSet, workerFilter, options = {})
     ? calendarStudentShiftItems(day, date, visibleSpaceSet, workerFilter)
     : calendarShiftItems(day, date, visibleSpaceSet, workerFilter);
   const events = eventsInFocusWeek(app.data.events || []).filter((event) => event.date === date && visibleSpaceSet.has(event.space));
-  const gapCount = app.data.role === "staff" ? (app.data.coverageGaps || []).filter((gap) => gap.date === date && visibleSpaceSet.has(gap.space)).length : 0;
+  const gaps = coverageGapsForDate(date, visibleSpaceSet);
   return `
     <article class="calendar-day">
       <header class="calendar-day-head">
@@ -991,7 +991,7 @@ function calendarDayCard(day, date, visibleSpaceSet, workerFilter, options = {})
           <span>${formatShortDate(date)}</span>
         </div>
         ${closed ? `<span class="badge warning-badge">Closed</span>` : ""}
-        ${gapCount ? `<span class="badge warning-badge">${gapCount} gap${gapCount === 1 ? "" : "s"}</span>` : ""}
+        ${gapDetailsControl(gaps)}
       </header>
       <div class="calendar-section">
         <h4>Schedule</h4>
@@ -1002,6 +1002,37 @@ function calendarDayCard(day, date, visibleSpaceSet, workerFilter, options = {})
         ${events.length ? events.map(calendarEventCard).join("") : `<p class="task-meta">No events in these spaces.</p>`}
       </div>
     </article>
+  `;
+}
+
+function coverageGapsForDate(date, visibleSpaceSet) {
+  if (app.data.role !== "staff") return [];
+  return (app.data.coverageGaps || [])
+    .filter((gap) => gap.date === date && visibleSpaceSet.has(gap.space))
+    .sort((a, b) => a.space.localeCompare(b.space) || minutes(a.start) - minutes(b.start));
+}
+
+function gapDetailsControl(gaps) {
+  if (!gaps.length) return "";
+  const label = `${gaps.length} gap${gaps.length === 1 ? "" : "s"}`;
+  return `
+    <details class="gap-details">
+      <summary class="badge warning-badge" aria-label="Show coverage gap details">${escapeHtml(label)}</summary>
+      <div class="gap-details-panel">
+        <strong>Coverage gaps</strong>
+        ${gaps.map(gapDetailsRow).join("")}
+      </div>
+    </details>
+  `;
+}
+
+function gapDetailsRow(gap) {
+  const blocks = Array.isArray(gap.blocks) ? gap.blocks.filter(Boolean) : [];
+  return `
+    <div class="gap-details-row">
+      <span>${spaceChip(gap.space)} <strong>${escapeHtml(gap.detail)}</strong></span>
+      <em>${blocks.length ? `Coverage that day: ${escapeHtml(blocks.join(", "))}` : "No student or staff coverage listed for this space."}</em>
+    </div>
   `;
 }
 

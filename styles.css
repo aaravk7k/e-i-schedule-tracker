@@ -1097,6 +1097,66 @@ tr:last-child td {
   font-style: normal;
 }
 
+.gap-details {
+  position: relative;
+  justify-self: end;
+}
+
+.gap-details summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.gap-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.gap-details[open] summary {
+  box-shadow: 0 0 0 3px rgba(255, 198, 39, 0.22);
+}
+
+.gap-details-panel {
+  position: absolute;
+  z-index: 25;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  gap: 8px;
+  width: min(320px, 82vw);
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 16px 34px rgba(25, 33, 46, 0.18);
+}
+
+.gap-details-panel > strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+}
+
+.gap-details-row {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.gap-details-row span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--ink);
+  font-size: 0.78rem;
+}
+
+.gap-details-row em {
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
 .calendar-section h4 {
   margin: 0;
   color: #3b4452;

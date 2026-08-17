@@ -262,6 +262,16 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/coverage-gaps/clear") {
+    requireStaff(user);
+    const body = await readJson(req);
+    const clearedGap = clearCoverageGap(body, user);
+    addActivity(`${user.name} manually cleared ${clearedGap.space} coverage on ${formatShortDate(clearedGap.date)}, ${formatTime(clearedGap.start)}-${formatTime(clearedGap.end)}.`);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
   if (req.method === "GET" && url.pathname === "/api/airtable/status") {
     requireStaff(user);
     sendJson(res, 200, airtableStatus());
@@ -1374,6 +1384,7 @@ function createInitialDb() {
     coverageRequests: [],
     scheduleChangeRequests: [],
     scheduleSuppressions: [],
+    clearedCoverageGaps: [],
     staffStatuses: [],
     tasks: [],
     activity: [],
@@ -1467,6 +1478,7 @@ function migrateDb(appDb) {
   appDb.coverageRequests ||= [];
   appDb.scheduleChangeRequests ||= [];
   appDb.scheduleSuppressions = cleanScheduleSuppressions(appDb.scheduleSuppressions || []);
+  appDb.clearedCoverageGaps = cleanClearedCoverageGaps(appDb.clearedCoverageGaps || []);
   appDb.users ||= [];
   ensureSakshiWorker(appDb);
   ensureAugustUsualSchedules(appDb);
@@ -2709,6 +2721,34 @@ function staffStatusesForDate(date) {
   });
 }
 
+function clearCoverageGap(input, user) {
+  const clearedGap = createClearedCoverageGap(input, user);
+  db.clearedCoverageGaps = cleanClearedCoverageGaps([...(db.clearedCoverageGaps || []), clearedGap]);
+  return clearedGap;
+}
+
+function createClearedCoverageGap(input, user) {
+  const date = normalizeDateValue(input.date);
+  const space = normalizeSpaceName(input.space);
+  const start = normalizeTimeValue(input.start, "");
+  const end = normalizeTimeValue(input.end, "");
+  if (!date || !space || space === "General" || !start || !end || minutes(end) <= minutes(start)) {
+    const error = new Error("Choose a valid coverage gap to clear.");
+    error.status = 400;
+    throw error;
+  }
+  return {
+    id: `cleared-gap-${date}-${slugify(space)}-${start.replace(":", "")}-${end.replace(":", "")}`,
+    date,
+    space,
+    start,
+    end,
+    note: cleanText(input.note).slice(0, 160),
+    clearedAt: new Date().toISOString(),
+    clearedBy: user.name
+  };
+}
+
 function latestStaffStatusForPerson(date, name) {
   return [...(db.staffStatuses || [])]
     .reverse()
@@ -3139,7 +3179,8 @@ function getCoverageGaps(focusWeekStart = db.focusWeekStart) {
             label: `${slotItem.name} ${formatTime(slotItem.start)}-${formatTime(slotItem.end)}`
           }));
         const staffStatusBlocks = staffStatusCoverageBlocksForSpace(space.name, date, open, close);
-        const allBlocks = [...studentBlocks, ...staffBlocks, ...staffStatusBlocks];
+        const clearedGapBlocks = clearedCoverageBlocksForSpace(space.name, date);
+        const allBlocks = [...studentBlocks, ...staffBlocks, ...staffStatusBlocks, ...clearedGapBlocks];
         const intervals = allBlocks
           .map((block) => ({
             start: Math.max(open, block.start),
@@ -3208,6 +3249,17 @@ function staffStatusCoverageBlocksForSpace(spaceName, date, open, close) {
           : `${record.name} In Office`
       };
     })
+    .filter((block) => block.end > block.start);
+}
+
+function clearedCoverageBlocksForSpace(spaceName, date) {
+  return (db.clearedCoverageGaps || [])
+    .filter((record) => record.date === date && record.space === spaceName)
+    .map((record) => ({
+      start: minutes(record.start),
+      end: minutes(record.end),
+      label: `${record.clearedBy || "Staff"} cleared ${formatTime(record.start)}-${formatTime(record.end)}`
+    }))
     .filter((block) => block.end > block.start);
 }
 
@@ -3867,6 +3919,34 @@ function cleanStaffStatusRecords(records = []) {
     latestByPersonDate.set(`${date}|${name.toLowerCase()}`, cleanRecord);
   });
   return [...latestByPersonDate.values()].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+}
+
+function cleanClearedCoverageGaps(records = []) {
+  const cleaned = new Map();
+  (records || []).forEach((record) => {
+    const date = normalizeDateValue(record.date);
+    const space = normalizeSpaceName(record.space);
+    const start = normalizeTimeValue(record.start, "");
+    const end = normalizeTimeValue(record.end, "");
+    if (!date || !space || space === "General" || !start || !end || minutes(end) <= minutes(start)) return;
+    const key = `${date}|${space}|${start}|${end}`;
+    cleaned.set(key, {
+      id: cleanText(record.id) || `cleared-gap-${date}-${slugify(space)}-${start.replace(":", "")}-${end.replace(":", "")}`,
+      date,
+      space,
+      start,
+      end,
+      note: cleanText(record.note).slice(0, 160),
+      clearedAt: record.clearedAt || new Date().toISOString(),
+      clearedBy: cleanText(record.clearedBy) || "Staff"
+    });
+  });
+  return [...cleaned.values()].sort((a, b) =>
+    a.date.localeCompare(b.date) ||
+    a.space.localeCompare(b.space) ||
+    minutes(a.start) - minutes(b.start) ||
+    minutes(a.end) - minutes(b.end)
+  );
 }
 
 function staffScheduleVisible(schedule = {}) {

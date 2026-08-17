@@ -1032,6 +1032,15 @@ function gapDetailsRow(gap) {
     <div class="gap-details-row">
       <span>${spaceChip(gap.space)} <strong>${escapeHtml(gap.detail)}</strong></span>
       <em>${blocks.length ? `Coverage that day: ${escapeHtml(blocks.join(", "))}` : "No student or staff coverage listed for this space."}</em>
+      <button
+        class="mini-button"
+        type="button"
+        data-action="clear-coverage-gap"
+        data-gap-date="${escapeHtml(gap.date)}"
+        data-gap-space="${escapeHtml(gap.space)}"
+        data-gap-start="${escapeHtml(gap.start)}"
+        data-gap-end="${escapeHtml(gap.end)}"
+      >Clear gap</button>
     </div>
   `;
 }
@@ -2434,6 +2443,20 @@ async function handleAction(action, button) {
       const eventAction = button.dataset.eventAction;
       app.data = await api(`/api/events/${encodeURIComponent(eventId)}/coverage-action`, { method: "POST", body: { action: eventAction } });
       showToast(eventAction === "covered" ? "Event cleared as covered." : "Coverage request dismissed.");
+      render();
+      return;
+    }
+    if (action === "clear-coverage-gap") {
+      app.data = await api("/api/coverage-gaps/clear", {
+        method: "POST",
+        body: {
+          date: button.dataset.gapDate,
+          space: button.dataset.gapSpace,
+          start: button.dataset.gapStart,
+          end: button.dataset.gapEnd
+        }
+      });
+      showToast("Gap cleared as covered.");
       render();
       return;
     }

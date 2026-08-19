@@ -92,6 +92,8 @@ const SAKSHI_START_DATE = "2026-06-15";
 const SAKSHI_DEFAULT_SCHEDULE_SOURCE = "Staff-provided Sakshi schedule";
 const DAKSH_WORKER_ID = "daksh";
 const DAKSH_DEFAULT_EMAIL = "daksh@ei.asu.edu";
+const DAKSH_DEFAULT_PASSWORD = "daksh123";
+const DAKSH_PASSWORD_MIGRATION_KEY = "daksh-password-daksh123";
 const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student schedule change"]);
 const AUGUST_USUAL_SCHEDULE_START = "2026-08-03";
 const AUGUST_USUAL_SCHEDULE_END = "2026-08-19";
@@ -141,7 +143,8 @@ const FALL_STUDENT_SCHEDULES = {
   ],
   [DAKSH_WORKER_ID]: [
     { day: "Monday", space: "The Studios", start: "13:00", end: "17:00" },
-    { day: "Wednesday", space: "The Studios", start: "13:00", end: "17:00" }
+    { day: "Wednesday", space: "The Studios", start: "13:00", end: "17:00" },
+    { day: "Friday", space: "The Studios", start: "11:00", end: "17:00" }
   ]
 };
 const OBSERVED_CLOSED_DATES = ["2026-07-03"];
@@ -1397,6 +1400,7 @@ function createInitialDb() {
     alerts: [],
     airtable: {},
     integrations: { mazevo: {} },
+    migrations: {},
     users: []
   };
   ensureObservedClosedDates(initial);
@@ -1477,6 +1481,7 @@ function migrateDb(appDb) {
   appDb.airtable ||= {};
   appDb.integrations ||= {};
   appDb.integrations.mazevo ||= {};
+  appDb.migrations ||= {};
   appDb.spaces = cleanSpaces(appDb.spaces || structuredClone(seedData.spaces));
   ensureObservedClosedDates(appDb);
   appDb.staffSchedules = cleanStaffSchedules(appDb.staffSchedules || structuredClone(seedData.staffSchedules));
@@ -1604,17 +1609,26 @@ function ensureDakshWorker(appDb) {
   daksh.availability.sort(sortScheduleSlots);
 
   if (!worker) appDb.workers.push(daksh);
-  ensureStudentLogin(appDb, DAKSH_WORKER_ID, "Daksh", DAKSH_DEFAULT_EMAIL);
+  ensureStudentLogin(appDb, DAKSH_WORKER_ID, "Daksh", DAKSH_DEFAULT_EMAIL, {
+    password: DAKSH_DEFAULT_PASSWORD,
+    resetPasswordKey: DAKSH_PASSWORD_MIGRATION_KEY
+  });
 }
 
-function ensureStudentLogin(appDb, workerId, name, email) {
+function ensureStudentLogin(appDb, workerId, name, email, options = {}) {
   appDb.users ||= [];
+  appDb.migrations ||= {};
+  const password = cleanText(options.password) || process.env.STUDENT_DEFAULT_PASSWORD || "edson-student";
   const existingForWorker = appDb.users.find((item) => item.workerId === workerId);
   if (existingForWorker) {
     existingForWorker.name = name;
     existingForWorker.role = "student";
     existingForWorker.workerId = workerId;
     if (!cleanText(existingForWorker.email)) existingForWorker.email = email;
+    if (options.resetPasswordKey && !appDb.migrations[options.resetPasswordKey]) {
+      existingForWorker.password = hashPassword(password);
+      appDb.migrations[options.resetPasswordKey] = new Date().toISOString();
+    }
     return;
   }
 
@@ -1627,8 +1641,9 @@ function ensureStudentLogin(appDb, workerId, name, email) {
     name,
     role: "student",
     workerId,
-    password: process.env.STUDENT_DEFAULT_PASSWORD || "edson-student"
+    password
   }));
+  if (options.resetPasswordKey) appDb.migrations[options.resetPasswordKey] = new Date().toISOString();
 }
 
 function ensureAugustUsualSchedules(appDb) {

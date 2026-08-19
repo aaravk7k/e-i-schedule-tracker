@@ -156,7 +156,10 @@ const STAFF_STATUS_PEOPLE = [
   "Matthew Kohlbeck",
   "Paula Alvarado",
   "Lynn Romero",
-  "Dania Alcala-Calvillo",
+  "Dania Alcala-Calvillo"
+];
+const STAFF_COVERAGE_ASSIGNEES = [
+  ...STAFF_STATUS_PEOPLE,
   "Sarah Zarr",
   "Eric Heimbecker",
   "Jesus Ledezma",
@@ -1162,6 +1165,7 @@ function viewForUser(user) {
     staffStatuses: staffStatusesForDate(focusDate),
     staffStatusRecords: cleanStaffStatusRecords(db.staffStatuses).map(publicStaffStatus),
     staffStatusPeople: STAFF_STATUS_PEOPLE,
+    staffCoverageAssignees: STAFF_COVERAGE_ASSIGNEES,
     staffStatusOptions: STAFF_STATUS_OPTIONS,
     scheduleChangeRequests: scheduleChangeRequestsForUser(user).map((request) => publicScheduleChangeRequest(request, user.role === "staff")),
     spaceColors: SPACE_COLORS,
@@ -2756,7 +2760,7 @@ function createStaffStatusRecord(input, user) {
     throw error;
   }
   const coverageNeeded = formBoolean(input.coverageNeeded);
-  const coverageAssignedTo = coverageNeeded ? staffStatusPersonName(input.coverageAssignedTo) : "";
+  const coverageAssignedTo = coverageNeeded ? staffCoverageAssigneeName(input.coverageAssignedTo) : "";
   const space = (status === "In Office" || coverageNeeded) ? normalizeSpaceName(input.space) : "";
   if ((status === "In Office" || coverageNeeded) && (!space || space === "General")) {
     const error = new Error(coverageNeeded ? "Choose which space needs staff coverage." : "Choose which space the staff member is in.");
@@ -2854,6 +2858,11 @@ function publicStaffStatus(record) {
 function staffStatusPersonName(value) {
   const clean = cleanText(value);
   return STAFF_STATUS_PEOPLE.find((name) => staffStatusNameMatches(name, clean)) || "";
+}
+
+function staffCoverageAssigneeName(value) {
+  const clean = cleanText(value);
+  return STAFF_COVERAGE_ASSIGNEES.find((name) => staffStatusNameMatches(name, clean)) || "";
 }
 
 function staffStatusNameMatches(left, right) {
@@ -3990,7 +3999,7 @@ function cleanStaffStatusRecords(records = []) {
       start: hasValidTimeRange ? start : "",
       end: hasValidTimeRange ? end : "",
       coverageNeeded,
-      coverageAssignedTo: coverageNeeded ? staffStatusPersonName(record.coverageAssignedTo) : "",
+      coverageAssignedTo: coverageNeeded ? staffCoverageAssigneeName(record.coverageAssignedTo) : "",
       note: cleanText(record.note || record.notes).slice(0, 160),
       updatedAt: record.updatedAt || "",
       updatedBy: cleanText(record.updatedBy)

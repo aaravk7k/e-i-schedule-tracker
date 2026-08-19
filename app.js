@@ -957,13 +957,19 @@ function staffStatusForm(statuses = [], includeDatePicker = false) {
       <label class="span-2" data-staff-coverage-assignee>Assign coverage to
         <select name="coverageAssignedTo">
           <option value="">Choose staff</option>
-          ${(app.data.staffStatusPeople || []).map((name) => `<option value="${escapeHtml(name)}" ${first.coverageAssignedTo === name ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")}
+          ${staffCoverageAssigneeOptions(first.coverageAssignedTo)}
         </select>
       </label>
       <label class="span-6">Note<input name="note" value="${escapeHtml(first.note || "")}" placeholder="Optional note for the team"></label>
       <div class="span-6 action-row"><button class="secondary-button" type="submit">Update Staff Status</button></div>
     </form>
   `;
+}
+
+function staffCoverageAssigneeOptions(selectedName = "") {
+  return (app.data.staffCoverageAssignees || app.data.staffStatusPeople || [])
+    .map((name) => `<option value="${escapeHtml(name)}" ${selectedName === name ? "selected" : ""}>${escapeHtml(name)}</option>`)
+    .join("");
 }
 
 function calendarExportActions(includeScheduleEdit) {

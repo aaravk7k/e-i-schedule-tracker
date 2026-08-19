@@ -156,7 +156,11 @@ const STAFF_STATUS_PEOPLE = [
   "Matthew Kohlbeck",
   "Paula Alvarado",
   "Lynn Romero",
-  "Dania Alcala-Calvillo"
+  "Dania Alcala-Calvillo",
+  "Sarah Zarr",
+  "Eric Heimbecker",
+  "Jesus Ledezma",
+  "Matt Beard"
 ];
 const STAFF_STATUS_OPTIONS = ["In Office", "Remote", "Out of Office"];
 const STAFF_STATUS_DEFAULT = "Not Set";

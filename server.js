@@ -90,6 +90,8 @@ const SPACE_OWNER_WORKER_IDS = {
 const SAKSHI_WORKER_ID = "sakshi";
 const SAKSHI_START_DATE = "2026-06-15";
 const SAKSHI_DEFAULT_SCHEDULE_SOURCE = "Staff-provided Sakshi schedule";
+const DAKSH_WORKER_ID = "daksh";
+const DAKSH_DEFAULT_EMAIL = "daksh@ei.asu.edu";
 const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student schedule change"]);
 const AUGUST_USUAL_SCHEDULE_START = "2026-08-03";
 const AUGUST_USUAL_SCHEDULE_END = "2026-08-19";
@@ -136,6 +138,10 @@ const FALL_STUDENT_SCHEDULES = {
     { day: "Monday", space: "The Studios", start: "08:00", end: "13:00" },
     { day: "Tuesday", space: "The Studios", start: "08:00", end: "17:00" },
     { day: "Wednesday", space: "The Studios", start: "08:00", end: "15:00" }
+  ],
+  [DAKSH_WORKER_ID]: [
+    { day: "Monday", space: "The Studios", start: "13:00", end: "17:00" },
+    { day: "Wednesday", space: "The Studios", start: "13:00", end: "17:00" }
   ]
 };
 const OBSERVED_CLOSED_DATES = ["2026-07-03"];
@@ -1416,6 +1422,7 @@ function createInitialDb() {
   });
 
   ensureSakshiWorker(initial);
+  ensureDakshWorker(initial);
   ensureAugustUsualSchedules(initial);
   ensureFallStudentSchedules(initial);
   ensureNoUnpaidBreakOverrides(initial);
@@ -1481,6 +1488,7 @@ function migrateDb(appDb) {
   appDb.clearedCoverageGaps = cleanClearedCoverageGaps(appDb.clearedCoverageGaps || []);
   appDb.users ||= [];
   ensureSakshiWorker(appDb);
+  ensureDakshWorker(appDb);
   ensureAugustUsualSchedules(appDb);
   ensureFallStudentSchedules(appDb);
   appDb.workers.forEach((worker) => {
@@ -1569,6 +1577,58 @@ function ensureSakshiWorker(appDb) {
   sakshi.availability.sort(sortScheduleSlots);
 
   if (!worker) appDb.workers.push(sakshi);
+  ensureStudentLogin(appDb, SAKSHI_WORKER_ID, "Sakshi", "sakshi@ei.asu.edu");
+}
+
+function ensureDakshWorker(appDb) {
+  appDb.workers ||= [];
+  const worker = appDb.workers.find((item) => item.id === DAKSH_WORKER_ID);
+  const daksh = worker || {
+    id: DAKSH_WORKER_ID,
+    name: "Daksh",
+    role: "Student Worker",
+    initials: "D",
+    supervisor: "Unassigned",
+    primarySpaces: ["The Studios"],
+    skills: ["coverage", "customer-service", "events"],
+    availability: []
+  };
+
+  daksh.name = "Daksh";
+  daksh.role ||= "Student Worker";
+  daksh.initials ||= "D";
+  daksh.supervisor ||= "Unassigned";
+  daksh.primarySpaces = ["The Studios"];
+  daksh.skills = normalizeSkillList([...(daksh.skills || []), "coverage", "customer-service", "events"]);
+  daksh.availability ||= [];
+  daksh.availability.sort(sortScheduleSlots);
+
+  if (!worker) appDb.workers.push(daksh);
+  ensureStudentLogin(appDb, DAKSH_WORKER_ID, "Daksh", DAKSH_DEFAULT_EMAIL);
+}
+
+function ensureStudentLogin(appDb, workerId, name, email) {
+  appDb.users ||= [];
+  const existingForWorker = appDb.users.find((item) => item.workerId === workerId);
+  if (existingForWorker) {
+    existingForWorker.name = name;
+    existingForWorker.role = "student";
+    existingForWorker.workerId = workerId;
+    if (!cleanText(existingForWorker.email)) existingForWorker.email = email;
+    return;
+  }
+
+  const emailTaken = appDb.users.some((item) => cleanText(item.email).toLowerCase() === email.toLowerCase());
+  if (emailTaken) return;
+
+  appDb.users.push(createSeedUser({
+    id: `user-${workerId}`,
+    email,
+    name,
+    role: "student",
+    workerId,
+    password: process.env.STUDENT_DEFAULT_PASSWORD || "edson-student"
+  }));
 }
 
 function ensureAugustUsualSchedules(appDb) {

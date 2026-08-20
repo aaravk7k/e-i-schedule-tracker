@@ -408,6 +408,52 @@ button:disabled {
   border-top: 1px solid var(--line);
 }
 
+.staff-coverage-assignment-form,
+.staff-coverage-assignment-list {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.form-subhead h4 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.staff-coverage-assignment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.staff-coverage-assignment-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid #005c5c;
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.staff-coverage-assignment-card strong,
+.staff-coverage-assignment-card span {
+  display: block;
+}
+
+.staff-coverage-assignment-card span {
+  color: var(--muted);
+}
+
+.staff-coverage-assignment-card .badge-row,
+.staff-coverage-assignment-card .task-meta {
+  grid-column: 1 / -1;
+}
+
+.staff-coverage-assignment-card .mini-button {
+  justify-self: end;
+}
+
 .staff-calendar-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(185px, 1fr));
@@ -489,6 +535,10 @@ button:disabled {
 
 .staff-calendar-card.is-unset {
   border-left-color: #98a2b3;
+}
+
+.staff-calendar-card.is-coverage-assignment {
+  border-left-color: #005c5c;
 }
 
 .staff-calendar-card .mini-button {
@@ -1263,6 +1313,10 @@ tr:last-child td {
 
 .combined-staff-row.is-out {
   border-left-color: var(--danger);
+}
+
+.combined-staff-row.is-coverage-assignment {
+  border-left-color: #005c5c;
 }
 
 .combined-unset-staff {

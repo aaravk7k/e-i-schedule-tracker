@@ -279,6 +279,27 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/staff-coverage-assignments") {
+    requireStaff(user);
+    const body = await readJson(req);
+    const assignment = upsertStaffCoverageAssignment(body, user);
+    addAlert("info", "Staff coverage assigned", `${assignment.assignedTo} is covering ${assignment.space} on ${formatShortDate(assignment.date)}, ${formatTime(assignment.start)}-${formatTime(assignment.end)}.`);
+    addActivity(`${user.name} assigned ${assignment.assignedTo} to cover ${assignment.space} on ${formatShortDate(assignment.date)}, ${formatTime(assignment.start)}-${formatTime(assignment.end)}.`);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
+  const staffCoverageAssignmentMatch = url.pathname.match(/^\/api\/staff-coverage-assignments\/([^/]+)$/);
+  if (req.method === "DELETE" && staffCoverageAssignmentMatch) {
+    requireStaff(user);
+    const removed = deleteStaffCoverageAssignment(decodeURIComponent(staffCoverageAssignmentMatch[1]));
+    addActivity(`${user.name} removed assigned coverage for ${removed.assignedTo} at ${removed.space} on ${formatShortDate(removed.date)}.`);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/coverage-gaps/clear") {
     requireStaff(user);
     const body = await readJson(req);
@@ -1180,6 +1201,7 @@ function viewForUser(user) {
     staffSchedules: cleanStaffSchedules(db.staffSchedules),
     staffStatuses: staffStatusesForDate(focusDate),
     staffStatusRecords: cleanStaffStatusRecords(db.staffStatuses).map(publicStaffStatus),
+    staffCoverageAssignments: cleanStaffCoverageAssignments(db.staffCoverageAssignments).map(publicStaffCoverageAssignment),
     staffStatusPeople: STAFF_STATUS_PEOPLE,
     staffCoverageAssignees: STAFF_COVERAGE_ASSIGNEES,
     staffStatusOptions: STAFF_STATUS_OPTIONS,
@@ -1420,6 +1442,7 @@ function createInitialDb() {
     scheduleSuppressions: [],
     clearedCoverageGaps: [],
     staffStatuses: [],
+    staffCoverageAssignments: [],
     tasks: [],
     activity: [],
     alerts: [],
@@ -1516,6 +1539,7 @@ function migrateDb(appDb) {
   appDb.scheduleChangeRequests ||= [];
   appDb.scheduleSuppressions = cleanScheduleSuppressions(appDb.scheduleSuppressions || []);
   appDb.clearedCoverageGaps = cleanClearedCoverageGaps(appDb.clearedCoverageGaps || []);
+  appDb.staffCoverageAssignments = cleanStaffCoverageAssignments(appDb.staffCoverageAssignments || []);
   appDb.users ||= [];
   ensureSakshiWorker(appDb);
   ensureDakshWorker(appDb);
@@ -2822,6 +2846,89 @@ function staffStatusesForDate(date) {
   });
 }
 
+function upsertStaffCoverageAssignment(input, user) {
+  db.staffCoverageAssignments ||= [];
+  const assignment = createStaffCoverageAssignment(input, user);
+  const existingIndex = db.staffCoverageAssignments.findIndex((item) =>
+    item.date === assignment.date &&
+    item.space === assignment.space &&
+    item.start === assignment.start &&
+    item.end === assignment.end &&
+    staffStatusNameMatches(item.assignedTo, assignment.assignedTo)
+  );
+  if (existingIndex >= 0) {
+    db.staffCoverageAssignments[existingIndex] = {
+      ...db.staffCoverageAssignments[existingIndex],
+      ...assignment,
+      id: db.staffCoverageAssignments[existingIndex].id || assignment.id
+    };
+  } else {
+    db.staffCoverageAssignments.push(assignment);
+  }
+  db.staffCoverageAssignments = cleanStaffCoverageAssignments(db.staffCoverageAssignments);
+  return assignment;
+}
+
+function createStaffCoverageAssignment(input, user) {
+  const date = normalizeDateValue(input.date) || db.focusDate || FALLBACK_FOCUS_DATE;
+  const space = normalizeSpaceName(input.space);
+  const assignedTo = staffCoverageAssigneeName(input.assignedTo);
+  const start = normalizeTimeValue(input.start, "");
+  const end = normalizeTimeValue(input.end, "");
+  if (!date || !space || space === "General") {
+    const error = new Error("Choose which space needs assigned coverage.");
+    error.status = 400;
+    throw error;
+  }
+  if (!assignedTo) {
+    const error = new Error("Choose a staff coverage person.");
+    error.status = 400;
+    throw error;
+  }
+  if (!start || !end || minutes(end) <= minutes(start)) {
+    const error = new Error("Assigned coverage needs a valid start and end time.");
+    error.status = 400;
+    throw error;
+  }
+  return {
+    id: cleanText(input.id) || `staff-coverage-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+    date,
+    space,
+    start,
+    end,
+    assignedTo,
+    note: cleanText(input.note || input.notes).slice(0, 160),
+    createdAt: new Date().toISOString(),
+    createdBy: user.name
+  };
+}
+
+function deleteStaffCoverageAssignment(id) {
+  db.staffCoverageAssignments = cleanStaffCoverageAssignments(db.staffCoverageAssignments || []);
+  const index = db.staffCoverageAssignments.findIndex((assignment) => assignment.id === id);
+  if (index < 0) {
+    const error = new Error("Assigned coverage block not found.");
+    error.status = 404;
+    throw error;
+  }
+  const [removed] = db.staffCoverageAssignments.splice(index, 1);
+  return removed;
+}
+
+function publicStaffCoverageAssignment(record) {
+  return {
+    id: record.id || "",
+    date: record.date,
+    space: record.space,
+    start: record.start,
+    end: record.end,
+    assignedTo: record.assignedTo,
+    note: record.note || "",
+    createdAt: record.createdAt || "",
+    createdBy: record.createdBy || ""
+  };
+}
+
 function clearCoverageGap(input, user) {
   const clearedGap = createClearedCoverageGap(input, user);
   db.clearedCoverageGaps = cleanClearedCoverageGaps([...(db.clearedCoverageGaps || []), clearedGap]);
@@ -3285,8 +3392,9 @@ function getCoverageGaps(focusWeekStart = db.focusWeekStart) {
             label: `${slotItem.name} ${formatTime(slotItem.start)}-${formatTime(slotItem.end)}`
           }));
         const staffStatusBlocks = staffStatusCoverageBlocksForSpace(space.name, date, open, close);
+        const staffCoverageAssignmentBlocks = staffCoverageAssignmentBlocksForSpace(space.name, date);
         const clearedGapBlocks = clearedCoverageBlocksForSpace(space.name, date);
-        const allBlocks = [...studentBlocks, ...staffBlocks, ...staffStatusBlocks, ...clearedGapBlocks];
+        const allBlocks = [...studentBlocks, ...staffBlocks, ...staffStatusBlocks, ...staffCoverageAssignmentBlocks, ...clearedGapBlocks];
         const intervals = allBlocks
           .map((block) => ({
             start: Math.max(open, block.start),
@@ -3355,6 +3463,17 @@ function staffStatusCoverageBlocksForSpace(spaceName, date, open, close) {
           : `${record.name} In Office`
       };
     })
+    .filter((block) => block.end > block.start);
+}
+
+function staffCoverageAssignmentBlocksForSpace(spaceName, date) {
+  return cleanStaffCoverageAssignments(db.staffCoverageAssignments || [])
+    .filter((record) => record.date === date && record.space === spaceName)
+    .map((record) => ({
+      start: minutes(record.start),
+      end: minutes(record.end),
+      label: `${record.assignedTo} assigned ${formatTime(record.start)}-${formatTime(record.end)}`
+    }))
     .filter((block) => block.end > block.start);
 }
 
@@ -4144,6 +4263,36 @@ function cleanStaffStatusRecords(records = []) {
     latestByPersonDate.set(`${date}|${name.toLowerCase()}`, cleanRecord);
   });
   return [...latestByPersonDate.values()].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+}
+
+function cleanStaffCoverageAssignments(records = []) {
+  const cleaned = new Map();
+  (records || []).forEach((record) => {
+    const date = normalizeDateValue(record.date);
+    const space = normalizeSpaceName(record.space);
+    const start = normalizeTimeValue(record.start, "");
+    const end = normalizeTimeValue(record.end, "");
+    const assignedTo = staffCoverageAssigneeName(record.assignedTo);
+    if (!date || !space || space === "General" || !assignedTo || !start || !end || minutes(end) <= minutes(start)) return;
+    const key = cleanText(record.id) || `${date}|${space}|${start}|${end}|${assignedTo.toLowerCase()}`;
+    cleaned.set(key, {
+      id: cleanText(record.id) || `staff-coverage-${date}-${slugify(space)}-${start.replace(":", "")}-${end.replace(":", "")}-${slugify(assignedTo)}`,
+      date,
+      space,
+      start,
+      end,
+      assignedTo,
+      note: cleanText(record.note || record.notes).slice(0, 160),
+      createdAt: record.createdAt || new Date().toISOString(),
+      createdBy: cleanText(record.createdBy)
+    });
+  });
+  return [...cleaned.values()].sort((a, b) =>
+    a.date.localeCompare(b.date) ||
+    a.start.localeCompare(b.start) ||
+    a.space.localeCompare(b.space) ||
+    a.assignedTo.localeCompare(b.assignedTo)
+  );
 }
 
 function cleanClearedCoverageGaps(records = []) {

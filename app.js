@@ -515,6 +515,7 @@ function renderSpaceCalendar() {
     return sum + calendarStudentShiftItems(day, date, visibleSpaceSet, context.workerFilter).length;
   }, 0);
   const staffStatusRows = DAYS.flatMap((day, index) => staffStatusesForDate(addDays(app.data.focusWeekStart, index)));
+  const staffCoverageAssignments = staffCoverageAssignmentsForWeek().filter((assignment) => visibleSpaceSet.has(assignment.space));
   const activeStaffStatuses = staffStatusRows.filter((record) => record.status !== "Not Set").length;
   const staffCoverageNeeds = staffStatusRows.filter((record) => record.coverageNeeded).length;
 
@@ -532,6 +533,7 @@ function renderSpaceCalendar() {
         ${kpiCard(studentShiftCount, "Student worker shifts")}
         ${kpiCard(activeStaffStatuses, "Staff statuses")}
         ${kpiCard(staffCoverageNeeds, "Staff coverage needs")}
+        ${kpiCard(staffCoverageAssignments.length, "Assigned staff coverage")}
         ${kpiCard(focusEvents.length, "Events this week")}
         ${kpiCard(focusEvents.filter((event) => event.afterHours).length, "After-hours events")}
         ${app.data.role === "staff" ? kpiCard(visibleGaps.length, "Coverage gaps") : ""}
@@ -669,7 +671,7 @@ function combinedSpaceCalendarDay(day, date, context) {
       </div>
       <div class="calendar-section">
         <h4>Staff Status</h4>
-        ${combinedStaffStatusList(date)}
+        ${combinedStaffStatusList(date, context.visibleSpaceSet)}
       </div>
       <div class="calendar-section">
         <h4>Events</h4>
@@ -679,14 +681,16 @@ function combinedSpaceCalendarDay(day, date, context) {
   `;
 }
 
-function combinedStaffStatusList(date) {
+function combinedStaffStatusList(date, visibleSpaceSet = null) {
   const statuses = staffStatusesForDate(date);
   const active = statuses.filter((record) => record.status !== "Not Set");
   const unset = statuses.filter((record) => record.status === "Not Set");
-  if (!active.length) return `<p class="task-meta">No staff status set.</p>`;
+  const assignments = staffCoverageAssignmentsForDate(date).filter((assignment) => !visibleSpaceSet || visibleSpaceSet.has(assignment.space));
+  if (!active.length && !assignments.length) return `<p class="task-meta">No staff status or assigned coverage set.</p>`;
   return `
     <div class="combined-staff-list">
       ${active.map(compactStaffStatusRow).join("")}
+      ${assignments.map(compactStaffCoverageAssignmentRow).join("")}
       ${unset.length ? `<p class="combined-unset-staff">Not set: ${unset.map((record) => escapeHtml(record.name)).join(", ")}</p>` : ""}
     </div>
   `;
@@ -708,6 +712,20 @@ function compactStaffStatusRow(record) {
   `;
 }
 
+function compactStaffCoverageAssignmentRow(record) {
+  return `
+    <div class="combined-staff-row is-coverage-assignment">
+      <div>
+        <strong>${escapeHtml(record.assignedTo)}</strong>
+        <span class="badge">Assigned coverage</span>
+        <span class="badge">${escapeHtml(formatTime(record.start))}-${escapeHtml(formatTime(record.end))}</span>
+      </div>
+      ${spaceChip(record.space)}
+      ${record.note ? `<span>${escapeHtml(record.note)}</span>` : ""}
+    </div>
+  `;
+}
+
 function renderStaffCalendar() {
   const statuses = staffStatusWeekRows();
   const inOfficeCount = statuses.flat().filter((record) => record.status === "In Office").length;
@@ -715,6 +733,7 @@ function renderStaffCalendar() {
   const outCount = statuses.flat().filter((record) => record.status === "Out of Office").length;
   const unsetCount = statuses.flat().filter((record) => record.status === "Not Set").length;
   const coverageNeedCount = statuses.flat().filter((record) => record.coverageNeeded).length;
+  const assignedCoverageCount = staffCoverageAssignmentsForWeek().length;
   return `
     <section class="band">
       <div class="band-header">
@@ -730,6 +749,7 @@ function renderStaffCalendar() {
         ${kpiCard(outCount, "Out of office")}
         ${kpiCard(unsetCount, "Not set")}
         ${kpiCard(coverageNeedCount, "Coverage needs")}
+        ${kpiCard(assignedCoverageCount, "Assigned coverage")}
       </div>
     </section>
 
@@ -742,6 +762,8 @@ function renderStaffCalendar() {
           </div>
         </div>
         ${staffStatusForm(staffStatusesForDate(app.data.focusDate), true)}
+        ${staffCoverageAssignmentForm(true)}
+        ${staffCoverageAssignmentsPanel()}
       </section>
     ` : ""}
 
@@ -761,6 +783,7 @@ function staffStatusWeekRows() {
 
 function staffCalendarDay(day, date) {
   const statuses = staffStatusesForDate(date);
+  const assignments = staffCoverageAssignmentsForDate(date);
   return `
     <article class="calendar-day staff-calendar-day">
       <header class="calendar-day-head">
@@ -772,6 +795,7 @@ function staffCalendarDay(day, date) {
       </header>
       <div class="staff-calendar-list">
         ${statuses.map((record) => staffCalendarCard(record)).join("")}
+        ${assignments.map((record) => staffCalendarAssignmentCard(record)).join("")}
       </div>
     </article>
   `;
@@ -793,6 +817,24 @@ function staffCalendarCard(record) {
       </div>
       ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
       ${app.data.role === "staff" ? `<button class="mini-button" type="button" data-action="edit-staff-status" data-staff-status-date="${record.date}" data-staff-status-name="${escapeHtml(record.name)}">Edit</button>` : ""}
+    </article>
+  `;
+}
+
+function staffCalendarAssignmentCard(record) {
+  return `
+    <article class="staff-calendar-card is-coverage-assignment">
+      <div class="task-head">
+        <strong>${escapeHtml(record.assignedTo)}</strong>
+        <span class="badge">Assigned coverage</span>
+      </div>
+      <div class="badge-row">
+        ${spaceChip(record.space)}
+        <span class="badge">${escapeHtml(formatTime(record.start))}-${escapeHtml(formatTime(record.end))}</span>
+        ${record.createdBy ? `<span class="badge">Assigned by ${escapeHtml(record.createdBy)}</span>` : ""}
+      </div>
+      ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
+      ${app.data.role === "staff" ? `<button class="mini-button" type="button" data-action="remove-staff-coverage-assignment" data-staff-coverage-assignment-id="${escapeHtml(record.id)}">Remove</button>` : ""}
     </article>
   `;
 }
@@ -847,7 +889,7 @@ function staffStatusPanel() {
       <div class="staff-status-grid">
         ${statuses.map(staffStatusCard).join("") || emptyState("No staff status records yet.")}
       </div>
-      ${app.data.role === "staff" ? staffStatusForm(statuses) : ""}
+      ${app.data.role === "staff" ? `${staffStatusForm(statuses)}${staffCoverageAssignmentForm(false)}${staffCoverageAssignmentsPanel()}` : ""}
     </section>
   `;
 }
@@ -875,6 +917,20 @@ function staffStatusesForDate(date) {
       updatedBy: ""
     };
   });
+}
+
+function staffCoverageAssignmentsForDate(date) {
+  return (app.data.staffCoverageAssignments || [])
+    .filter((record) => record.date === date)
+    .sort((a, b) => a.start.localeCompare(b.start) || a.space.localeCompare(b.space) || a.assignedTo.localeCompare(b.assignedTo));
+}
+
+function staffCoverageAssignmentsForWeek() {
+  const weekStart = app.data.focusWeekStart;
+  const weekEnd = addDays(weekStart, 6);
+  return (app.data.staffCoverageAssignments || [])
+    .filter((record) => record.date >= weekStart && record.date <= weekEnd)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start) || a.space.localeCompare(b.space) || a.assignedTo.localeCompare(b.assignedTo));
 }
 
 function staffStatusCard(record) {
@@ -954,15 +1010,74 @@ function staffStatusForm(statuses = [], includeDatePicker = false) {
         <input name="coverageNeeded" type="checkbox" value="true" data-staff-coverage-needed ${first.coverageNeeded ? "checked" : ""}>
         Coverage needed
       </label>
-      <label class="span-2" data-staff-coverage-assignee>Assign coverage to
-        <select name="coverageAssignedTo">
-          <option value="">Choose staff</option>
-          ${staffCoverageAssigneeOptions(first.coverageAssignedTo)}
-        </select>
-      </label>
       <label class="span-6">Note<input name="note" value="${escapeHtml(first.note || "")}" placeholder="Optional note for the team"></label>
       <div class="span-6 action-row"><button class="secondary-button" type="submit">Update Staff Status</button></div>
     </form>
+  `;
+}
+
+function staffCoverageAssignmentForm(includeDatePicker = false) {
+  const date = app.data.focusDate;
+  return `
+    <form id="staffCoverageAssignmentForm" class="form-grid staff-coverage-assignment-form">
+      <div class="span-6 form-subhead">
+        <h4>Assign Coverage</h4>
+      </div>
+      ${includeDatePicker ? `
+        <label class="span-2">Day
+          <select name="date" required>
+            ${DAYS.map((day, index) => {
+              const dayDate = addDays(app.data.focusWeekStart, index);
+              return `<option value="${dayDate}" ${dayDate === date ? "selected" : ""}>${day} ${formatShortDate(dayDate)}</option>`;
+            }).join("")}
+          </select>
+        </label>
+      ` : `<input type="hidden" name="date" value="${date}">`}
+      <label class="span-2">Space${spaceSelect("space", app.data.spaces[0]?.name || "1951@SkySong")}</label>
+      <label class="span-1">From
+        <input name="start" type="time" value="09:00" required>
+      </label>
+      <label class="span-1">Until
+        <input name="end" type="time" value="17:00" required>
+      </label>
+      <label class="span-2">Assign coverage to
+        <select name="assignedTo" required>
+          <option value="">Choose staff</option>
+          ${staffCoverageAssigneeOptions()}
+        </select>
+      </label>
+      <label class="span-4">Note<input name="note" placeholder="Optional coverage note"></label>
+      <div class="span-6 action-row"><button class="secondary-button" type="submit">Assign Coverage</button></div>
+    </form>
+  `;
+}
+
+function staffCoverageAssignmentsPanel() {
+  const assignments = staffCoverageAssignmentsForWeek();
+  return `
+    <div class="staff-coverage-assignment-list">
+      <div class="form-subhead">
+        <h4>Assigned Coverage This Week</h4>
+      </div>
+      ${assignments.length ? assignments.map(staffCoverageAssignmentCard).join("") : `<p class="task-meta">No assigned staff coverage for this week.</p>`}
+    </div>
+  `;
+}
+
+function staffCoverageAssignmentCard(record) {
+  return `
+    <article class="staff-coverage-assignment-card">
+      <div>
+        <strong>${escapeHtml(record.assignedTo)}</strong>
+        <span>${escapeHtml(formatShortDate(record.date))} · ${escapeHtml(formatTime(record.start))}-${escapeHtml(formatTime(record.end))}</span>
+      </div>
+      <div class="badge-row">
+        ${spaceChip(record.space)}
+        ${record.createdBy ? `<span class="badge">Assigned by ${escapeHtml(record.createdBy)}</span>` : ""}
+      </div>
+      ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
+      <button class="mini-button" type="button" data-action="remove-staff-coverage-assignment" data-staff-coverage-assignment-id="${escapeHtml(record.id)}">Remove</button>
+    </article>
   `;
 }
 
@@ -1442,6 +1557,14 @@ function combinedSpaceCalendarSnapshotDay(context, day, date) {
       meta: [record.status, record.status === "In Office" && record.space ? record.space : "", staffStatusTimeText(record)].filter(Boolean).join(" | "),
       detail: [staffCoverageNeedText(record), record.note].filter(Boolean).join(" | ")
     }));
+  const assignedCoverage = staffCoverageAssignmentsForDate(date)
+    .filter((record) => context.visibleSpaceSet.has(record.space))
+    .map((record) => ({
+      type: "staff",
+      title: record.assignedTo,
+      meta: ["Assigned coverage", record.space, `${formatTime(record.start)}-${formatTime(record.end)}`].filter(Boolean).join(" | "),
+      detail: record.note || ""
+    }));
   const unsetCount = staffStatuses.filter((record) => record.status === "Not Set").length;
   const events = eventsInFocusWeek(app.data.events || [])
     .filter((event) => event.date === date && context.visibleSpaceSet.has(event.space))
@@ -1463,7 +1586,7 @@ function combinedSpaceCalendarSnapshotDay(context, day, date) {
         </div>
       </div>
       ${combinedSnapshotSection("Student Workers", shifts, closed ? "ASU observed holiday. No scheduled coverage needed." : "No student worker coverage.", 5)}
-      ${combinedSnapshotSection("Staff Status", activeStaff, "No staff status set.", 4, unsetCount ? `Not set: ${unsetCount}` : "")}
+      ${combinedSnapshotSection("Staff Status", [...activeStaff, ...assignedCoverage], "No staff status or assigned coverage set.", 4, unsetCount ? `Not set: ${unsetCount}` : "")}
       ${combinedSnapshotSection("Events", events, "No events in these spaces.", 5)}
     </section>
   `;
@@ -2225,6 +2348,7 @@ function bindEvents() {
   bindForm("smartEventForm", createSmartEvent);
   bindForm("staffScheduleForm", createStaffSchedule);
   bindForm("staffStatusForm", saveStaffStatus);
+  bindForm("staffCoverageAssignmentForm", saveStaffCoverageAssignment);
   bindForm("workerForm", createWorker);
   bindForm("userForm", createUser);
   bindForm("skillForm", saveSkills);
@@ -2259,7 +2383,6 @@ function bindStaffStatusControls() {
     form.querySelector("[name='start']").value = record.start || "";
     form.querySelector("[name='end']").value = record.end || "";
     form.querySelector("[name='coverageNeeded']").checked = Boolean(record.coverageNeeded);
-    form.querySelector("[name='coverageAssignedTo']").value = record.coverageAssignedTo || "";
     form.querySelector("[name='note']").value = record.note || "";
     toggleStaffStatusFields(form);
   };
@@ -2288,8 +2411,6 @@ function selectStaffStatusForEdit(date, name) {
   if (endField) endField.value = record.end || "";
   const coverageField = form.querySelector("[name='coverageNeeded']");
   if (coverageField) coverageField.checked = Boolean(record.coverageNeeded);
-  const coverageAssignedToField = form.querySelector("[name='coverageAssignedTo']");
-  if (coverageAssignedToField) coverageAssignedToField.value = record.coverageAssignedTo || "";
   const noteField = form.querySelector("[name='note']");
   if (noteField) noteField.value = record.note || "";
   toggleStaffStatusFields(form);
@@ -2301,13 +2422,9 @@ function toggleStaffStatusFields(form) {
   const spaceField = form.querySelector("[data-staff-status-space]");
   const spaceSelectElement = spaceField?.querySelector("select");
   const coverageNeeded = form.querySelector("[data-staff-coverage-needed]")?.checked;
-  const assigneeField = form.querySelector("[data-staff-coverage-assignee]");
-  const assigneeSelect = assigneeField?.querySelector("select");
   const needsSpace = status === "In Office" || coverageNeeded;
   if (spaceField) spaceField.hidden = !needsSpace;
   if (spaceSelectElement) spaceSelectElement.required = needsSpace;
-  if (assigneeField) assigneeField.hidden = !coverageNeeded;
-  if (assigneeSelect) assigneeSelect.required = false;
 }
 
 function bindScheduleModeControls() {
@@ -2409,6 +2526,14 @@ async function handleAction(action, button) {
     }
     if (action === "edit-staff-status") {
       selectStaffStatusForEdit(button.dataset.staffStatusDate, button.dataset.staffStatusName);
+      return;
+    }
+    if (action === "remove-staff-coverage-assignment") {
+      const assignmentId = button.dataset.staffCoverageAssignmentId;
+      if (!assignmentId) return;
+      app.data = await api(`/api/staff-coverage-assignments/${encodeURIComponent(assignmentId)}`, { method: "DELETE" });
+      showToast("Assigned coverage removed.");
+      render();
       return;
     }
     if (action === "clear-schedule-edit") {
@@ -2579,11 +2704,27 @@ async function saveStaffStatus(form) {
       start: data.get("start"),
       end: data.get("end"),
       coverageNeeded: data.get("coverageNeeded") === "true",
-      coverageAssignedTo: data.get("coverageAssignedTo"),
       note: data.get("note")
     }
   });
   showToast("Staff status updated.");
+  render();
+}
+
+async function saveStaffCoverageAssignment(form) {
+  const data = new FormData(form);
+  app.data = await api("/api/staff-coverage-assignments", {
+    method: "POST",
+    body: {
+      date: data.get("date"),
+      space: data.get("space"),
+      start: data.get("start"),
+      end: data.get("end"),
+      assignedTo: data.get("assignedTo"),
+      note: data.get("note")
+    }
+  });
+  showToast("Staff coverage assigned.");
   render();
 }
 

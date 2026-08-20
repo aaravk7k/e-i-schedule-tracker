@@ -1005,6 +1005,23 @@ tr:last-child td {
   margin-top: 0;
 }
 
+.schedule-edit-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #d9e1ec;
+  border-left: 4px solid #8c1d40;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #344054;
+}
+
+.schedule-edit-note strong {
+  color: #191919;
+}
+
 .calendar-toolbar {
   display: grid;
   grid-template-columns: minmax(160px, 0.65fr) minmax(160px, 0.65fr) minmax(260px, 1.25fr) auto;

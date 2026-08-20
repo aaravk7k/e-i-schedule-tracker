@@ -2068,6 +2068,7 @@ function scheduleChangeCard(request) {
         <span class="badge">${timeLabel}</span>
       </div>
       ${original ? `<p class="task-meta">Original: ${escapeHtml(original.space)} ${formatTime(original.start)}-${formatTime(original.end)}.</p>` : ""}
+      ${request.scope === "future" ? `<p class="task-meta">Applies this week and going forward.</p>` : ""}
       <p class="task-meta">${escapeHtml(scheduleChangeStatusText(request))}</p>
       <div class="task-footer">
         <span class="task-meta">${request.createdAt ? `Submitted ${formatDateTime(request.createdAt)}` : ""}${request.reviewedBy ? ` · Reviewed by ${escapeHtml(request.reviewedBy)}` : ""}</span>
@@ -2082,6 +2083,7 @@ function scheduleChangeCard(request) {
 function scheduleModeLabel(mode) {
   return {
     "edit-slot": "Edit schedule block",
+    "move-slot": "Move schedule block",
     "replace-space": "Replace this space/day",
     "replace-day": "Replace full day",
     "split-day": "Split day around away time",
@@ -2330,7 +2332,10 @@ function syncScheduleDate(form) {
   if (!dateInput || !dayInput) return;
   const day = dayFromDate(dateInput.value);
   dayInput.value = day;
-  if (label) label.textContent = day ? `Editing ${day}, ${formatShortDate(dateInput.value)}` : "Choose a date in this focus week";
+  if (label) {
+    const prefix = label.dataset.scheduleDatePrefix || "Editing";
+    label.textContent = day ? `${prefix} ${day}, ${formatShortDate(dateInput.value)}` : "Choose a date in this focus week";
+  }
 }
 
 function toggleSplitDayFields(form) {
@@ -2414,7 +2419,8 @@ async function handleAction(action, button) {
     if (action === "edit-schedule") {
       app.editingSchedule = {
         workerId: button.dataset.workerId,
-        slotIndex: Number(button.dataset.slotIndex)
+        slotIndex: Number(button.dataset.slotIndex),
+        actionType: button.dataset.scheduleEditAction || "edit"
       };
       if (app.data.role === "student") app.view = "profile";
       render();
@@ -2469,6 +2475,10 @@ async function handleAction(action, button) {
     if (action === "remove-schedule") {
       const workerId = button.dataset.workerId;
       const index = button.dataset.slotIndex;
+      const message = app.data.role === "staff"
+        ? "Remove this shift from the live schedule for this week?"
+        : "Send a request to staff to remove this shift?";
+      if (!confirm(message)) return;
       app.data = await api(`/api/workers/${encodeURIComponent(workerId)}/schedules/${index}`, { method: "DELETE" });
       app.editingSchedule = null;
       showToast(app.data.role === "staff" ? "Schedule block removed. Coverage alerts updated." : "Schedule removal sent to staff for approval.");
@@ -2634,6 +2644,7 @@ async function saveSchedule(form) {
       breakStart: data.get("breakStart"),
       breakEnd: data.get("breakEnd"),
       mode: data.get("mode"),
+      scope: data.get("scope"),
       slotIndex: data.get("slotIndex"),
       noUnpaidBreak: data.get("noUnpaidBreak") === "on"
     }
@@ -2691,6 +2702,9 @@ function scheduleForm(workerId, includeWorkerSelect) {
   const editing = app.editingSchedule?.workerId === workerId ? app.editingSchedule : null;
   const worker = workerById(workerId);
   const editSlot = editing ? worker?.availability[editing.slotIndex] : null;
+  const editAction = editing?.actionType === "move" ? "move" : "edit";
+  const editMode = editAction === "move" ? "move-slot" : "edit-slot";
+  const editVerb = editAction === "move" ? "Move" : "Edit";
   const staff = app.data.role === "staff";
   const fallbackSlotDate = editSlot?.day && DAYS.includes(editSlot.day) ? addDays(app.data.focusWeekStart, DAYS.indexOf(editSlot.day)) : "";
   const date = editSlot?.date || fallbackSlotDate || app.data.focusDate;
@@ -2701,32 +2715,52 @@ function scheduleForm(workerId, includeWorkerSelect) {
   const noUnpaidBreak = Number(editSlot?.unpaidBreakMinutes) === 0;
   const defaultBreakStart = start < "12:00" && end > "12:00" ? "12:00" : "";
   const defaultBreakEnd = start < "13:00" && end > "13:00" ? "13:00" : "";
+  const scheduleDateField = editSlot && editAction === "edit"
+    ? `
+          <input type="hidden" name="date" value="${date}">
+          <input type="date" value="${date}" disabled>
+          <span class="field-hint">Use "Move to another day" if the day is changing.</span>
+        `
+    : `
+          <input name="date" type="date" min="${app.data.focusWeekStart}" max="${addDays(app.data.focusWeekStart, 6)}" value="${date}" data-schedule-date required>
+          <span class="field-hint" data-schedule-date-label data-schedule-date-prefix="${editAction === "move" ? "Moving to" : "Editing"}">${editAction === "move" ? "Moving to" : "Editing"} ${escapeHtml(day)}, ${formatShortDate(date)}</span>
+        `;
   return `
     <form id="scheduleForm" class="schedule-change-form">
       <div class="form-grid">
+        ${editSlot ? `<div class="span-6 schedule-edit-note"><strong>${editVerb} this shift</strong><span>${escapeHtml(editSlot.space)} · ${escapeHtml(editSlot.day)}, ${formatShortDate(date)} · ${formatTime(editSlot.start)}-${formatTime(editSlot.end)}</span></div>` : ""}
         ${includeWorkerSelect && !editSlot ? `<label class="span-2">Student${workerSelect(workerId)}</label>` : `<input type="hidden" name="workerId" value="${workerId}">${includeWorkerSelect ? `<label class="span-2">Student<input value="${escapeHtml(worker?.name || "Student")}" disabled></label>` : ""}`}
         ${editSlot ? `<input type="hidden" name="slotIndex" value="${editing.slotIndex}">` : ""}
         <input type="hidden" name="day" value="${escapeHtml(day)}" data-schedule-day>
-        <label class="span-2">Date
-          <input name="date" type="date" min="${app.data.focusWeekStart}" max="${addDays(app.data.focusWeekStart, 6)}" value="${date}" data-schedule-date required>
-          <span class="field-hint" data-schedule-date-label>Editing ${escapeHtml(day)}, ${formatShortDate(date)}</span>
+        <label class="span-2">${editAction === "move" ? "Move to date" : "Date"}
+          ${scheduleDateField}
         </label>
         <label>Space${spaceSelect("space", space)}</label>
         <label>Start<input name="start" type="time" value="${start}" required></label>
         <label>End<input name="end" type="time" value="${end}" required></label>
-        ${staff ? `
+        ${staff && !editSlot ? `
           <label data-split-day-field>Away Start<input name="breakStart" type="time" value="${defaultBreakStart}"></label>
           <label data-split-day-field>Back At<input name="breakEnd" type="time" value="${defaultBreakEnd}"></label>
         ` : ""}
-        <label class="span-2">Change Type
-          <select name="mode" data-schedule-mode>
-            ${editSlot ? `<option value="edit-slot">Edit selected block</option>` : ""}
-            <option value="replace-space" ${editSlot ? "" : "selected"}>Replace this space/day</option>
-            <option value="add">Add block</option>
-            <option value="replace-day">Replace full day</option>
-            ${staff ? `<option value="split-day">Split day around away time</option>` : ""}
-          </select>
-        </label>
+        ${editSlot ? `
+          <input type="hidden" name="mode" value="${editMode}">
+          <label class="span-2">Apply
+            <select name="scope">
+              <option value="week">This week only</option>
+              <option value="future">This week and going forward</option>
+            </select>
+          </label>
+        ` : `
+          <input type="hidden" name="scope" value="week">
+          <label class="span-2">Change Type
+            <select name="mode" data-schedule-mode>
+              <option value="replace-space" selected>Replace this space/day</option>
+              <option value="add">Add block</option>
+              <option value="replace-day">Replace full day</option>
+              ${staff ? `<option value="split-day">Split day around away time</option>` : ""}
+            </select>
+          </label>
+        `}
         ${staff ? `
           <label class="span-2 inline-check">
             <input name="noUnpaidBreak" type="checkbox" ${noUnpaidBreak ? "checked" : ""}>
@@ -2734,8 +2768,8 @@ function scheduleForm(workerId, includeWorkerSelect) {
           </label>
         ` : ""}
         <div class="span-6 action-row">
-          <button class="primary-button" type="submit">${editSlot ? "Save Edited Hours" : "Save Schedule"}</button>
-          ${editSlot ? `<button class="ghost-button" type="button" data-action="clear-schedule-edit">Cancel Edit</button>` : ""}
+          <button class="primary-button" type="submit">${editSlot ? `${editVerb} Shift` : "Save Schedule"}</button>
+          ${editSlot ? `<button class="ghost-button" type="button" data-action="clear-schedule-edit">Cancel</button>` : ""}
         </div>
       </div>
     </form>
@@ -2837,8 +2871,9 @@ function scheduleMiniCard(slot, worker, index, editable) {
       <strong>${escapeHtml(slot.space)}</strong>
       <span>${formatTime(slot.start)}-${formatTime(slot.end)}</span>
       ${editable ? `<div class="slot-actions">
-        <button class="mini-button slot-action" type="button" data-action="edit-schedule" data-worker-id="${worker.id}" data-slot-index="${index}">Edit</button>
-        <button class="mini-button slot-action" type="button" data-action="remove-schedule" data-worker-id="${worker.id}" data-slot-index="${index}">Remove</button>
+        <button class="mini-button slot-action" type="button" data-action="edit-schedule" data-schedule-edit-action="edit" data-worker-id="${worker.id}" data-slot-index="${index}">Edit this shift</button>
+        <button class="mini-button slot-action" type="button" data-action="edit-schedule" data-schedule-edit-action="move" data-worker-id="${worker.id}" data-slot-index="${index}">Move to another day</button>
+        <button class="mini-button slot-action" type="button" data-action="remove-schedule" data-worker-id="${worker.id}" data-slot-index="${index}">Remove this shift</button>
       </div>` : ""}
     </article>
   `;

@@ -95,6 +95,7 @@ const DAKSH_DEFAULT_EMAIL = "daksh@ei.asu.edu";
 const DAKSH_DEFAULT_PASSWORD = "daksh123";
 const DAKSH_PASSWORD_MIGRATION_KEY = "daksh-password-daksh123";
 const SCHEDULE_OVERRIDE_SOURCES = new Set(["Staff schedule edit", "Student schedule change"]);
+const SCHEDULE_SCOPE_FUTURE = "future";
 const AUGUST_USUAL_SCHEDULE_START = "2026-08-03";
 const AUGUST_USUAL_SCHEDULE_END = "2026-08-19";
 const AUGUST_USUAL_SCHEDULE_SOURCE = "August usual schedule extension";
@@ -496,6 +497,7 @@ async function handleApi(req, res) {
       start: body.start,
       end: body.end,
       mode: body.mode,
+      scope: body.scope,
       slotIndex: body.slotIndex,
       breakStart: body.breakStart,
       breakEnd: body.breakEnd,
@@ -678,6 +680,7 @@ function createScheduleChangeRequest(worker, input, user, type = "change") {
     workerId: worker.id,
     status: "pending",
     type,
+    scope: normalized.scope,
     day: normalized.day,
     date: normalized.date,
     space: normalized.space,
@@ -721,6 +724,7 @@ function normalizeScheduleChangeRequest(worker, input, type) {
       start: originalSlot.start,
       end: originalSlot.end,
       mode: "remove",
+      scope: normalizeScheduleScope(input.scope),
       slotIndex,
       originalSlot: structuredClone(originalSlot)
     };
@@ -731,6 +735,7 @@ function normalizeScheduleChangeRequest(worker, input, type) {
   const start = normalizeTimeValue(input.start, "09:00");
   const end = normalizeTimeValue(input.end, "17:00");
   const mode = cleanText(input.mode) || "add";
+  const scope = normalizeScheduleScope(input.scope);
   const breakStart = normalizeTimeValue(input.breakStart, "");
   const breakEnd = normalizeTimeValue(input.breakEnd, "");
   const date = normalizeDateValue(input.date) || (DAYS.includes(day) ? addDays(db.focusWeekStart, DAYS.indexOf(day)) : "");
@@ -744,8 +749,8 @@ function normalizeScheduleChangeRequest(worker, input, type) {
     error.status = 400;
     throw error;
   }
-  if (mode === "edit-slot" && !originalSlot) {
-    const error = new Error("Choose a schedule block to edit.");
+  if (scheduleChangeNeedsOriginal(mode) && !originalSlot) {
+    const error = new Error(mode === "move-slot" ? "Choose a schedule block to move." : "Choose a schedule block to edit.");
     error.status = 400;
     throw error;
   }
@@ -758,9 +763,18 @@ function normalizeScheduleChangeRequest(worker, input, type) {
     breakStart: mode === "split-day" ? breakStart : "",
     breakEnd: mode === "split-day" ? breakEnd : "",
     mode,
+    scope,
     slotIndex: Number.isInteger(slotIndex) ? slotIndex : "",
     originalSlot: originalSlot ? structuredClone(originalSlot) : null
   };
+}
+
+function normalizeScheduleScope(value) {
+  return cleanText(value) === SCHEDULE_SCOPE_FUTURE ? SCHEDULE_SCOPE_FUTURE : "week";
+}
+
+function scheduleChangeNeedsOriginal(mode) {
+  return ["edit-slot", "move-slot"].includes(cleanText(mode));
 }
 
 function handleScheduleChangeRequestAction(request, action, user) {
@@ -789,10 +803,10 @@ function handleScheduleChangeRequestAction(request, action, user) {
   if (request.type === "remove") {
     removeScheduleBlockFromApprovedRequest(worker, request, user);
   } else {
-    const slotIndex = request.mode === "edit-slot" && request.originalSlot
+    const slotIndex = scheduleChangeNeedsOriginal(request.mode) && request.originalSlot
       ? findScheduleSlotIndex(worker, request.originalSlot)
       : request.slotIndex;
-    if (request.mode === "edit-slot" && slotIndex === -1) {
+    if (scheduleChangeNeedsOriginal(request.mode) && slotIndex === -1) {
       const error = new Error("That schedule block is no longer on the student's schedule.");
       error.status = 400;
       throw error;
@@ -806,6 +820,7 @@ function handleScheduleChangeRequestAction(request, action, user) {
       breakStart: request.breakStart,
       breakEnd: request.breakEnd,
       mode: request.mode,
+      scope: request.scope,
       slotIndex,
       source: "Student schedule change",
       by: request.requestedByName || "Student"
@@ -843,11 +858,12 @@ function findScheduleSlotIndex(worker, slotItem) {
 }
 
 function scheduleChangeSummary(request) {
-  const verb = request.type === "remove" ? "remove" : "change";
+  const verb = request.type === "remove" ? "remove" : request.mode === "move-slot" ? "move" : request.mode === "edit-slot" ? "edit" : "change";
+  const scopeLabel = normalizeScheduleScope(request.scope) === SCHEDULE_SCOPE_FUTURE ? " going forward" : "";
   if (request.mode === "split-day") {
-    return `${verb} ${request.space} on ${request.day}, ${formatTime(request.start)}-${formatTime(request.breakStart)} and ${formatTime(request.breakEnd)}-${formatTime(request.end)}`;
+    return `${verb} ${request.space} on ${request.day}, ${formatTime(request.start)}-${formatTime(request.breakStart)} and ${formatTime(request.breakEnd)}-${formatTime(request.end)}${scopeLabel}`;
   }
-  return `${verb} ${request.space} on ${request.day}, ${formatTime(request.start)}-${formatTime(request.end)}`;
+  return `${verb} ${request.space} on ${request.day}, ${formatTime(request.start)}-${formatTime(request.end)}${scopeLabel}`;
 }
 
 function handleTaskAction(task, action, user) {
@@ -1327,6 +1343,7 @@ function publicScheduleChangeRequest(request, forStaff) {
     breakStart: request.breakStart || "",
     breakEnd: request.breakEnd || "",
     mode: request.mode || "",
+    scope: normalizeScheduleScope(request.scope),
     originalSlot: request.originalSlot ? publicScheduleSlot(request.originalSlot, forStaff) : null,
     requestedByName: request.requestedByName || "",
     createdAt: request.createdAt || "",
@@ -1533,6 +1550,7 @@ function migrateDb(appDb) {
     request.status ||= "pending";
     request.type ||= "change";
     request.mode ||= request.type === "remove" ? "remove" : "add";
+    request.scope = normalizeScheduleScope(request.scope);
     request.createdAt ||= new Date().toISOString();
     request.reviewedAt ||= "";
     request.reviewedBy ||= "";
@@ -3357,6 +3375,7 @@ function applyScheduleChange(worker, change) {
   const start = normalizeTimeValue(change.start, "09:00");
   const end = normalizeTimeValue(change.end, "17:00");
   const mode = cleanText(change.mode) || "add";
+  const scope = normalizeScheduleScope(change.scope);
   const breakStart = normalizeTimeValue(change.breakStart, "");
   const breakEnd = normalizeTimeValue(change.breakEnd, "");
   const slotIndex = Number(change.slotIndex);
@@ -3371,24 +3390,51 @@ function applyScheduleChange(worker, change) {
     error.status = 400;
     throw error;
   }
+  if (scope === SCHEDULE_SCOPE_FUTURE && scheduleChangeNeedsOriginal(mode)) {
+    applyFutureScheduleChange(worker, {
+      ...change,
+      day,
+      space,
+      start,
+      end,
+      mode,
+      breakStart,
+      breakEnd,
+      date,
+      originalSlot
+    });
+    return;
+  }
 
   const before = worker.availability.length;
   const weekStart = date ? weekStartMonday(date) : db.focusWeekStart;
   const beforeHours = weeklyHoursFor(worker.availability, weekStart);
   let nextAvailability = [...worker.availability];
+  const removedForSuppression = [];
+  const removeSlots = (predicate) => {
+    const kept = [];
+    nextAvailability.forEach((item, index) => {
+      if (predicate(item, index)) {
+        removedForSuppression.push(item);
+      } else {
+        kept.push(item);
+      }
+    });
+    nextAvailability = kept;
+  };
   if (mode === "replace-day") {
-    nextAvailability = nextAvailability.filter((item) => !scheduleItemMatchesDate(item, day, date));
+    removeSlots((item) => scheduleItemMatchesDate(item, day, date));
   }
   if (mode === "replace-space" || mode === "split-day") {
-    nextAvailability = nextAvailability.filter((item) => !(scheduleItemMatchesDate(item, day, date) && item.space === space));
+    removeSlots((item) => scheduleItemMatchesDate(item, day, date) && item.space === space);
   }
-  if (mode === "edit-slot") {
+  if (scheduleChangeNeedsOriginal(mode)) {
     if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= nextAvailability.length) {
-      const error = new Error("Choose a schedule block to edit");
+      const error = new Error(mode === "move-slot" ? "Choose a schedule block to move" : "Choose a schedule block to edit");
       error.status = 400;
       throw error;
     }
-    nextAvailability = nextAvailability.filter((_, index) => index !== slotIndex);
+    removeSlots((_, index) => index === slotIndex);
   }
   const slotRanges = mode === "split-day"
     ? [[start, breakStart], [breakEnd, end]]
@@ -3408,14 +3454,105 @@ function applyScheduleChange(worker, change) {
     throw error;
   }
 
+  removedForSuppression.forEach((slotItem) => recordScheduleSuppression(db, worker.id, slotItem, change.by || ""));
   worker.availability = nextAvailability;
 
-  const modeLabel = mode === "add" ? "added" : mode === "edit-slot" ? "edited" : mode === "split-day" ? "split" : "changed";
+  const modeLabel = mode === "add" ? "added" : mode === "edit-slot" ? "edited" : mode === "move-slot" ? "moved" : mode === "split-day" ? "split" : "changed";
   const timeLabel = mode === "split-day"
     ? `${formatTime(start)}-${formatTime(breakStart)} and ${formatTime(breakEnd)}-${formatTime(end)}`
     : `${formatTime(start)}-${formatTime(end)}`;
   addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${space} on ${day}, ${timeLabel}. Weekly total: ${formatHourTotal(nextHours)}/${weeklyLimit} hours.`);
   addActivity(`${worker.name} ${modeLabel} schedule at ${space}; ${before} block${before === 1 ? "" : "s"} became ${worker.availability.length}, ${formatHourTotal(beforeHours)}h became ${formatHourTotal(nextHours)}h.`);
+}
+
+function applyFutureScheduleChange(worker, change) {
+  if (!change.originalSlot?.date) {
+    const error = new Error("Going forward changes need a dated schedule block.");
+    error.status = 400;
+    throw error;
+  }
+  const originalDayIndex = DAYS.indexOf(change.originalSlot.day);
+  const targetDayIndex = DAYS.indexOf(change.day);
+  if (originalDayIndex === -1 || targetDayIndex === -1) {
+    const error = new Error("Invalid schedule block.");
+    error.status = 400;
+    throw error;
+  }
+
+  const before = worker.availability.length;
+  const firstWeekStart = weekStartMonday(change.date || change.originalSlot.date);
+  const beforeHours = weeklyHoursFor(worker.availability, firstWeekStart);
+  const removedForSuppression = [];
+  const addedSlots = [];
+  const dayOffset = targetDayIndex - originalDayIndex;
+  const slotRanges = change.mode === "split-day"
+    ? [[change.start, change.breakStart], [change.breakEnd, change.end]]
+    : [[change.start, change.end]];
+  let nextAvailability = [...worker.availability];
+
+  for (let currentDate = change.originalSlot.date; currentDate <= FALL_SCHEDULE_END; currentDate = addDays(currentDate, 7)) {
+    const index = nextAvailability.findIndex((item) => scheduleSlotMatchesOriginalOnDate(item, change.originalSlot, currentDate));
+    if (index === -1) continue;
+    const [removed] = nextAvailability.splice(index, 1);
+    removedForSuppression.push(removed);
+    const targetDate = addDays(currentDate, dayOffset);
+    if (targetDate < FALL_SCHEDULE_START || targetDate > FALL_SCHEDULE_END) continue;
+    const targetDay = dayFromDate(targetDate) || change.day;
+    slotRanges.forEach(([slotStart, slotEnd]) => {
+      const nextSlot = slot(targetDay, change.space, slotStart, slotEnd, change.source, targetDate);
+      applyBreakOverride(nextSlot, scheduleBreakMinutesFromChange(change, change.originalSlot, slotStart, slotEnd));
+      const duplicate = nextAvailability.some((item) =>
+        item.date === nextSlot.date &&
+        item.day === nextSlot.day &&
+        item.space === nextSlot.space &&
+        item.start === nextSlot.start &&
+        item.end === nextSlot.end
+      );
+      if (!duplicate) {
+        nextAvailability.push(nextSlot);
+        addedSlots.push(nextSlot);
+      }
+    });
+  }
+
+  if (!removedForSuppression.length) {
+    const error = new Error("That schedule block is no longer on the student's schedule.");
+    error.status = 400;
+    throw error;
+  }
+
+  nextAvailability.sort(sortScheduleSlots);
+  const affectedWeeks = new Set([
+    ...removedForSuppression.map((item) => weekStartMonday(item.date || change.date)),
+    ...addedSlots.map((item) => weekStartMonday(item.date || change.date))
+  ]);
+  affectedWeeks.forEach((weekStart) => {
+    const nextHours = weeklyHoursFor(nextAvailability, weekStart);
+    const weeklyLimit = weeklyHourLimitFor(weekStart);
+    if (nextHours > weeklyLimit) {
+      const error = new Error(`${worker.name} would be scheduled for ${formatHourTotal(nextHours)} hours in the week of ${formatShortDate(weekStart)}. Student workers must stay at or under ${weeklyLimit} hours, so edit or remove another block first.`);
+      error.status = 400;
+      throw error;
+    }
+  });
+
+  removedForSuppression.forEach((slotItem) => recordScheduleSuppression(db, worker.id, slotItem, change.by || ""));
+  worker.availability = nextAvailability;
+
+  const firstNextHours = weeklyHoursFor(nextAvailability, firstWeekStart);
+  const weeklyLimit = weeklyHourLimitFor(firstWeekStart);
+  const modeLabel = change.mode === "move-slot" ? "moved" : "edited";
+  addAlert("warning", "Schedule changed", `${worker.name} ${modeLabel} ${change.space} on ${change.day} going forward. Weekly total: ${formatHourTotal(firstNextHours)}/${weeklyLimit} hours.`);
+  addActivity(`${worker.name} ${modeLabel} schedule going forward at ${change.space}; ${before} block${before === 1 ? "" : "s"} became ${worker.availability.length}, ${formatHourTotal(beforeHours)}h became ${formatHourTotal(firstNextHours)}h.`);
+}
+
+function scheduleSlotMatchesOriginalOnDate(item, originalSlot, date) {
+  return item.date === date &&
+    item.day === originalSlot.day &&
+    item.space === originalSlot.space &&
+    item.start === originalSlot.start &&
+    item.end === originalSlot.end &&
+    cleanText(item.source) === cleanText(originalSlot.source);
 }
 
 function weeklyHoursFor(availability, weekStart = db?.focusWeekStart || SOURCE_WEEK_START) {

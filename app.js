@@ -1575,6 +1575,7 @@ function combinedSpaceCalendarSnapshotDay(context, day, date) {
       detail: calendarEventCoverageText(event)
     }));
   const gapCount = context.staff ? (app.data.coverageGaps || []).filter((gap) => gap.date === date && context.visibleSpaceSet.has(gap.space)).length : 0;
+  const staffSnapshotItems = [...activeStaff, ...assignedCoverage];
   return `
     <section class="snapshot-day">
       <div class="snapshot-day-head">
@@ -1586,7 +1587,7 @@ function combinedSpaceCalendarSnapshotDay(context, day, date) {
         </div>
       </div>
       ${combinedSnapshotSection("Student Workers", shifts, closed ? "ASU observed holiday. No scheduled coverage needed." : "No student worker coverage.", 5)}
-      ${combinedSnapshotSection("Staff Status", [...assignedCoverage, ...activeStaff], "No staff status or assigned coverage set.", 4, unsetCount ? `Not set: ${unsetCount}` : "")}
+      ${combinedSnapshotSection("Staff Status", staffSnapshotItems, "No staff status or assigned coverage set.", staffSnapshotItems.length, unsetCount ? `Not set: ${unsetCount}` : "")}
       ${combinedSnapshotSection("Events", events, "No events in these spaces.", 5)}
     </section>
   `;

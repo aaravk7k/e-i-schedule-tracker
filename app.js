@@ -1586,7 +1586,7 @@ function combinedSpaceCalendarSnapshotDay(context, day, date) {
         </div>
       </div>
       ${combinedSnapshotSection("Student Workers", shifts, closed ? "ASU observed holiday. No scheduled coverage needed." : "No student worker coverage.", 5)}
-      ${combinedSnapshotSection("Staff Status", [...activeStaff, ...assignedCoverage], "No staff status or assigned coverage set.", 4, unsetCount ? `Not set: ${unsetCount}` : "")}
+      ${combinedSnapshotSection("Staff Status", [...assignedCoverage, ...activeStaff], "No staff status or assigned coverage set.", 4, unsetCount ? `Not set: ${unsetCount}` : "")}
       ${combinedSnapshotSection("Events", events, "No events in these spaces.", 5)}
     </section>
   `;

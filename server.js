@@ -149,6 +149,37 @@ const FALL_STUDENT_SCHEDULES = {
   ]
 };
 const OBSERVED_CLOSED_DATES = ["2026-07-03"];
+const FY27_ACIC_MANUAL_EVENT_SOURCE = "FY27 ACIC manual schedule";
+const FY27_ACIC_MANUAL_EVENTS_MIGRATION_KEY = "fy27-acic-manual-events-v1";
+const FY27_ACIC_MANUAL_EVENTS = [
+  ["2026-09-09", "Chandler Endeavor Connect+", "Room 136 / large pod", "17:00", "18:30", "16:00", "19:00"],
+  ["2026-10-14", "Chandler Endeavor Connect+", "Room 136 / large pod", "17:00", "18:30", "16:00", "19:00"],
+  ["2026-12-09", "Chandler Endeavor Connect+", "Room 136 / large pod", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-01-13", "Chandler Endeavor Connect+", "Room 136 / large pod", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-02-10", "Chandler Endeavor Connect+", "Room 136 / large pod", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-03-10", "Chandler Endeavor Connect+", "Room 136 / large pod", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-04-14", "Chandler Endeavor Connect+", "Room 136 / large pod", "17:00", "18:30", "16:00", "19:00"],
+  ["2026-09-02", "Chandler Endeavor Monthly Forum", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2026-10-07", "Chandler Endeavor Monthly Forum", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2026-11-04", "Chandler Endeavor Monthly Forum", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2027-01-06", "Chandler Endeavor Monthly Forum", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2027-02-03", "Chandler Endeavor Monthly Forum", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2027-03-03", "Chandler Endeavor Monthly Forum", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2027-04-07", "Chandler Endeavor Monthly Forum", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2026-12-02", "Chandler Endeavor Venture Challenge", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2027-05-05", "Chandler Endeavor Venture Challenge", "Room 101/103 / pods", "17:00", "19:00", "15:00", "19:30"],
+  ["2026-08-10", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2026-09-14", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2026-10-12", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2026-11-09", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2026-12-14", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-01-11", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-02-08", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-03-08", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-04-12", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-05-10", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"],
+  ["2027-06-14", "Prototyping Founder Exchange", "Room 130 / U-shaped", "17:00", "18:30", "16:00", "19:00"]
+];
 const NO_UNPAID_BREAK_OVERRIDES = [
   { workerId: "aarav-kapoor", startDate: "2026-06-29", endDate: "2026-07-02" },
   { workerId: "amanda", startDate: "2026-06-29", endDate: "2026-07-02" }
@@ -1478,6 +1509,7 @@ function createInitialDb() {
   ensureAugustUsualSchedules(initial);
   ensureFallStudentSchedules(initial);
   ensureNoUnpaidBreakOverrides(initial);
+  ensureFy27AcicManualEvents(initial);
   ensureCoverageRequestsForFocusWeek(initial);
   return initial;
 }
@@ -1545,6 +1577,7 @@ function migrateDb(appDb) {
   ensureDakshWorker(appDb);
   ensureAugustUsualSchedules(appDb);
   ensureFallStudentSchedules(appDb);
+  ensureFy27AcicManualEvents(appDb);
   appDb.workers.forEach((worker) => {
     worker.skills = normalizeSkillList(worker.skills || []);
     worker.primarySpaces ||= [];
@@ -1601,6 +1634,105 @@ function ensureObservedClosedDates(appDb) {
       if (!space.closedDates.includes(date)) space.closedDates.push(date);
     });
     space.closedDates.sort();
+  });
+}
+
+function ensureFy27AcicManualEvents(appDb) {
+  appDb.migrations ||= {};
+  appDb.events ||= [];
+  if (appDb.migrations[FY27_ACIC_MANUAL_EVENTS_MIGRATION_KEY]) return;
+
+  FY27_ACIC_MANUAL_EVENTS.forEach((definition) => {
+    const event = createFy27AcicManualEvent(definition);
+    const existing = findMatchingFy27AcicEvent(appDb, event);
+    const target = existing || event;
+    if (!existing) appDb.events.push(event);
+    applyFy27AcicCoverageWindow(target, definition);
+    ensureCoverageRequestsForEventBlocks(target, appDb);
+  });
+
+  appDb.migrations[FY27_ACIC_MANUAL_EVENTS_MIGRATION_KEY] = new Date().toISOString();
+}
+
+function createFy27AcicManualEvent(definition) {
+  const [date, title, room, eventStart, eventEnd, coverageStart, coverageEnd] = definition;
+  const id = `manual-acic-fy27-${date}-${slugify(title)}`;
+  return createScheduleEvent({
+    id,
+    externalId: id,
+    title,
+    date,
+    space: "ACIC",
+    start: eventStart,
+    end: eventEnd,
+    status: "requesting",
+    source: FY27_ACIC_MANUAL_EVENT_SOURCE,
+    mazevoBuildingDescription: "ACIC Chandler",
+    mazevoRoomDescription: room,
+    notes: `Confirmed ACIC event. ${room}. SW coverage needed ${formatTime(coverageStart)}-${formatTime(coverageEnd)}; event runs ${formatTime(eventStart)}-${formatTime(eventEnd)}. Source: Scheduling Dates FY27.csv.`
+  });
+}
+
+function findMatchingFy27AcicEvent(appDb, event) {
+  return appDb.events.find((item) => item.externalId === event.externalId || item.id === event.id) ||
+    appDb.events.find((item) =>
+      item.space === "ACIC" &&
+      item.date === event.date &&
+      item.start === event.start &&
+      item.end === event.end &&
+      titlesLikelySame(item.title, event.title)
+    );
+}
+
+function applyFy27AcicCoverageWindow(event, definition) {
+  const [, title, room, eventStart, eventEnd, coverageStart, coverageEnd] = definition;
+  event.mazevoBuildingDescription ||= "ACIC Chandler";
+  event.mazevoRoomDescription = event.mazevoRoomDescription || room;
+  event.coverageBlocks ||= [];
+  const blockId = `manual-acic-fy27-coverage-${event.date}-${slugify(title)}`;
+  const note = `SW coverage needed ${formatTime(coverageStart)}-${formatTime(coverageEnd)}; event runs ${formatTime(eventStart)}-${formatTime(eventEnd)}.`;
+  const block = event.coverageBlocks.find((item) => item.id === blockId);
+
+  if (!block) {
+    event.coverageBlocks.push({
+      id: blockId,
+      start: coverageStart,
+      end: coverageEnd,
+      status: "requesting",
+      workerId: "",
+      resolvedBy: "",
+      resolvedAt: "",
+      note
+    });
+    return;
+  }
+
+  if (!["covered", "scheduled", "rejected"].includes(block.status)) {
+    block.start = coverageStart;
+    block.end = coverageEnd;
+    block.note = note;
+  }
+}
+
+function fy27AcicDefinitionForEvent(event) {
+  if (event.space !== "ACIC") return null;
+  return FY27_ACIC_MANUAL_EVENTS.find(([date, title, , eventStart, eventEnd]) =>
+    event.date === date &&
+    event.start === eventStart &&
+    event.end === eventEnd &&
+    titlesLikelySame(event.title, title)
+  ) || null;
+}
+
+function ensureCoverageRequestsForEventBlocks(event, appDb) {
+  coverageScopesForEvent(event).forEach((scope) => {
+    createCoverageRequestsForEvent(event, appDb, {
+      coverageBlockId: scope.coverageBlockId,
+      start: scope.start,
+      end: scope.end,
+      reason: `SW coverage needed ${formatTime(scope.start)}-${formatTime(scope.end)}.`,
+      silent: true
+    });
   });
 }
 
@@ -2306,30 +2438,47 @@ function mazevoSpaceMap() {
 
 function upsertMazevoEvent(input) {
   const event = createScheduleEvent(input);
+  const fy27AcicDefinition = fy27AcicDefinitionForEvent(event);
+  if (fy27AcicDefinition) applyFy27AcicCoverageWindow(event, fy27AcicDefinition);
   const existing = db.events.find((item) => item.source === "mazevo" && item.externalId === event.externalId) || db.events.find((item) => item.id === event.id);
 
   if (!existing) {
     if (!event.afterHours) event.status = "scheduled";
     db.events.push(event);
     const duplicatesRemoved = removeLegacyDuplicatesForMazevoEvent(event, db);
-    const created = event.afterHours ? createCoverageRequestsForEvent(event, db, { silent: true }) : [];
+    const created = event.afterHours ? ensureCoverageRequestsForMazevoEvent(event) : [];
     return { action: "imported", eventId: event.id, requestsCreated: created.length, duplicatesRemoved };
   }
 
   const preserveCoverage = existing.afterHours && ["accepted", "scheduled", "covered", "rejected"].includes(existing.status);
   const preservedStatus = preserveCoverage ? existing.status : (event.afterHours ? "requesting" : "scheduled");
   const preservedAssignedTo = preserveCoverage ? existing.assignedTo : "";
+  const preservedCoverageBlocks = preserveCoverage ? existing.coverageBlocks : [];
+  const nextCoverageBlocks = fy27AcicDefinition
+    ? (preserveCoverage ? preservedCoverageBlocks : event.coverageBlocks)
+    : preservedCoverageBlocks;
   Object.assign(existing, event, {
     id: existing.id,
     createdAt: existing.createdAt || event.createdAt,
     status: preservedStatus,
-    assignedTo: preservedAssignedTo
+    assignedTo: preservedAssignedTo,
+    coverageBlocks: nextCoverageBlocks
   });
+  if (fy27AcicDefinition) applyFy27AcicCoverageWindow(existing, fy27AcicDefinition);
   existing.afterHours = isAfterHoursEvent(existing);
   if (!preserveCoverage) removeOpenCoverageRequestsForEvent(existing.id);
   const duplicatesRemoved = removeLegacyDuplicatesForMazevoEvent(existing, db);
-  const created = existing.afterHours && !afterHoursCoverageResolved(existing) ? createCoverageRequestsForEvent(existing, db, { silent: true }) : [];
+  const created = existing.afterHours && !afterHoursCoverageResolved(existing) ? ensureCoverageRequestsForMazevoEvent(existing) : [];
   return { action: "updated", eventId: existing.id, requestsCreated: created.length, duplicatesRemoved };
+}
+
+function ensureCoverageRequestsForMazevoEvent(event) {
+  if (event.coverageBlocks?.length) {
+    const before = db.coverageRequests.length;
+    ensureCoverageRequestsForEventBlocks(event, db);
+    return db.coverageRequests.slice(before);
+  }
+  return createCoverageRequestsForEvent(event, db, { silent: true });
 }
 
 function removeLegacyDuplicatesForMazevoEvent(mazevoEvent, appDb) {
@@ -2405,12 +2554,30 @@ function transferResolvedCoverageIfNeeded(legacyEvent, mazevoEvent, appDb) {
     mazevoEvent.resolvedAt = legacyEvent.resolvedAt || mazevoEvent.resolvedAt || "";
     mazevoEvent.resolvedBy = legacyEvent.resolvedBy || mazevoEvent.resolvedBy || "";
   }
+  mergeResolvedCoverageBlocks(legacyEvent, mazevoEvent);
   appDb.coverageRequests
     .filter((request) => request.eventId === legacyEvent.id && ["accepted", "scheduled", "covered"].includes(request.status))
     .forEach((request) => {
       const exists = appDb.coverageRequests.some((item) => item.eventId === mazevoEvent.id && item.workerId === request.workerId);
       if (!exists) request.eventId = mazevoEvent.id;
     });
+}
+
+function mergeResolvedCoverageBlocks(fromEvent, toEvent) {
+  const resolvedBlocks = (fromEvent.coverageBlocks || []).filter((block) =>
+    ["accepted", "scheduled", "covered", "rejected"].includes(block.status)
+  );
+  if (!resolvedBlocks.length) return;
+
+  toEvent.coverageBlocks ||= [];
+  resolvedBlocks.forEach((block) => {
+    const match = toEvent.coverageBlocks.find((item) => item.id === block.id || (item.start === block.start && item.end === block.end));
+    if (match) {
+      Object.assign(match, block, { id: match.id || block.id });
+      return;
+    }
+    toEvent.coverageBlocks.push({ ...block });
+  });
 }
 
 function titlesLikelySame(left, right) {

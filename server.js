@@ -148,7 +148,7 @@ const FALL_STUDENT_SCHEDULES = {
     { day: "Friday", space: "The Studios", start: "11:00", end: "17:00" }
   ]
 };
-const OBSERVED_CLOSED_DATES = ["2026-07-03"];
+const OBSERVED_CLOSED_DATES = ["2026-07-03", "2026-09-07"];
 const FY27_ACIC_MANUAL_EVENT_SOURCE = "FY27 ACIC manual schedule";
 const FY27_ACIC_MANUAL_EVENTS_MIGRATION_KEY = "fy27-acic-manual-events-v1";
 const FY27_ACIC_MANUAL_EVENTS = [

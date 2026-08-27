@@ -816,7 +816,10 @@ function staffCalendarCard(record) {
         ${record.updatedBy ? `<span class="badge">Updated by ${escapeHtml(record.updatedBy)}</span>` : ""}
       </div>
       ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
-      ${app.data.role === "staff" ? `<button class="mini-button" type="button" data-action="edit-staff-status" data-staff-status-date="${record.date}" data-staff-status-name="${escapeHtml(record.name)}">Edit</button>` : ""}
+      ${app.data.role === "staff" ? `<div class="action-row">
+        <button class="mini-button" type="button" data-action="edit-staff-status" data-staff-status-date="${record.date}" data-staff-status-name="${escapeHtml(record.name)}">Edit</button>
+        ${record.id ? `<button class="mini-button danger-mini-button" type="button" data-action="remove-staff-status" data-staff-status-id="${escapeHtml(record.id)}" data-staff-status-name="${escapeHtml(record.name)}" data-staff-status-date="${record.date}">Remove</button>` : ""}
+      </div>` : ""}
     </article>
   `;
 }
@@ -948,6 +951,10 @@ function staffStatusCard(record) {
         ${record.updatedBy ? `<span class="badge">Updated by ${escapeHtml(record.updatedBy)}</span>` : ""}
       </div>
       ${record.note ? `<p class="task-meta">${escapeHtml(record.note)}</p>` : ""}
+      ${app.data.role === "staff" && record.id ? `<div class="action-row">
+        <button class="mini-button" type="button" data-action="edit-staff-status" data-staff-status-date="${record.date}" data-staff-status-name="${escapeHtml(record.name)}">Edit</button>
+        <button class="mini-button danger-mini-button" type="button" data-action="remove-staff-status" data-staff-status-id="${escapeHtml(record.id)}" data-staff-status-name="${escapeHtml(record.name)}" data-staff-status-date="${record.date}">Remove</button>
+      </div>` : ""}
     </article>
   `;
 }
@@ -2527,6 +2534,17 @@ async function handleAction(action, button) {
     }
     if (action === "edit-staff-status") {
       selectStaffStatusForEdit(button.dataset.staffStatusDate, button.dataset.staffStatusName);
+      return;
+    }
+    if (action === "remove-staff-status") {
+      const statusId = button.dataset.staffStatusId;
+      if (!statusId) return;
+      const name = button.dataset.staffStatusName || "this staff member";
+      const date = button.dataset.staffStatusDate || app.data.focusDate;
+      if (!window.confirm(`Remove ${name}'s staff status for ${formatShortDate(date)}?`)) return;
+      app.data = await api(`/api/staff-statuses/${encodeURIComponent(statusId)}`, { method: "DELETE" });
+      showToast("Staff status removed.");
+      render();
       return;
     }
     if (action === "remove-staff-coverage-assignment") {

@@ -794,6 +794,11 @@ tr:last-child td {
   font-size: 0.78rem;
 }
 
+.danger-mini-button {
+  border-color: #fda29b;
+  color: var(--danger);
+}
+
 .primary-button:hover,
 .secondary-button:hover,
 .ghost-button:hover,

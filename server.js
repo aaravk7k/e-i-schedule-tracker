@@ -310,6 +310,16 @@ async function handleApi(req, res) {
     return;
   }
 
+  const staffStatusMatch = url.pathname.match(/^\/api\/staff-statuses\/([^/]+)$/);
+  if (req.method === "DELETE" && staffStatusMatch) {
+    requireStaff(user);
+    const removed = deleteStaffStatus(decodeURIComponent(staffStatusMatch[1]));
+    addActivity(`${user.name} removed ${removed.name}'s staff status for ${formatShortDate(removed.date)}.`);
+    saveDb();
+    sendJson(res, 200, viewForUser(user));
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/staff-coverage-assignments") {
     requireStaff(user);
     const body = await readJson(req);
@@ -2941,6 +2951,18 @@ function upsertStaffStatus(input, user) {
   }
   db.staffStatuses = cleanStaffStatusRecords(db.staffStatuses);
   return record;
+}
+
+function deleteStaffStatus(id) {
+  db.staffStatuses = cleanStaffStatusRecords(db.staffStatuses || []);
+  const index = db.staffStatuses.findIndex((record) => record.id === id);
+  if (index < 0) {
+    const error = new Error("Staff status not found.");
+    error.status = 404;
+    throw error;
+  }
+  const [removed] = db.staffStatuses.splice(index, 1);
+  return removed;
 }
 
 function createStaffStatusRecord(input, user) {

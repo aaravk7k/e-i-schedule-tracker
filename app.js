@@ -1509,8 +1509,7 @@ function combinedSpaceCalendarPrintHtml(context) {
           .snapshot-day-head { border-bottom: 1px solid #d8dee8; display: grid; gap: 3px; margin-bottom: 5px; min-height: 40px; padding-bottom: 5px; }
           .snapshot-day-head strong { font-size: 10.5px; line-height: 1.15; }
           .snapshot-day-head span,
-          .snapshot-empty,
-          .snapshot-more { color: #667085; font-size: 7.5px; line-height: 1.2; }
+          .snapshot-empty { color: #667085; font-size: 7.5px; line-height: 1.2; }
           .snapshot-badge-row { display: flex; flex-wrap: wrap; gap: 3px; }
           .snapshot-badge { background: #eef2f7; border-radius: 999px; color: #344054; display: inline-flex; font-size: 7px; font-weight: 800; line-height: 1; padding: 3px 5px; }
           .snapshot-badge.warning { background: #fff3cd; color: #7a4c00; }
@@ -1572,7 +1571,6 @@ function combinedSpaceCalendarSnapshotDay(context, day, date) {
       meta: ["Assigned coverage", record.space, `${formatTime(record.start)}-${formatTime(record.end)}`].filter(Boolean).join(" | "),
       detail: record.note || ""
     }));
-  const unsetCount = staffStatuses.filter((record) => record.status === "Not Set").length;
   const events = eventsInFocusWeek(app.data.events || [])
     .filter((event) => event.date === date && context.visibleSpaceSet.has(event.space))
     .map((event) => ({
@@ -1593,21 +1591,18 @@ function combinedSpaceCalendarSnapshotDay(context, day, date) {
           ${gapCount ? `<span class="snapshot-badge warning">${gapCount} gap${gapCount === 1 ? "" : "s"}</span>` : ""}
         </div>
       </div>
-      ${combinedSnapshotSection("Student Workers", shifts, closed ? "ASU observed holiday. No scheduled coverage needed." : "No student worker coverage.", 5)}
-      ${combinedSnapshotSection("Staff Status", staffSnapshotItems, "No staff status or assigned coverage set.", staffSnapshotItems.length, unsetCount ? `Not set: ${unsetCount}` : "")}
-      ${combinedSnapshotSection("Events", events, "No events in these spaces.", 5)}
+      ${combinedSnapshotSection("Student Workers", shifts, closed ? "ASU observed holiday. No scheduled coverage needed." : "No student worker coverage.")}
+      ${combinedSnapshotSection("Staff Status", staffSnapshotItems, "No staff status or assigned coverage set.")}
+      ${combinedSnapshotSection("Events", events, "No events in these spaces.")}
     </section>
   `;
 }
 
-function combinedSnapshotSection(title, items, emptyText, maxItems, footer = "") {
-  const visibleItems = items.slice(0, maxItems);
+function combinedSnapshotSection(title, items, emptyText) {
   return `
     <div class="snapshot-section">
       <h2>${escapeHtml(title)}</h2>
-      ${visibleItems.length ? visibleItems.map(combinedSnapshotItem).join("") : `<span class="snapshot-empty">${escapeHtml(emptyText)}</span>`}
-      ${items.length > visibleItems.length ? `<span class="snapshot-more">+${items.length - visibleItems.length} more</span>` : ""}
-      ${footer ? `<span class="snapshot-more">${escapeHtml(footer)}</span>` : ""}
+      ${items.length ? items.map(combinedSnapshotItem).join("") : `<span class="snapshot-empty">${escapeHtml(emptyText)}</span>`}
     </div>
   `;
 }
@@ -1666,7 +1661,6 @@ function spaceCalendarPrintHtml(context) {
           .cell-item strong { display: block; font-size: 8.5px; line-height: 1.15; }
           .cell-item span { color: #344054; display: block; font-size: 8px; line-height: 1.2; }
           .cell-item em { color: #667085; display: block; font-size: 7.5px; font-style: normal; line-height: 1.15; }
-          .cell-more { color: #667085; font-size: 7.5px; font-weight: 700; }
           @page { size: letter landscape; margin: 0.25in; }
           @media print {
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1711,17 +1705,15 @@ function spaceCalendarSnapshotCell(context, space, day, date) {
         detail: calendarEventCoverageText(event)
       }))
   ];
-  const visibleItems = items.slice(0, 4);
   return `
     <div class="snapshot-cell">
-      ${visibleItems.length ? visibleItems.map((item) => `
+      ${items.length ? items.map((item) => `
         <div class="cell-item ${item.type === "event" ? "event" : ""}">
           <strong>${escapeHtml(item.title)}</strong>
           <span>${escapeHtml(item.meta)}</span>
           <em>${escapeHtml(item.detail)}</em>
         </div>
       `).join("") : `<span class="cell-empty">No coverage</span>`}
-      ${items.length > visibleItems.length ? `<div class="cell-more">+${items.length - visibleItems.length} more</div>` : ""}
     </div>
   `;
 }

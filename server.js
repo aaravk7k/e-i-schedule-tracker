@@ -196,7 +196,8 @@ const STAFF_COVERAGE_ASSIGNEES = [
   "Eric Heimbecker",
   "Jesus Ledezma",
   "Matt Beard",
-  "Stevie Campbell"
+  "Stevie Campbell",
+  "Shannon Lunsford"
 ];
 const STAFF_STATUS_OPTIONS = ["In Office", "Remote", "Out of Office"];
 const STAFF_STATUS_DEFAULT = "Not Set";
